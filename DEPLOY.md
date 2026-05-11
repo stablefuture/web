@@ -26,8 +26,8 @@
 # 1. Log in to Vercel
 vercel login
 
-# 2. Link this project (run from /Users/ben/projects/stable-future)
-cd /Users/ben/projects/stable-future
+# 2. Link this project (run from /Users/ben/build/stable-future)
+cd /Users/ben/build/stable-future
 vercel link
 
 # 3. Add each env var (repeat for all keys above)
