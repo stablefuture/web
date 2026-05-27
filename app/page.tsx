@@ -1,6 +1,62 @@
 import { Button } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
 import { Section } from "@/app/components/Section";
+import { VSL_URL } from "@/app/config";
+
+const PROBLEMS = [
+  "The careers advice they're getting is out of date. School guidance assumes a job market that's already changing fast.",
+  "AI is reshaping entry-level work. The roles graduates used to start in are the first ones being automated.",
+  "Good grades are no longer enough. Employers increasingly hire for judgement, initiative and real projects — things exams don't measure.",
+  "Most parents feel all this but can't act on it. The worry is real; the next step isn't obvious.",
+];
+
+const OUTCOMES = [
+  "An honest assessment of your child's current trajectory.",
+  "Subject and course choices that hold their value.",
+  "The practical AI skills employers actually reward.",
+  "A concrete 6-month action plan you can start this week.",
+];
+
+const STEPS = [
+  {
+    n: "1",
+    title: "Apply",
+    body: "Answer a few questions about your child. It takes about 60 seconds.",
+  },
+  {
+    n: "2",
+    title: "Strategy call",
+    body: "A free 30-minute call where we map the situation and tell you honestly what we'd do.",
+  },
+  {
+    n: "3",
+    title: "The plan",
+    body: "You leave with a clear, prioritised plan for your child — whether or not we work together after.",
+  },
+];
+
+const FAQS = [
+  {
+    q: "How much does this cost?",
+    a: "Less than a year of private tutoring, and far less than the cost of the wrong university course or career path. We'll talk specifics on the call, once we both know it's a fit.",
+  },
+  {
+    q: "Is this for my child or for me?",
+    a: "Both. You make the decision; your child does the work. The call is with you; the plan is for them.",
+  },
+  {
+    q: "My child already gets good grades — do we still need this?",
+    a: "Grades matter less than they used to. This is about what comes after the grades: the skills, projects and choices that decide whether your child stands out in an AI-shaped market.",
+  },
+  {
+    q: "What happens on the free call?",
+    a: "We look at your child's current path and tell you honestly what we'd change. No pressure and no obligation — you leave with a clear next step either way.",
+  },
+  {
+    q: "What ages do you work with?",
+    a: "Years 9 to 13 (ages 13–18) — the window where subject and skill choices compound the most.",
+  },
+];
 
 export default function Home() {
   return (
@@ -12,8 +68,8 @@ export default function Home() {
             <span className="text-lg font-extrabold tracking-tight text-brand-950">
               Stable Future
             </span>
-            <Button href="#book" size="md">
-              Book a Free Call
+            <Button href="/apply" size="md">
+              Apply Now
             </Button>
           </div>
         </Container>
@@ -22,136 +78,203 @@ export default function Home() {
       {/* Hero */}
       <Section as="section" className="bg-white">
         <Container narrow>
-          <div className="flex flex-col items-center text-center gap-8">
-            {/* VSL placeholder */}
-            <div className="w-full aspect-video bg-ink rounded-xl flex items-center justify-center shadow-2xl">
-              <div className="flex flex-col items-center gap-3 text-white/60">
-                <PlayIcon className="w-16 h-16" />
-                <span className="text-sm font-medium uppercase tracking-widest">
-                  Video coming soon
-                </span>
-              </div>
-            </div>
+          <div className="flex flex-col items-center gap-8 text-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-700">
+              For parents of Year 9–13 students
+            </span>
 
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-ink max-w-2xl">
-              Your teenager&apos;s career is already being disrupted by AI.
+            <h1 className="max-w-3xl text-4xl font-extrabold text-ink sm:text-5xl lg:text-6xl">
+              Give your teenager an unfair advantage in an AI-shaped world.
             </h1>
 
-            {/* Subheadline */}
-            <p className="text-lg sm:text-xl text-muted max-w-xl leading-relaxed">
-              We help parents of Y10–13 students make confident decisions so
-              their children land on the right side of the AI job market.
+            <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
+              Most careers advice was written before ChatGPT. We give you a
+              clear, honest plan for the subjects, skills and choices that will
+              still matter when your child enters the workforce.
             </p>
 
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-2">
-              <Button href="#book" size="lg">
-                Book a Free Strategy Call
-              </Button>
-              <Button href="/guide" variant="secondary" size="lg">
-                Get the Free Guide
+            <VideoEmbed />
+
+            <div className="mt-2 flex flex-col gap-4 sm:flex-row">
+              <Button href="/apply" size="lg">
+                Apply for a free strategy call →
               </Button>
             </div>
 
             <p className="text-sm text-muted">
-              No obligation. 30 minutes. Clarity guaranteed.
+              Free 30-minute call · No obligation · A clear plan either way
             </p>
           </div>
         </Container>
       </Section>
 
-      {/* Social proof strip */}
-      <Section tight className="bg-brand-950 text-white">
-        <Container>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-10 text-center">
-            <Stat number="87%" label="of jobs will be transformed by AI within 10 years" />
-            <div className="hidden sm:block w-px h-12 bg-white/20" />
-            <Stat number="Y10–13" label="the critical window to build future-proof skills" />
-            <div className="hidden sm:block w-px h-12 bg-white/20" />
-            <Stat number="Free" label="initial strategy call — no strings attached" />
+      {/* Problem */}
+      <Section className="bg-surface-alt">
+        <Container narrow>
+          <div className="flex flex-col gap-8">
+            <h2 className="max-w-2xl text-3xl font-extrabold text-ink sm:text-4xl">
+              The ground is shifting under your child&apos;s feet.
+            </h2>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {PROBLEMS.map((p) => (
+                <div
+                  key={p}
+                  className="rounded-2xl border border-brand-100 bg-white p-6 text-foreground leading-relaxed"
+                >
+                  {p}
+                </div>
+              ))}
+            </div>
           </div>
         </Container>
       </Section>
 
-      {/* What we do */}
-      <Section className="bg-surface-alt">
+      {/* What you get */}
+      <Section className="bg-white">
         <Container>
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid items-center gap-16 lg:grid-cols-2">
             <div className="flex flex-col gap-6">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-ink">
-                We help your child become AI-proof — not AI-replaced.
+              <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
+                A clear plan, built around your child.
               </h2>
-              <p className="text-lg text-muted leading-relaxed">
-                Most careers advice for teenagers was written before ChatGPT
-                existed. We give parents a clear, honest picture of which skills
-                and paths have staying power — and which ones don&apos;t.
+              <p className="text-lg leading-relaxed text-muted">
+                We give parents a clear, honest picture of which skills and
+                paths have staying power — and which ones don&apos;t — then turn
+                it into something you can act on.
               </p>
               <ul className="flex flex-col gap-3">
-                {[
-                  "Personalised assessment of your child's current trajectory",
-                  "Subject and course choices that hold their value",
-                  "Practical AI skills that employers actually want",
-                  "A concrete 6-month action plan you can start this week",
-                ].map((item) => (
+                {OUTCOMES.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <CheckIcon className="mt-1 w-5 h-5 text-brand-700 shrink-0" />
+                    <CheckIcon className="mt-1 h-5 w-5 shrink-0 text-brand-700" />
                     <span className="text-foreground">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col gap-4 border border-brand-100">
-              <p className="text-lg font-semibold text-ink leading-snug">
+            <div className="flex flex-col gap-4 rounded-2xl border border-brand-100 bg-surface-alt p-8 shadow-xl">
+              <p className="text-lg font-semibold leading-snug text-ink">
                 &ldquo;Within one session, we had a clear plan. My son is now
                 doing projects that will actually matter in five years — not
                 just A-levels that AI can replace overnight.&rdquo;
               </p>
-              <p className="text-sm text-muted font-medium">— Parent of a Year 12 student, Manchester</p>
+              <p className="text-sm font-medium text-muted">
+                — Parent of a Year 12 student, Manchester
+              </p>
             </div>
           </div>
         </Container>
       </Section>
 
-      {/* Book a call */}
-      <Section id="book" className="bg-brand-950 text-white">
-        <Container narrow>
-          <div className="flex flex-col items-center text-center gap-8">
-            <h2 className="text-3xl sm:text-4xl font-extrabold">
-              Book your free 30-minute strategy call
+      {/* How it works */}
+      <Section className="bg-surface-alt">
+        <Container>
+          <div className="flex flex-col gap-10">
+            <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
+              How it works
             </h2>
-            <p className="text-lg text-brand-200 max-w-lg leading-relaxed">
-              We&apos;ll look at your child&apos;s current path and tell you honestly
-              what we think. No upsell. No fluff.
-            </p>
-            {/* Booking embed placeholder */}
-            <div className="w-full max-w-md bg-white/10 border border-white/20 rounded-xl p-8 flex flex-col items-center gap-4">
-              <p className="text-sm text-brand-200 uppercase tracking-widest font-medium">
-                Booking calendar
-              </p>
-              <p className="text-white/60 text-sm text-center">
-                Calendly / TidyCal embed goes here.
-                <br />
-                Replace this placeholder with your booking link.
-              </p>
-              <Button
-                href="#"
-                size="lg"
-                className="bg-white text-brand-950 hover:bg-brand-100 border-0"
-              >
-                Schedule Now →
-              </Button>
+            <div className="grid gap-8 md:grid-cols-3">
+              {STEPS.map((step) => (
+                <div key={step.n} className="flex flex-col gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-950 font-extrabold text-white">
+                    {step.n}
+                  </span>
+                  <h3 className="text-xl font-extrabold text-ink">
+                    {step.title}
+                  </h3>
+                  <p className="leading-relaxed text-muted">{step.body}</p>
+                </div>
+              ))}
             </div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Guarantee — replace with the conditional services guarantee when ready */}
+      <Section tight className="bg-brand-950 text-white">
+        <Container narrow>
+          <div className="flex flex-col items-center gap-5 text-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-300">
+              Our guarantee
+            </span>
+            <p className="max-w-2xl text-2xl font-extrabold leading-snug sm:text-3xl">
+              Show up to your call and you&apos;ll leave with a clear, concrete
+              next step for your child — or we&apos;ve wasted our time, not
+              yours. The call is free either way.
+            </p>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Scarcity */}
+      <Section tight className="bg-white">
+        <Container narrow>
+          <p className="text-center text-base leading-relaxed text-muted">
+            We work with a limited number of families at a time, so every plan
+            gets proper attention. If the calendar&apos;s open, you can book.
+          </p>
+        </Container>
+      </Section>
+
+      {/* FAQ */}
+      <Section className="bg-surface-alt">
+        <Container narrow>
+          <div className="flex flex-col gap-8">
+            <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
+              Questions parents ask
+            </h2>
+            <div className="flex flex-col gap-3">
+              {FAQS.map((faq) => (
+                <details
+                  key={faq.q}
+                  className="group rounded-xl border border-brand-100 bg-white p-5"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between font-semibold text-ink">
+                    {faq.q}
+                    <span className="ml-4 text-brand-700 transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 leading-relaxed text-muted">{faq.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Final CTA */}
+      <Section className="bg-brand-950 text-white">
+        <Container narrow>
+          <div className="flex flex-col items-center gap-8 text-center">
+            <h2 className="text-3xl font-extrabold sm:text-4xl">
+              Give your child a head start.
+            </h2>
+            <p className="max-w-lg text-lg leading-relaxed text-brand-200">
+              Answer a few questions and book your free strategy call. We&apos;ll
+              tell you honestly what we&apos;d do — no upsell, no fluff.
+            </p>
+            <Button
+              href="/apply"
+              size="lg"
+              className="border-0 bg-white text-brand-950 hover:bg-brand-100"
+            >
+              Apply now →
+            </Button>
+            <p className="text-sm text-brand-300">
+              Free 30-minute call · No obligation
+            </p>
           </div>
         </Container>
       </Section>
 
       {/* Footer */}
-      <footer className="bg-ink text-white/60 py-8">
+      <footer className="bg-ink py-8 text-white/60">
         <Container>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+          <div className="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
             <span className="font-bold text-white">Stable Future</span>
-            <span>© {new Date().getFullYear()} Stable Future. All rights reserved.</span>
+            <span>
+              © {new Date().getFullYear()} Stable Future. All rights reserved.
+            </span>
           </div>
         </Container>
       </footer>
@@ -159,25 +282,18 @@ export default function Home() {
   );
 }
 
-function Stat({ number, label }: { number: string; label: string }) {
+function VideoEmbed() {
+  if (!VSL_URL) return null;
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-3xl font-extrabold text-white">{number}</span>
-      <span className="text-brand-300 text-sm max-w-[160px]">{label}</span>
+    <div className="aspect-video w-full overflow-hidden rounded-xl shadow-2xl">
+      <iframe
+        src={VSL_URL}
+        title="Stable Future"
+        className="h-full w-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
     </div>
-  );
-}
-
-function PlayIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14Z" />
-    </svg>
   );
 }
 
@@ -191,11 +307,7 @@ function CheckIcon({ className }: { className?: string }) {
       strokeWidth={2.5}
       aria-hidden="true"
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.5 12.75l6 6 9-13.5"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
     </svg>
   );
 }

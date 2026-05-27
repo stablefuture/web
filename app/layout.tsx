@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Stable Future — AI Advisory for Parents",
   description:
-    "Helping parents prepare their Y10-13 teenagers for a rapidly changing, AI-shaped job market.",
+    "Helping parents prepare their Y9-13 teenagers for a rapidly changing, AI-shaped job market.",
 };
 
 export default function RootLayout({

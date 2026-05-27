@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (!key || key === "PLACEHOLDER") return;
 
     posthog.init(key, {
-      api_host: host ?? "https://app.posthog.com",
+      api_host: host || "https://eu.i.posthog.com",
       capture_pageview: true,
       capture_pageleave: true,
       persistence: "localStorage",
