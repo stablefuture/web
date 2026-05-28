@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
-  /* Deep purple brand palette */
+  /* Bright purple brand palette */
   --color-brand-50: #faf5ff;
   --color-brand-100: #f3e8ff;
   --color-brand-200: #e9d5ff;
@@ -14,32 +16,72 @@
   --color-brand-900: #581c87;
   --color-brand-950: #3b0764;
 
-  /* Semantic tokens */
-  --color-background: #ffffff;
-  --color-foreground: #0f0520;
-  --color-ink: #0f0520;
-  --color-muted: #6b5c8a;
-  --color-surface-alt: #faf5ff;
+  /* Semantic tokens — read from CSS vars so they swap with theme */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-surface-alt: var(--surface-alt);
+  --color-border-soft: var(--border-soft);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-glow: var(--accent-glow);
+  --color-on-accent: var(--on-accent);
 
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* LIGHT (default) */
 :root {
   --background: #ffffff;
   --foreground: #0f0520;
+  --ink: #0f0520;
+  --muted: #6b5c8a;
+  --surface-alt: #faf5ff;
+  --border-soft: #f3e8ff;
+  /* Accent: the bright purple identity (#a855f7 = brand-500) shows through
+     for highlight boxes and glow. Solid filled buttons need deeper purple
+     to hit WCAG AA against white text. */
+  --accent: #a855f7;
+  --accent-strong: #7e22ce; /* button fill on light */
+  --accent-glow: transparent; /* no VSL glow in light */
+  --on-accent: #ffffff;
 }
 
+/* DARK — opt-in via .dark on <html> */
+.dark {
+  --background: #050008;
+  --foreground: #f5edff;
+  --ink: #f5edff;
+  --muted: #b2a4cf;
+  --surface-alt: #100620;
+  --border-soft: #281047;
+  --accent: #a855f7;
+  --accent-strong: #9333ea; /* button fill on dark; AA on white text */
+  --accent-glow: #c084fc; /* VSL halo only in dark */
+  --on-accent: #ffffff;
+}
+
+/* prefers-color-scheme: the inline script in layout sets .dark before paint
+   based on localStorage or prefers-color-scheme, so the toggle is the single
+   source of truth. No CSS media query needed. */
+
+html,
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Display headings — bold and tight */
+/* Display headings — bold and tight. ALL-CAPS is allowed on landing hero /
+   payoff (set per-element via Tailwind `uppercase`). */
 h1, h2, h3, h4 {
   font-weight: 800;
   letter-spacing: -0.025em;

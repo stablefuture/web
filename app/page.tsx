@@ -61,20 +61,6 @@ const FAQS = [
 export default function Home() {
   return (
     <main>
-      {/* Nav */}
-      <header className="border-b border-brand-100 bg-white">
-        <Container>
-          <div className="flex h-16 items-center justify-between">
-            <span className="text-lg font-extrabold tracking-tight text-brand-950">
-              Stable Future
-            </span>
-            <Button href="/apply" size="md">
-              Apply Now
-            </Button>
-          </div>
-        </Container>
-      </header>
-
       {/* Hero */}
       <Section as="section" className="bg-white">
         <Container narrow>
