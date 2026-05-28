@@ -2,7 +2,7 @@ import { Button } from "@/app/components/Button";
 import { Comparison } from "@/app/components/Comparison";
 import { Container } from "@/app/components/Container";
 import { Section } from "@/app/components/Section";
-import { VSL_URL } from "@/app/config";
+import { SCARCITY_ENABLED, SCARCITY_TEXT, VSL_URL } from "@/app/config";
 
 const PROBLEMS = [
   "The careers advice they're getting is out of date. School guidance assumes a job market that's already changing fast.",
@@ -16,47 +16,6 @@ const OUTCOMES = [
   "Subject and course choices that hold their value.",
   "The practical AI skills employers actually reward.",
   "A concrete 6-month action plan you can start this week.",
-];
-
-const STEPS = [
-  {
-    n: "1",
-    title: "Apply",
-    body: "Answer a few questions about your child. It takes about 60 seconds.",
-  },
-  {
-    n: "2",
-    title: "Strategy call",
-    body: "A free 30-minute call where we map the situation and tell you honestly what we'd do.",
-  },
-  {
-    n: "3",
-    title: "The plan",
-    body: "You leave with a clear, prioritised plan for your child — whether or not we work together after.",
-  },
-];
-
-const FAQS = [
-  {
-    q: "How much does this cost?",
-    a: "Less than a year of private tutoring, and far less than the cost of the wrong university course or career path. We'll talk specifics on the call, once we both know it's a fit.",
-  },
-  {
-    q: "Is this for my child or for me?",
-    a: "Both. You make the decision; your child does the work. The call is with you; the plan is for them.",
-  },
-  {
-    q: "My child already gets good grades — do we still need this?",
-    a: "Grades matter less than they used to. This is about what comes after the grades: the skills, projects and choices that decide whether your child stands out in an AI-shaped market.",
-  },
-  {
-    q: "What happens on the free call?",
-    a: "We look at your child's current path and tell you honestly what we'd change. No pressure and no obligation — you leave with a clear next step either way.",
-  },
-  {
-    q: "What ages do you work with?",
-    a: "Years 9 to 13 (ages 13–18) — the window where subject and skill choices compound the most.",
-  },
 ];
 
 export default function Home() {
@@ -110,102 +69,45 @@ export default function Home() {
         </Container>
       </Section>
 
-      {/* How it works */}
-      <Section className="bg-surface-alt">
-        <Container>
-          <div className="flex flex-col gap-10">
-            <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
-              How it works
-            </h2>
-            <div className="grid gap-8 md:grid-cols-3">
-              {STEPS.map((step) => (
-                <div key={step.n} className="flex flex-col gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-950 font-extrabold text-white">
-                    {step.n}
-                  </span>
-                  <h3 className="text-xl font-extrabold text-ink">
-                    {step.title}
-                  </h3>
-                  <p className="leading-relaxed text-muted">{step.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Payoff */}
+      <Section as="section">
+        <Container narrow>
+          <h2 className="text-center text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+            All you do:{" "}
+            <span className="inline-block whitespace-nowrap bg-accent px-3 py-0.5 text-on-accent">
+              show up
+            </span>{" "}
+            to the call.
+          </h2>
         </Container>
       </Section>
 
-      {/* Guarantee — replace with the conditional services guarantee when ready */}
-      <Section tight className="bg-brand-950 text-white">
-        <Container narrow>
-          <div className="flex flex-col items-center gap-5 text-center">
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-300">
-              Our guarantee
-            </span>
-            <p className="max-w-2xl text-2xl font-extrabold leading-snug sm:text-3xl">
-              Show up to your call and you&apos;ll leave with a clear, concrete
-              next step for your child — or we&apos;ve wasted our time, not
-              yours. The call is free either way.
+      {/* Scarcity — gated by SCARCITY_ENABLED in app/config.ts */}
+      {SCARCITY_ENABLED && (
+        <Section tight className="bg-surface-alt">
+          <Container narrow>
+            <p className="text-center text-base leading-relaxed text-muted sm:text-lg">
+              {SCARCITY_TEXT}
             </p>
-          </div>
-        </Container>
-      </Section>
-
-      {/* Scarcity */}
-      <Section tight className="bg-white">
-        <Container narrow>
-          <p className="text-center text-base leading-relaxed text-muted">
-            We work with a limited number of families at a time, so every plan
-            gets proper attention. If the calendar&apos;s open, you can book.
-          </p>
-        </Container>
-      </Section>
-
-      {/* FAQ */}
-      <Section className="bg-surface-alt">
-        <Container narrow>
-          <div className="flex flex-col gap-8">
-            <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
-              Questions parents ask
-            </h2>
-            <div className="flex flex-col gap-3">
-              {FAQS.map((faq) => (
-                <details
-                  key={faq.q}
-                  className="group rounded-xl border border-brand-100 bg-white p-5"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between font-semibold text-ink">
-                    {faq.q}
-                    <span className="ml-4 text-brand-700 transition-transform group-open:rotate-45">
-                      +
-                    </span>
-                  </summary>
-                  <p className="mt-3 leading-relaxed text-muted">{faq.a}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </Section>
+          </Container>
+        </Section>
+      )}
 
       {/* Final CTA */}
-      <Section className="bg-brand-950 text-white">
+      <Section className="bg-surface-alt">
         <Container narrow>
           <div className="flex flex-col items-center gap-8 text-center">
-            <h2 className="text-3xl font-extrabold sm:text-4xl">
+            <h2 className="text-3xl font-extrabold uppercase tracking-tight text-ink sm:text-4xl">
               Give your child a head start.
             </h2>
-            <p className="max-w-lg text-lg leading-relaxed text-brand-200">
+            <p className="max-w-lg text-lg leading-relaxed text-muted">
               Answer a few questions and book your free strategy call. We&apos;ll
               tell you honestly what we&apos;d do — no upsell, no fluff.
             </p>
-            <Button
-              href="/apply"
-              size="lg"
-              className="border-0 bg-white text-brand-950 hover:bg-brand-100"
-            >
+            <Button href="/apply" size="lg" className="uppercase tracking-wide">
               Apply now →
             </Button>
-            <p className="text-sm text-brand-300">
+            <p className="text-sm text-muted">
               Free 30-minute call · No obligation
             </p>
           </div>
@@ -213,10 +115,10 @@ export default function Home() {
       </Section>
 
       {/* Footer */}
-      <footer className="bg-ink py-8 text-white/60">
+      <footer className="border-t border-border-soft bg-background py-8 text-muted">
         <Container>
           <div className="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
-            <span className="font-bold text-white">Stable Future</span>
+            <span className="font-extrabold text-ink">Stable Future</span>
             <span>
               © {new Date().getFullYear()} Stable Future. All rights reserved.
             </span>
