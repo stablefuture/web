@@ -87,3 +87,15 @@ h1, h2, h3, h4 {
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
+
+/* Comparison-toggle fade-in on side switch (key remount). */
+@keyframes sf-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sf-fade-in {
+  animation: sf-fade-in 250ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-fade-in { animation: none; }
+}

@@ -1,4 +1,5 @@
 import { Button } from "@/app/components/Button";
+import { Comparison } from "@/app/components/Comparison";
 import { Container } from "@/app/components/Container";
 import { Section } from "@/app/components/Section";
 import { VSL_URL } from "@/app/config";
@@ -62,15 +63,19 @@ export default function Home() {
   return (
     <main>
       {/* Hero */}
-      <Section as="section" className="bg-white">
+      <Section as="section">
         <Container narrow>
           <div className="flex flex-col items-center gap-8 text-center">
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-700">
+            <span className="text-xs font-bold uppercase tracking-widest text-accent-strong">
               For parents of Year 9–13 students
             </span>
 
-            <h1 className="max-w-3xl text-4xl font-extrabold text-ink sm:text-5xl lg:text-6xl">
-              Give your teenager an unfair advantage in an AI-shaped world.
+            <h1 className="max-w-4xl text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+              Give your teenager an unfair{" "}
+              <span className="inline-block bg-accent px-3 py-0.5 text-on-accent">
+                advantage
+              </span>{" "}
+              in an AI-shaped world.
             </h1>
 
             <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
@@ -81,72 +86,26 @@ export default function Home() {
 
             <VideoEmbed />
 
-            <div className="mt-2 flex flex-col gap-4 sm:flex-row">
-              <Button href="/apply" size="lg">
-                Apply for a free strategy call →
+            <div className="mt-2 flex flex-col items-center gap-3">
+              <Button href="/apply" size="lg" className="uppercase tracking-wide">
+                Apply now →
               </Button>
+              <p className="text-sm text-muted">
+                Free 30-minute call · No obligation
+              </p>
             </div>
-
-            <p className="text-sm text-muted">
-              Free 30-minute call · No obligation · A clear plan either way
-            </p>
           </div>
         </Container>
       </Section>
 
-      {/* Problem */}
+      {/* Interactive comparison */}
       <Section className="bg-surface-alt">
         <Container narrow>
-          <div className="flex flex-col gap-8">
-            <h2 className="max-w-2xl text-3xl font-extrabold text-ink sm:text-4xl">
-              The ground is shifting under your child&apos;s feet.
+          <div className="flex flex-col gap-10">
+            <h2 className="text-center text-3xl font-extrabold uppercase tracking-tight text-ink sm:text-4xl">
+              Two paths from here.
             </h2>
-            <div className="grid gap-5 sm:grid-cols-2">
-              {PROBLEMS.map((p) => (
-                <div
-                  key={p}
-                  className="rounded-2xl border border-brand-100 bg-white p-6 text-foreground leading-relaxed"
-                >
-                  {p}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </Section>
-
-      {/* What you get */}
-      <Section className="bg-white">
-        <Container>
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            <div className="flex flex-col gap-6">
-              <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
-                A clear plan, built around your child.
-              </h2>
-              <p className="text-lg leading-relaxed text-muted">
-                We give parents a clear, honest picture of which skills and
-                paths have staying power — and which ones don&apos;t — then turn
-                it into something you can act on.
-              </p>
-              <ul className="flex flex-col gap-3">
-                {OUTCOMES.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <CheckIcon className="mt-1 h-5 w-5 shrink-0 text-brand-700" />
-                    <span className="text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex flex-col gap-4 rounded-2xl border border-brand-100 bg-surface-alt p-8 shadow-xl">
-              <p className="text-lg font-semibold leading-snug text-ink">
-                &ldquo;Within one session, we had a clear plan. My son is now
-                doing projects that will actually matter in five years — not
-                just A-levels that AI can replace overnight.&rdquo;
-              </p>
-              <p className="text-sm font-medium text-muted">
-                — Parent of a Year 12 student, Manchester
-              </p>
-            </div>
+            <Comparison problems={PROBLEMS} outcomes={OUTCOMES} />
           </div>
         </Container>
       </Section>
@@ -269,9 +228,23 @@ export default function Home() {
 }
 
 function VideoEmbed() {
-  if (!VSL_URL) return null;
+  // The accent-glow halo is purple in dark, transparent in light — same class is
+  // safe in both themes.
+  const glow = "shadow-[0_0_80px_-10px_var(--accent-glow)]";
+  if (!VSL_URL) {
+    return (
+      <div
+        className={`flex aspect-video w-full items-center justify-center rounded-2xl border border-border-soft bg-surface-alt ${glow}`}
+        aria-label="Video placeholder"
+      >
+        <span className="text-sm font-medium uppercase tracking-widest text-muted">
+          Video coming soon
+        </span>
+      </div>
+    );
+  }
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-xl shadow-2xl">
+    <div className={`aspect-video w-full overflow-hidden rounded-2xl ${glow}`}>
       <iframe
         src={VSL_URL}
         title="Stable Future"
@@ -280,20 +253,5 @@ function VideoEmbed() {
         allowFullScreen
       />
     </div>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      aria-hidden="true"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-    </svg>
   );
 }
