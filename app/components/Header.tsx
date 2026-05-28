@@ -8,7 +8,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border-soft bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <Container>
         {/* Three-column grid keeps APPLY NOW dead-centre regardless of side widths. */}
-        <div className="grid h-16 grid-cols-3 items-center">
+        <div className="grid h-16 grid-cols-[auto_1fr_auto] items-center">
           <div className="flex justify-start">
             <Link
               href="/"
@@ -20,7 +20,7 @@ export function Header() {
             </Link>
           </div>
           <div className="flex justify-center">
-            <Button href="/apply" size="md" className="uppercase tracking-wide">
+            <Button href="/apply" size="md" className="uppercase tracking-wide whitespace-nowrap">
               Apply Now
             </Button>
           </div>

@@ -52,7 +52,7 @@ export function Comparison({ problems, outcomes }: Props) {
       {/* Card — key remount triggers the fade-in defined in globals.css */}
       <div
         key={side}
-        className="sf-fade-in w-full rounded-3xl border border-border-soft bg-ink p-8 text-white shadow-xl sm:p-10"
+        className="sf-fade-in w-full rounded-3xl border border-border-soft bg-brand-950 p-8 text-white shadow-xl sm:p-10"
       >
         <h3 className="mb-6 text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">
           {side === "alone" ? "On your own" : "With Stable Future"}
