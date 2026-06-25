@@ -70,12 +70,12 @@ export default function ApplyPage() {
 
   return (
     <main className="min-h-screen bg-surface-alt">
-      <header className="border-b border-brand-100 bg-white">
+      <header className="border-b border-border-soft bg-background">
         <Container>
           <div className="flex h-16 items-center justify-between">
             <a
               href="/"
-              className="text-lg font-extrabold tracking-tight text-brand-950"
+              className="text-lg font-extrabold tracking-tight text-ink"
             >
               Stable Future
             </a>
@@ -88,9 +88,9 @@ export default function ApplyPage() {
         <Container narrow>
           <div className="mx-auto w-full max-w-xl">
             {/* Progress */}
-            <div className="mb-10 h-1.5 w-full overflow-hidden rounded-full bg-brand-100">
+            <div className="mb-10 h-1.5 w-full overflow-hidden rounded-full bg-border-soft">
               <div
-                className="h-full rounded-full bg-brand-700 transition-all duration-300"
+                className="h-full rounded-full bg-accent-strong transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -134,7 +134,7 @@ export default function ApplyPage() {
                       placeholder="Jane"
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
-                      className="h-12 w-full rounded-md border border-brand-200 bg-white px-4 text-base text-ink placeholder:text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-950"
+                      className="h-12 w-full rounded-md border border-border-soft bg-background px-4 text-base text-ink placeholder:text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -150,7 +150,7 @@ export default function ApplyPage() {
                       type="email"
                       required
                       placeholder="you@example.com"
-                      className="h-12 w-full rounded-md border border-brand-200 bg-white px-4 text-base text-ink placeholder:text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-950"
+                      className="h-12 w-full rounded-md border border-border-soft bg-background px-4 text-base text-ink placeholder:text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
                   {state && !state.ok && (
@@ -161,7 +161,7 @@ export default function ApplyPage() {
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="mt-2 h-14 w-full rounded-md bg-brand-950 text-lg font-bold text-white transition-all hover:bg-brand-900 disabled:opacity-60"
+                    className="mt-2 h-14 w-full rounded-md bg-accent-strong text-lg font-bold text-on-accent transition-all hover:bg-accent disabled:opacity-60"
                   >
                     {isPending ? "Submitting…" : "Submit application"}
                   </button>
@@ -194,8 +194,8 @@ export default function ApplyPage() {
                         onClick={() => choose(STEPS[step].id, option)}
                         className={`w-full rounded-xl border-2 px-5 py-4 text-left text-base font-medium transition-all ${
                           selected
-                            ? "border-brand-700 bg-brand-50 text-brand-950"
-                            : "border-brand-100 bg-white text-ink hover:border-brand-300"
+                            ? "border-accent-strong bg-surface-alt text-ink"
+                            : "border-border-soft bg-background text-ink hover:border-accent"
                         }`}
                       >
                         {option}
@@ -215,8 +215,8 @@ export default function ApplyPage() {
 function Confirmation({ name }: { name?: string }) {
   return (
     <div className="flex flex-col items-center gap-5 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100">
-        <CheckIcon className="h-7 w-7 text-brand-700" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent/15">
+        <CheckIcon className="h-7 w-7 text-accent" />
       </div>
       <h1 className="text-3xl sm:text-4xl font-extrabold text-ink">
         {name ? `Thank you, ${name}.` : "Application received."}

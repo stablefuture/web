@@ -1,14 +1,15 @@
-import { Button } from "@/app/components/Button";
+import { BookCall } from "@/app/components/BookCall";
 import { Comparison } from "@/app/components/Comparison";
 import { Container } from "@/app/components/Container";
+import { Wordmark } from "@/app/components/Logo";
 import { Section } from "@/app/components/Section";
 import { SCARCITY_ENABLED, SCARCITY_TEXT, VSL_URL } from "@/app/config";
 
 const PROBLEMS = [
-  "The careers advice they're getting is out of date. School guidance assumes a job market that's already changing fast.",
+  "Standard careers advice they're getting is out of date. School guidance assumes a job market that's already changed.",
   "AI is reshaping entry-level work. The roles graduates used to start in are the first ones being automated.",
-  "Good grades are no longer enough. Employers increasingly hire for judgement, initiative and real projects — things exams don't measure.",
-  "Most parents feel all this but can't act on it. The worry is real; the next step isn't obvious.",
+  "Good grades are no longer enough. Employers increasingly hire for things exams don't measure.",
+  "Most parents feel all this but can't act on it. The worry is real but the next step isn't obvious.",
 ];
 
 const OUTCOMES = [
@@ -23,18 +24,17 @@ export default function Home() {
     <main>
       {/* Hero */}
       <Section as="section">
-        <Container narrow>
+        <Container>
           <div className="flex flex-col items-center gap-8 text-center">
             <span className="text-xs font-bold uppercase tracking-widest text-accent-strong">
               For parents of Year 9–13 students
             </span>
 
-            <h1 className="max-w-4xl text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
-              Give your teenager an unfair{" "}
+            <h1 className="max-w-6xl text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+              The entry-level job market has changed. {" "}
               <span className="inline-block bg-accent px-3 py-0.5 text-on-accent">
-                advantage
+                Protect your teen.
               </span>{" "}
-              in an AI-shaped world.
             </h1>
 
             <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
@@ -46,11 +46,9 @@ export default function Home() {
             <VideoEmbed />
 
             <div className="mt-2 flex flex-col items-center gap-3">
-              <Button href="/apply" size="lg" className="uppercase tracking-wide">
-                Apply now →
-              </Button>
+              <BookCall size="lg" />
               <p className="text-sm text-muted">
-                Free 30-minute call · No obligation
+                Free strategy call
               </p>
             </div>
           </div>
@@ -101,12 +99,10 @@ export default function Home() {
               Give your child a head start.
             </h2>
             <p className="max-w-lg text-lg leading-relaxed text-muted">
-              Answer a few questions and book your free strategy call. We&apos;ll
-              tell you honestly what we&apos;d do — no upsell, no fluff.
+              Book your free strategy call. We&apos;ll tell you honestly what
+              we&apos;d do — no upsell, no fluff.
             </p>
-            <Button href="/apply" size="lg" className="uppercase tracking-wide">
-              Apply now →
-            </Button>
+            <BookCall size="lg" />
             <p className="text-sm text-muted">
               Free 30-minute call · No obligation
             </p>
@@ -118,7 +114,7 @@ export default function Home() {
       <footer className="border-t border-border-soft bg-background py-8 text-muted">
         <Container>
           <div className="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
-            <span className="font-extrabold text-ink">Stable Future</span>
+            <Wordmark className="h-7 text-ink" />
             <span>
               © {new Date().getFullYear()} Stable Future. All rights reserved.
             </span>
@@ -130,13 +126,12 @@ export default function Home() {
 }
 
 function VideoEmbed() {
-  // The accent-glow halo is purple in dark, transparent in light — same class is
-  // safe in both themes.
-  const glow = "shadow-[0_0_80px_-10px_var(--accent-glow)]";
+  // Purple halo in dark mode only; no glow in light.
+  const glow = "dark:shadow-[0_0_80px_-10px_var(--accent-glow)]";
   if (!VSL_URL) {
     return (
       <div
-        className={`flex aspect-video w-full items-center justify-center rounded-2xl border border-border-soft bg-surface-alt ${glow}`}
+        className={`flex aspect-video w-full max-w-3xl items-center justify-center rounded-2xl border border-border-soft bg-surface-alt ${glow}`}
         aria-label="Video placeholder"
       >
         <span className="text-sm font-medium uppercase tracking-widest text-muted">
@@ -146,7 +141,7 @@ function VideoEmbed() {
     );
   }
   return (
-    <div className={`aspect-video w-full overflow-hidden rounded-2xl ${glow}`}>
+    <div className={`aspect-video w-full max-w-3xl overflow-hidden rounded-2xl ${glow}`}>
       <iframe
         src={VSL_URL}
         title="Stable Future"

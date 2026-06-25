@@ -8,7 +8,7 @@
 export const VSL_URL = "";
 
 // Booking link (Calendly / TidyCal). Leave empty until ready.
-export const BOOKING_URL = "";
+export const BOOKING_URL = "https://cal.eu/ben-grime/discovery-call";
 
 // Scarcity section: hidden when false. Copy must be truthful — no fake
 // "SOLD OUT", no invented cohort numbers, no countdown timers.

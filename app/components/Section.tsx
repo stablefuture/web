@@ -14,7 +14,7 @@ export function Section({
   return (
     <Tag
       className={[
-        tight ? "py-12 lg:py-16" : "py-20 lg:py-28",
+        tight ? "py-8 lg:py-10" : "py-14 lg:py-20",
         className,
       ]
         .filter(Boolean)

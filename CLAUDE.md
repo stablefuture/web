@@ -1,0 +1,1 @@
+after changes, always `cd ~/build/stablefuture/web`, `npm run dev` to localhost:3000 so ben can inspect.

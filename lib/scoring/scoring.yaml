@@ -1,0 +1,1247 @@
+# Stable Future — Pathway Test scoring rubric (v2)
+#
+# v2 change: introduces SECTORS layer for two-stage scoring (sector → job).
+# Allows graceful fallback when user is sector-sure but job-unsure.
+#
+# Sources: docs/research/job-market.md §7 (tier table), §3 (Anthropic
+# AI-coverage), §4 (sector writeups). Rationale lives in
+# docs/research/scoring-rationale.md keyed by `rationale_key`.
+#
+# ────────────────────────────────────────────────────────────────────────────
+# Scoring algorithm (quiz consumes):
+#   1. Match user's (direction, sector, job) inputs.
+#   2. Both sector + job match a path → use path.scoring (R/Y/D/S);
+#      exposure_score = round((3 − R) × 10/3).
+#   3. Sector matches, job = "unsure" / no path → use
+#      sector.sector_exposure_score + sector.sector_tier_default.
+#   4. Sector = "unsure" / direction = undecided/other → use the
+#      `*_undecided` sector for that direction (max-exposure default).
+# ────────────────────────────────────────────────────────────────────────────
+#
+# Schemas:
+#
+# sector:
+#   sector_id              snake_case unique
+#   label                  parent-facing string
+#   matches.direction      uni | apprenticeship | leaving_for_work | undecided | other
+#   matches.keywords       list of lowercased synonyms for sector matching
+#   anthropic_category     reference: the §3 Anthropic table category
+#   anthropic_theoretical  reference: theoretical (Blue) coverage from §3
+#   anthropic_observed     reference: observed (Red) coverage from §3
+#   sector_exposure_score  0–10, hand-set, theoretical-leaning per Ben's note
+#                          (long horizon → AI capability + diffusion will
+#                          expand), adjusted for sector-level moats
+#                          (physicality, regulation, statutory authority)
+#   sector_tier_default    1 | 2 | 3 | 4 — default tier when job unspecified
+#   rationale_key          key in scoring-rationale.md
+#
+# path:
+#   path_id            snake_case unique
+#   label              parent-facing string
+#   sector_id          links to parent sector
+#   matches.direction  uni | apprenticeship | leaving_for_work | undecided | other
+#   matches.job_keywords  list of lowercased synonyms for job matching
+#   soc4               list of SOC2020 4-digit codes; null if no SOC4 maps
+#   scoring.{R,Y,D,S}  0–3 per §1 framework axes
+#   total              R+Y+D+S, 0–12
+#   tier               1 (≥11) | 2 (9–10) | 3 (6–8) | 4 (≤5)
+#   exposure_score     0–10 AI-displacement risk; = round((3 − R) × 10/3)
+#   rationale_key      key in scoring-rationale.md
+# ────────────────────────────────────────────────────────────────────────────
+
+version: 2
+last_updated: 2026-06-05
+
+# ============================================================================
+# SECTORS — 33 total (uni 12 · app 11 · work 8 · undec/other 2)
+# Each direction has its own *_undecided (high-risk fallback when sector
+# unknown) and *_other (mid-risk fallback when user supplies free-text sector
+# not yet in the rubric; captured for analytics + future inclusion).
+# ============================================================================
+
+sectors:
+
+  # ---------- direction: uni ----------
+
+  - sector_id: sector_uni_healthcare_practitioner
+    label: Healthcare practitioner
+    matches:
+      direction: uni
+      keywords: [healthcare, medicine, nursing, dentistry, vet, veterinary, optometry, physio, physiotherapy, occupational therapy, pharmacy, midwifery, paramedic]
+    anthropic_category: healthcare_practitioners
+    anthropic_theoretical: 0.60
+    anthropic_observed: 0.05
+    sector_exposure_score: 2
+    sector_tier_default: 2
+    rationale_key: sector_uni_healthcare_practitioner
+
+  - sector_id: sector_uni_engineering
+    label: Engineering
+    matches:
+      direction: uni
+      keywords: [engineering, eng, civil, mechanical, electrical, electronic, aerospace, aero, chemical, biomedical, biomed, manufacturing]
+    anthropic_category: architecture_engineering
+    anthropic_theoretical: 0.85
+    anthropic_observed: 0.05
+    sector_exposure_score: 3
+    sector_tier_default: 2
+    rationale_key: sector_uni_engineering
+
+  - sector_id: sector_uni_compsci_maths
+    label: Computer science / maths / AI
+    matches:
+      direction: uni
+      keywords: [computer science, cs, computing, software, programming, ai, artificial intelligence, machine learning, ml, data science, cybersecurity, cyber, maths, mathematics, statistics]
+    anthropic_category: computer_maths
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.35
+    sector_exposure_score: 9
+    sector_tier_default: 4
+    rationale_key: sector_uni_compsci_maths
+
+  - sector_id: sector_uni_natural_sciences
+    label: Natural sciences (physics, chemistry, biology)
+    matches:
+      direction: uni
+      keywords: [physics, chemistry, biology, biological sciences, biochemistry, neuroscience, environmental science, geology]
+    anthropic_category: life_social_sciences
+    anthropic_theoretical: 0.80
+    anthropic_observed: 0.10
+    sector_exposure_score: 6
+    sector_tier_default: 3
+    rationale_key: sector_uni_natural_sciences
+
+  - sector_id: sector_uni_business_finance
+    label: Business / finance / economics
+    matches:
+      direction: uni
+      keywords: [business, finance, accounting, accountancy, economics, econ, management, banking, marketing]
+    anthropic_category: business_finance
+    anthropic_theoretical: 0.95
+    anthropic_observed: 0.30
+    sector_exposure_score: 9
+    sector_tier_default: 4
+    rationale_key: sector_uni_business_finance
+
+  - sector_id: sector_uni_law
+    label: Law
+    matches:
+      direction: uni
+      keywords: [law, llb, legal, jurisprudence]
+    anthropic_category: legal
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.20
+    sector_exposure_score: 8
+    sector_tier_default: 4
+    rationale_key: sector_uni_law
+
+  - sector_id: sector_uni_humanities
+    label: Humanities (history, English, philosophy, languages, politics)
+    matches:
+      direction: uni
+      keywords: [history, english, english literature, philosophy, languages, modern languages, classics, politics, ppe, international relations, theology]
+    anthropic_category: office_admin
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.35
+    sector_exposure_score: 8
+    sector_tier_default: 4
+    rationale_key: sector_uni_humanities
+
+  - sector_id: sector_uni_arts_creative
+    label: Arts / design / media
+    matches:
+      direction: uni
+      keywords: [art, fine art, design, graphic design, music, drama, theatre, performing arts, media, film, journalism, photography]
+    anthropic_category: arts_media
+    anthropic_theoretical: 0.80
+    anthropic_observed: 0.20
+    sector_exposure_score: 7
+    sector_tier_default: 4
+    rationale_key: sector_uni_arts_creative
+
+  - sector_id: sector_uni_social_sciences
+    label: Social sciences (psychology, sociology, geography, anthropology)
+    matches:
+      direction: uni
+      keywords: [psychology, psych, sociology, geography, anthropology, criminology, social policy]
+    anthropic_category: life_social_sciences
+    anthropic_theoretical: 0.80
+    anthropic_observed: 0.10
+    sector_exposure_score: 6
+    sector_tier_default: 3
+    rationale_key: sector_uni_social_sciences
+
+  - sector_id: sector_uni_education
+    label: Education / teaching
+    matches:
+      direction: uni
+      keywords: [education, teaching, pgce, primary teaching, secondary teaching, ba education]
+    anthropic_category: education_library
+    anthropic_theoretical: 0.60
+    anthropic_observed: 0.20
+    sector_exposure_score: 5
+    sector_tier_default: 3
+    rationale_key: sector_uni_education
+
+  - sector_id: sector_uni_undecided
+    label: Undecided / not yet chosen
+    matches:
+      direction: uni
+      keywords: [unsure, undecided, not sure, dont know, "don't know"]
+    anthropic_category: office_admin
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.35
+    sector_exposure_score: 8
+    sector_tier_default: 4
+    rationale_key: sector_uni_undecided
+
+  - sector_id: sector_uni_other
+    label: Other (not listed)
+    matches:
+      direction: uni
+      keywords: [other]
+    anthropic_category: null
+    anthropic_theoretical: null
+    anthropic_observed: null
+    sector_exposure_score: 6
+    sector_tier_default: 3
+    rationale_key: sector_uni_other
+
+  # ---------- direction: apprenticeship ----------
+
+  - sector_id: sector_app_trades
+    label: Construction trades (electrician, plumber, brick, carpenter, roofer, scaffolder, gas)
+    matches:
+      direction: apprenticeship
+      keywords: [trades, electrician, electrical, plumber, plumbing, gas, bricklayer, brick, carpenter, joiner, roofer, scaffolder, scaffolding, plasterer, decorator, painter, tiler, glazier]
+    anthropic_category: installation_repair
+    anthropic_theoretical: 0.20
+    anthropic_observed: 0.00
+    sector_exposure_score: 1
+    sector_tier_default: 1
+    rationale_key: sector_app_trades
+
+  - sector_id: sector_app_engineering
+    label: Engineering apprenticeship (mech, elec, civil, aero, production)
+    matches:
+      direction: apprenticeship
+      keywords: [engineering, mechanical engineer, electrical engineer, civil engineer, aerospace engineer, production engineer]
+    anthropic_category: architecture_engineering
+    anthropic_theoretical: 0.85
+    anthropic_observed: 0.05
+    sector_exposure_score: 3
+    sector_tier_default: 2
+    rationale_key: sector_app_engineering
+
+  - sector_id: sector_app_defence_manufacturing
+    label: Defence / advanced manufacturing (BAE, Rolls-Royce, submarine, coded welding)
+    matches:
+      direction: apprenticeship
+      keywords: [defence, defense, bae, rolls-royce, rolls royce, babcock, submarine, weapons, aerospace defence, coded welder, welding, fabrication, machinist]
+    anthropic_category: production
+    anthropic_theoretical: 0.20
+    anthropic_observed: 0.00
+    sector_exposure_score: 1
+    sector_tier_default: 1
+    rationale_key: sector_app_defence_manufacturing
+
+  - sector_id: sector_app_energy_utilities
+    label: Energy / utilities (grid, nuclear, wind, solar, water)
+    matches:
+      direction: apprenticeship
+      keywords: [energy, utilities, grid, hv, nuclear, smr, hinkley, sizewell, wind, offshore wind, solar, water, sewerage]
+    anthropic_category: architecture_engineering
+    anthropic_theoretical: 0.85
+    anthropic_observed: 0.05
+    sector_exposure_score: 2
+    sector_tier_default: 1
+    rationale_key: sector_app_energy_utilities
+
+  - sector_id: sector_app_aviation_maritime
+    label: Aviation / maritime (aircraft maintenance, merchant navy, pilot)
+    matches:
+      direction: apprenticeship
+      keywords: [aircraft, aircraft maintenance, mro, aviation, pilot, raf cadet, merchant navy, marine, maritime, ship officer, cadetship]
+    anthropic_category: transportation
+    anthropic_theoretical: 0.10
+    anthropic_observed: 0.00
+    sector_exposure_score: 2
+    sector_tier_default: 1
+    rationale_key: sector_app_aviation_maritime
+
+  - sector_id: sector_app_protective_services
+    label: Protective services (police, fire, prison, armed forces)
+    matches:
+      direction: apprenticeship
+      keywords: [police, fire, firefighter, prison, prison officer, army, navy, royal navy, raf, armed forces, military, hmpps]
+    anthropic_category: protective_service
+    anthropic_theoretical: 0.30
+    anthropic_observed: 0.00
+    sector_exposure_score: 1
+    sector_tier_default: 2
+    rationale_key: sector_app_protective_services
+
+  - sector_id: sector_app_healthcare
+    label: Healthcare apprenticeship (HCA, nursing, dental, paramedic)
+    matches:
+      direction: apprenticeship
+      keywords: [healthcare, nhs, nursing, nurse, hca, healthcare assistant, dental, dental nurse, paramedic, ambulance, support worker]
+    anthropic_category: healthcare_practitioners
+    anthropic_theoretical: 0.60
+    anthropic_observed: 0.05
+    sector_exposure_score: 2
+    sector_tier_default: 1
+    rationale_key: sector_app_healthcare
+
+  - sector_id: sector_app_business_digital
+    label: Business / digital / accountancy apprenticeship
+    matches:
+      direction: apprenticeship
+      keywords: [business, business admin, accounting, accountancy, aat, aca, marketing, hr, digital, software, programming, coding, devops, data]
+    anthropic_category: business_finance
+    anthropic_theoretical: 0.95
+    anthropic_observed: 0.30
+    sector_exposure_score: 9
+    sector_tier_default: 4
+    rationale_key: sector_app_business_digital
+
+  - sector_id: sector_app_surveying_planning
+    label: Surveying / planning (building, quantity, town)
+    matches:
+      direction: apprenticeship
+      keywords: [surveying, surveyor, building surveyor, quantity surveyor, qs, mrics, rtpi, town planner, town planning, land surveyor]
+    anthropic_category: architecture_engineering
+    anthropic_theoretical: 0.85
+    anthropic_observed: 0.05
+    sector_exposure_score: 4
+    sector_tier_default: 2
+    rationale_key: sector_app_surveying_planning
+
+  - sector_id: sector_app_undecided
+    label: Undecided / not yet chosen
+    matches:
+      direction: apprenticeship
+      keywords: [unsure, undecided, not sure, dont know, "don't know"]
+    anthropic_category: installation_repair
+    anthropic_theoretical: 0.20
+    anthropic_observed: 0.00
+    sector_exposure_score: 5
+    sector_tier_default: 3
+    rationale_key: sector_app_undecided
+
+  - sector_id: sector_app_other
+    label: Other (not listed)
+    matches:
+      direction: apprenticeship
+      keywords: [other]
+    anthropic_category: null
+    anthropic_theoretical: null
+    anthropic_observed: null
+    sector_exposure_score: 4
+    sector_tier_default: 3
+    rationale_key: sector_app_other
+
+  # ---------- direction: leaving_for_work ----------
+
+  - sector_id: sector_work_care
+    label: Care / support work
+    matches:
+      direction: leaving_for_work
+      keywords: [care, care worker, hca, support worker, healthcare assistant, social care, residential care]
+    anthropic_category: personal_care
+    anthropic_theoretical: 0.20
+    anthropic_observed: 0.00
+    sector_exposure_score: 2
+    sector_tier_default: 1
+    rationale_key: sector_work_care
+
+  - sector_id: sector_work_retail
+    label: Retail
+    matches:
+      direction: leaving_for_work
+      keywords: [retail, shop, sales assistant, cashier, supermarket, store]
+    anthropic_category: sales
+    anthropic_theoretical: 0.60
+    anthropic_observed: 0.30
+    sector_exposure_score: 7
+    sector_tier_default: 4
+    rationale_key: sector_work_retail
+
+  - sector_id: sector_work_hospitality
+    label: Hospitality / catering
+    matches:
+      direction: leaving_for_work
+      keywords: [hospitality, bar, waiter, waitress, restaurant, cafe, hotel, kitchen, chef, catering, barista]
+    anthropic_category: food_serving
+    anthropic_theoretical: 0.20
+    anthropic_observed: 0.00
+    sector_exposure_score: 3
+    sector_tier_default: 4
+    rationale_key: sector_work_hospitality
+
+  - sector_id: sector_work_office_admin
+    label: Office / admin / call centre
+    matches:
+      direction: leaving_for_work
+      keywords: [office, admin, administration, receptionist, secretary, data entry, call centre, customer service, sdr]
+    anthropic_category: office_admin
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.35
+    sector_exposure_score: 10
+    sector_tier_default: 4
+    rationale_key: sector_work_office_admin
+
+  - sector_id: sector_work_construction
+    label: Construction labour (entry route into trades)
+    matches:
+      direction: leaving_for_work
+      keywords: [construction, labourer, building site, groundworker]
+    anthropic_category: construction
+    anthropic_theoretical: 0.20
+    anthropic_observed: 0.00
+    sector_exposure_score: 2
+    sector_tier_default: 3
+    rationale_key: sector_work_construction
+
+  - sector_id: sector_work_driving
+    label: Driving / delivery / transport
+    matches:
+      direction: leaving_for_work
+      keywords: [driver, driving, delivery, courier, lorry, hgv, taxi, uber, deliveroo]
+    anthropic_category: transportation
+    anthropic_theoretical: 0.10
+    anthropic_observed: 0.00
+    sector_exposure_score: 7
+    sector_tier_default: 4
+    rationale_key: sector_work_driving
+
+  - sector_id: sector_work_undecided
+    label: Undecided / not yet chosen
+    matches:
+      direction: leaving_for_work
+      keywords: [unsure, undecided, not sure, dont know, "don't know"]
+    anthropic_category: office_admin
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.35
+    sector_exposure_score: 8
+    sector_tier_default: 4
+    rationale_key: sector_work_undecided
+
+  - sector_id: sector_work_other
+    label: Other (not listed)
+    matches:
+      direction: leaving_for_work
+      keywords: [other]
+    anthropic_category: null
+    anthropic_theoretical: null
+    anthropic_observed: null
+    sector_exposure_score: 6
+    sector_tier_default: 4
+    rationale_key: sector_work_other
+
+  # ---------- direction: undecided / other ----------
+
+  - sector_id: sector_undecided
+    label: Undecided
+    matches:
+      direction: undecided
+      keywords: ["*"]
+    anthropic_category: office_admin
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.35
+    sector_exposure_score: 8
+    sector_tier_default: 4
+    rationale_key: sector_undecided
+
+  - sector_id: sector_other
+    label: Other / not listed
+    matches:
+      direction: other
+      keywords: ["*"]
+    anthropic_category: office_admin
+    anthropic_theoretical: 0.90
+    anthropic_observed: 0.35
+    sector_exposure_score: 8
+    sector_tier_default: 4
+    rationale_key: sector_other
+
+# ============================================================================
+# PATHS — 59 total (uni 26 · app 24 · work 7 · undec/other 2)
+# ============================================================================
+
+paths:
+
+  # ============================== uni paths ==============================
+
+  - path_id: uni_medicine
+    label: Medicine (GP / consultant route)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [doctor, gp, consultant, medicine, mbbs, bmbs, physician]
+    soc4: [2211, 2212]
+    scoring: {R: 3, Y: 1, D: 3, S: 3}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: uni_medicine
+
+  - path_id: uni_nursing
+    label: Nursing degree (BSc → Band 5)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [nurse, nursing, registered nurse, rn, band 5, staff nurse]
+    soc4: [2237, 2233, 2234]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: uni_nursing
+
+  - path_id: uni_midwifery
+    label: Midwifery (BSc → RM)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [midwife, midwifery, rm]
+    soc4: [2231]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: uni_midwifery
+
+  - path_id: uni_dentistry
+    label: Dentistry (BDS)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [dentist, dentistry, bds, dental surgeon]
+    soc4: [2253]
+    scoring: {R: 3, Y: 1, D: 3, S: 3}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: uni_dentistry
+
+  - path_id: uni_vet
+    label: Veterinary medicine (BVetMed)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [vet, veterinarian, bvetmed, bvms, veterinary surgeon]
+    soc4: [2240]
+    scoring: {R: 3, Y: 1, D: 2, S: 3}
+    total: 9
+    tier: 2
+    exposure_score: 0
+    rationale_key: uni_vet
+
+  - path_id: uni_optometry
+    label: Optometry (BSc → MCOptom)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [optometrist, optometry, optician]
+    soc4: [2252]
+    scoring: {R: 3, Y: 2, D: 3, S: 2}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: uni_optometry
+
+  - path_id: uni_physio_ot
+    label: Physiotherapy or Occupational Therapy
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [physiotherapist, physiotherapy, physio, occupational therapist, occupational therapy, ot]
+    soc4: [2221, 2222]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: uni_physio_ot
+
+  - path_id: uni_pharmacy
+    label: Pharmacy (MPharm → registered pharmacist)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [pharmacist, pharmacy, mpharm]
+    soc4: [2251]
+    scoring: {R: 2, Y: 2, D: 3, S: 2}
+    total: 9
+    tier: 2
+    exposure_score: 3
+    rationale_key: uni_pharmacy
+
+  - path_id: uni_paramedic
+    label: Paramedic (BSc → registered paramedic)
+    sector_id: sector_uni_healthcare_practitioner
+    matches:
+      direction: uni
+      job_keywords: [paramedic, ambulance, emergency medical]
+    soc4: [2255]
+    scoring: {R: 3, Y: 2, D: 3, S: 2}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: uni_paramedic
+
+  - path_id: uni_civil_eng
+    label: Civil / structural engineering (uni route)
+    sector_id: sector_uni_engineering
+    matches:
+      direction: uni
+      job_keywords: [civil engineer, civil engineering, structural engineer, structural engineering]
+    soc4: [2121]
+    scoring: {R: 2, Y: 2, D: 3, S: 2}
+    total: 9
+    tier: 2
+    exposure_score: 3
+    rationale_key: uni_civil_eng
+
+  - path_id: uni_mech_aero_eng
+    label: Mechanical / aerospace engineering (uni route)
+    sector_id: sector_uni_engineering
+    matches:
+      direction: uni
+      job_keywords: [mechanical engineer, mechanical engineering, aerospace engineer, aerospace engineering, aero engineer]
+    soc4: [2122, 2126]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: uni_mech_aero_eng
+
+  - path_id: uni_elec_eng
+    label: Electrical / electronic engineering (DC + grid demand)
+    sector_id: sector_uni_engineering
+    matches:
+      direction: uni
+      job_keywords: [electrical engineer, electrical engineering, electronic engineer, electronic engineering, power engineer]
+    soc4: [2123, 2124]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: uni_elec_eng
+
+  - path_id: uni_architecture
+    label: Architecture (RIBA Part 1–3)
+    sector_id: sector_uni_engineering
+    matches:
+      direction: uni
+      job_keywords: [architect, architecture, riba]
+    soc4: [2451]
+    scoring: {R: 2, Y: 1, D: 2, S: 2}
+    total: 7
+    tier: 3
+    exposure_score: 3
+    rationale_key: uni_architecture
+
+  - path_id: uni_computer_science
+    label: Computer science / software engineering
+    sector_id: sector_uni_compsci_maths
+    matches:
+      direction: uni
+      job_keywords: [computer science, cs, software engineer, software engineering, swe, computing, programmer]
+    soc4: [2134, 2133]
+    scoring: {R: 0, Y: 2, D: 2, S: 0}
+    total: 4
+    tier: 4
+    exposure_score: 10
+    rationale_key: uni_computer_science
+
+  - path_id: uni_ai_ml
+    label: AI / Machine Learning / Data Science
+    sector_id: sector_uni_compsci_maths
+    matches:
+      direction: uni
+      job_keywords: [ai engineer, machine learning engineer, ml engineer, data scientist, ai researcher, mle]
+    soc4: [2134, 3544]
+    scoring: {R: 0, Y: 2, D: 2, S: 0}
+    total: 4
+    tier: 4
+    exposure_score: 10
+    rationale_key: uni_ai_ml
+
+  - path_id: uni_cybersec
+    label: Cybersecurity
+    sector_id: sector_uni_compsci_maths
+    matches:
+      direction: uni
+      job_keywords: [cybersecurity, cyber security, security engineer, pen tester, soc analyst, infosec]
+    soc4: [2135]
+    scoring: {R: 1, Y: 2, D: 1, S: 0}
+    total: 4
+    tier: 4
+    exposure_score: 7
+    rationale_key: uni_cybersec
+
+  - path_id: uni_ai_safety
+    label: AI safety / alignment / policy research
+    sector_id: sector_uni_compsci_maths
+    matches:
+      direction: uni
+      job_keywords: [ai safety, alignment researcher, ai policy, ai ethics, ai governance, aisi]
+    soc4: [2162]
+    scoring: {R: 3, Y: 2, D: 2, S: 1}
+    total: 8
+    tier: 3
+    exposure_score: 0
+    rationale_key: uni_ai_safety
+
+  - path_id: uni_accounting_finance
+    label: Accounting / finance (Big-4 grad route)
+    sector_id: sector_uni_business_finance
+    matches:
+      direction: uni
+      job_keywords: [accountant, accounting, finance, finance analyst, financial analyst, audit]
+    soc4: [2421, 2422, 2433]
+    scoring: {R: 0, Y: 2, D: 0, S: 0}
+    total: 2
+    tier: 4
+    exposure_score: 10
+    rationale_key: uni_accounting_finance
+
+  - path_id: uni_quant_finance
+    label: Quant / hedge fund / investment banking
+    sector_id: sector_uni_business_finance
+    matches:
+      direction: uni
+      job_keywords: [quant, quantitative analyst, hedge fund, investment banking, ib, trader, prop trading]
+    soc4: [2422, 2433]
+    scoring: {R: 0, Y: 1, D: 1, S: 0}
+    total: 2
+    tier: 4
+    exposure_score: 10
+    rationale_key: uni_quant_finance
+
+  - path_id: uni_marketing
+    label: Marketing / advertising / media
+    sector_id: sector_uni_arts_creative
+    matches:
+      direction: uni
+      job_keywords: [marketing, advertising, brand, media planner, communications]
+    soc4: [2493, 2494, 3554]
+    scoring: {R: 1, Y: 2, D: 0, S: 0}
+    total: 3
+    tier: 4
+    exposure_score: 7
+    rationale_key: uni_marketing
+
+  - path_id: uni_law
+    label: Law (LLB → solicitor route)
+    sector_id: sector_uni_law
+    matches:
+      direction: uni
+      job_keywords: [solicitor, lawyer, llb, legal, law firm, paralegal]
+    soc4: [2412]
+    scoring: {R: 0, Y: 1, D: 0, S: 0}
+    total: 1
+    tier: 4
+    exposure_score: 10
+    rationale_key: uni_law
+
+  - path_id: uni_psychology
+    label: Psychology (BSc → DClinPsy / occupational psych)
+    sector_id: sector_uni_social_sciences
+    matches:
+      direction: uni
+      job_keywords: [psychologist, psychology, clinical psychology, dclinpsy, occupational psychology]
+    soc4: [2225, 2226]
+    scoring: {R: 2, Y: 1, D: 1, S: 1}
+    total: 5
+    tier: 4
+    exposure_score: 3
+    rationale_key: uni_psychology
+
+  - path_id: uni_social_work
+    label: Social work (BA → SWE registration)
+    sector_id: sector_uni_social_sciences
+    matches:
+      direction: uni
+      job_keywords: [social worker, social work, swe registered]
+    soc4: [2461]
+    scoring: {R: 3, Y: 1, D: 2, S: 2}
+    total: 8
+    tier: 3
+    exposure_score: 0
+    rationale_key: uni_social_work
+
+  - path_id: uni_education
+    label: Education / teaching (PGCE route)
+    sector_id: sector_uni_education
+    matches:
+      direction: uni
+      job_keywords: [teacher, teaching, pgce, primary teacher, secondary teacher, stem teacher]
+    soc4: [2313, 2314]
+    scoring: {R: 2, Y: 2, D: 2, S: 2}
+    total: 8
+    tier: 3
+    exposure_score: 3
+    rationale_key: uni_education
+
+  - path_id: uni_building_surveying
+    label: Chartered building surveying (BSc → MRICS)
+    sector_id: sector_uni_engineering
+    matches:
+      direction: uni
+      job_keywords: [building surveyor, chartered building surveyor, mrics, building surveying]
+    soc4: [2454]
+    scoring: {R: 3, Y: 1, D: 3, S: 3}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: uni_building_surveying
+
+  - path_id: uni_town_planning
+    label: Town planning (BA/BSc → RTPI)
+    sector_id: sector_uni_engineering
+    matches:
+      direction: uni
+      job_keywords: [town planner, planning officer, urban planner, rtpi, planning consultant]
+    soc4: [2452]
+    scoring: {R: 3, Y: 1, D: 3, S: 3}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: uni_town_planning
+
+  # ============================== app paths ==============================
+
+  - path_id: app_electrician
+    label: Electrician (incl. EV / PV / heat-pump specialism)
+    sector_id: sector_app_trades
+    matches:
+      direction: apprenticeship
+      job_keywords: [electrician, electrical installer, electrical apprentice, sparky]
+    soc4: [5241]
+    scoring: {R: 3, Y: 3, D: 3, S: 3}
+    total: 12
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_electrician
+
+  - path_id: app_plumber_heating
+    label: Plumber / heating engineer (incl. heat-pump specialism)
+    sector_id: sector_app_trades
+    matches:
+      direction: apprenticeship
+      job_keywords: [plumber, plumbing, heating engineer, heat pump installer]
+    soc4: [5315]
+    scoring: {R: 3, Y: 3, D: 3, S: 3}
+    total: 12
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_plumber_heating
+
+  - path_id: app_gas_engineer
+    label: Gas engineer (Gas Safe registered)
+    sector_id: sector_app_trades
+    matches:
+      direction: apprenticeship
+      job_keywords: [gas engineer, gas safe, gas installer, gas fitter]
+    soc4: [5315]
+    scoring: {R: 3, Y: 3, D: 2, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_gas_engineer
+
+  - path_id: app_specialist_trade
+    label: Specialist trade — brick / carp / roof / scaffolder
+    sector_id: sector_app_trades
+    matches:
+      direction: apprenticeship
+      job_keywords: [bricklayer, bricklaying, carpenter, carpentry, joiner, roofer, scaffolder, scaffolding]
+    soc4: [5313, 5316, 5314, 8151]
+    scoring: {R: 3, Y: 3, D: 2, S: 2}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: app_specialist_trade
+
+  - path_id: app_coded_welder
+    label: Coded welder — defence / nuclear specialism
+    sector_id: sector_app_defence_manufacturing
+    matches:
+      direction: apprenticeship
+      job_keywords: [welder, welding, coded welder, fabrication, fabricator]
+    soc4: [5213]
+    scoring: {R: 3, Y: 3, D: 3, S: 3}
+    total: 12
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_coded_welder
+
+  - path_id: app_hvac
+    label: HVAC / refrigeration / F-Gas engineer
+    sector_id: sector_app_trades
+    matches:
+      direction: apprenticeship
+      job_keywords: [hvac, refrigeration, f-gas, air conditioning, ac engineer]
+    soc4: [5225]
+    scoring: {R: 2, Y: 2, D: 3, S: 3}
+    total: 10
+    tier: 2
+    exposure_score: 3
+    rationale_key: app_hvac
+
+  - path_id: app_aircraft_maintenance
+    label: Aircraft maintenance engineer (CAA / EASA Part-66)
+    sector_id: sector_app_aviation_maritime
+    matches:
+      direction: apprenticeship
+      job_keywords: [aircraft maintenance, part-66, b1, b2, aircraft engineer, mro, aircraft technician]
+    soc4: [5234]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_aircraft_maintenance
+
+  - path_id: app_pilot
+    label: Pilot — commercial cadet (BA/easyJet) or RAF
+    sector_id: sector_app_aviation_maritime
+    matches:
+      direction: apprenticeship
+      job_keywords: [pilot, commercial pilot, raf pilot, raf cadet, atpl, cadet pilot]
+    soc4: [3511]
+    scoring: {R: 3, Y: 3, D: 2, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_pilot
+
+  - path_id: app_merchant_navy
+    label: Merchant Navy officer cadet (deck / engineering)
+    sector_id: sector_app_aviation_maritime
+    matches:
+      direction: apprenticeship
+      job_keywords: [merchant navy, ship officer, deck officer, marine engineer, cadetship, officer cadet]
+    soc4: [3512]
+    scoring: {R: 3, Y: 3, D: 3, S: 3}
+    total: 12
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_merchant_navy
+
+  - path_id: app_wind_turbine
+    label: Wind turbine technician (offshore)
+    sector_id: sector_app_energy_utilities
+    matches:
+      direction: apprenticeship
+      job_keywords: [wind turbine, offshore wind, wind technician, renewables technician]
+    soc4: [5249, 3113]
+    scoring: {R: 3, Y: 3, D: 3, S: 3}
+    total: 12
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_wind_turbine
+
+  - path_id: app_hv_grid
+    label: HV cable / grid / SMR-nuclear engineering apprentice
+    sector_id: sector_app_energy_utilities
+    matches:
+      direction: apprenticeship
+      job_keywords: [grid engineer, hv engineer, nuclear engineer, smr, hinkley, sizewell, national grid]
+    soc4: [2123, 1123]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_hv_grid
+
+  - path_id: app_defence_engineering
+    label: Defence engineering degree apprentice (BAE / Rolls-Royce / submarine)
+    sector_id: sector_app_defence_manufacturing
+    matches:
+      direction: apprenticeship
+      job_keywords: [defence engineer, bae apprentice, rolls-royce apprentice, submarine engineer, weapons engineer]
+    soc4: [2122, 2126]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_defence_engineering
+
+  - path_id: app_vehicle_technician
+    label: Vehicle technician / mechanic
+    sector_id: sector_app_trades
+    matches:
+      direction: apprenticeship
+      job_keywords: [vehicle technician, mechanic, car mechanic, motor vehicle, motor mechanic]
+    soc4: [5231]
+    scoring: {R: 2, Y: 3, D: 1, S: 1}
+    total: 7
+    tier: 3
+    exposure_score: 3
+    rationale_key: app_vehicle_technician
+
+  - path_id: app_nursing_degree
+    label: Nursing degree apprenticeship (debt-free Band 5 route)
+    sector_id: sector_app_healthcare
+    matches:
+      direction: apprenticeship
+      job_keywords: [nursing degree apprentice, nda, nurse apprentice, nursing apprentice]
+    soc4: [2237, 2233, 2234]
+    scoring: {R: 3, Y: 3, D: 3, S: 3}
+    total: 12
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_nursing_degree
+
+  - path_id: app_dental_nurse_therapist
+    label: Dental nurse → dental therapist / hygienist
+    sector_id: sector_app_healthcare
+    matches:
+      direction: apprenticeship
+      job_keywords: [dental nurse, dental therapist, dental hygienist, dental apprentice]
+    soc4: [6133, 3219]
+    scoring: {R: 3, Y: 3, D: 3, S: 2}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_dental_nurse_therapist
+
+  - path_id: app_vet_nurse
+    label: Veterinary nurse (RVN) apprentice
+    sector_id: sector_app_healthcare
+    matches:
+      direction: apprenticeship
+      job_keywords: [veterinary nurse, vet nurse, rvn]
+    soc4: [3240]
+    scoring: {R: 3, Y: 3, D: 1, S: 1}
+    total: 8
+    tier: 3
+    exposure_score: 0
+    rationale_key: app_vet_nurse
+
+  - path_id: app_police
+    label: Police officer (direct entry / PEQF)
+    sector_id: sector_app_protective_services
+    matches:
+      direction: apprenticeship
+      job_keywords: [police officer, police constable, peqf, copper]
+    soc4: [3312]
+    scoring: {R: 3, Y: 2, D: 2, S: 3}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: app_police
+
+  - path_id: app_firefighter
+    label: Firefighter (wholetime, direct entry)
+    sector_id: sector_app_protective_services
+    matches:
+      direction: apprenticeship
+      job_keywords: [firefighter, fire service, fire and rescue, wholetime firefighter]
+    soc4: [3313]
+    scoring: {R: 3, Y: 2, D: 2, S: 3}
+    total: 10
+    tier: 2
+    exposure_score: 0
+    rationale_key: app_firefighter
+
+  - path_id: app_armed_forces
+    label: Armed Forces (Army / Navy / RAF non-engineering)
+    sector_id: sector_app_protective_services
+    matches:
+      direction: apprenticeship
+      job_keywords: [army, navy, royal navy, raf, armed forces, military, infantry, ncos, soldier]
+    soc4: [3311]
+    scoring: {R: 3, Y: 3, D: 2, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_armed_forces
+
+  - path_id: app_building_surveyor
+    label: Chartered building surveyor degree apprenticeship
+    sector_id: sector_app_surveying_planning
+    matches:
+      direction: apprenticeship
+      job_keywords: [building surveyor, chartered building surveyor, mrics apprentice, building surveying apprentice]
+    soc4: [2454]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_building_surveyor
+
+  - path_id: app_town_planner
+    label: Chartered town planner degree apprenticeship
+    sector_id: sector_app_surveying_planning
+    matches:
+      direction: apprenticeship
+      job_keywords: [town planner, planning apprentice, rtpi apprentice, planning officer]
+    soc4: [2452]
+    scoring: {R: 3, Y: 2, D: 3, S: 3}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: app_town_planner
+
+  - path_id: app_quantity_surveyor
+    label: Quantity surveyor (MRICS apprentice)
+    sector_id: sector_app_surveying_planning
+    matches:
+      direction: apprenticeship
+      job_keywords: [quantity surveyor, qs apprentice, mrics qs]
+    soc4: [2453]
+    scoring: {R: 2, Y: 2, D: 2, S: 2}
+    total: 8
+    tier: 3
+    exposure_score: 3
+    rationale_key: app_quantity_surveyor
+
+  - path_id: app_software_digital
+    label: Software / digital apprentice (L4–L6)
+    sector_id: sector_app_business_digital
+    matches:
+      direction: apprenticeship
+      job_keywords: [software apprentice, digital apprentice, web developer apprentice, devops apprentice, software developer]
+    soc4: [2134]
+    scoring: {R: 0, Y: 2, D: 2, S: 0}
+    total: 4
+    tier: 4
+    exposure_score: 10
+    rationale_key: app_software_digital
+
+  - path_id: app_accounting
+    label: Accountancy apprentice (AAT / ACA)
+    sector_id: sector_app_business_digital
+    matches:
+      direction: apprenticeship
+      job_keywords: [accountancy apprentice, accounting apprentice, aat, aca, bookkeeping]
+    soc4: [2421, 4122]
+    scoring: {R: 0, Y: 2, D: 0, S: 0}
+    total: 2
+    tier: 4
+    exposure_score: 10
+    rationale_key: app_accounting
+
+  # ============================== work paths ==============================
+
+  - path_id: work_care_worker
+    label: Care worker / healthcare assistant
+    sector_id: sector_work_care
+    matches:
+      direction: leaving_for_work
+      job_keywords: [care worker, healthcare assistant, hca, care assistant, support worker, residential care]
+    soc4: [6131, 6135]
+    scoring: {R: 3, Y: 3, D: 3, S: 2}
+    total: 11
+    tier: 1
+    exposure_score: 0
+    rationale_key: work_care_worker
+
+  - path_id: work_retail
+    label: Retail / shop work
+    sector_id: sector_work_retail
+    matches:
+      direction: leaving_for_work
+      job_keywords: [retail, shop, shop assistant, sales assistant, cashier, supermarket, store]
+    soc4: [7111, 7112]
+    scoring: {R: 2, Y: 3, D: 0, S: 0}
+    total: 5
+    tier: 4
+    exposure_score: 3
+    rationale_key: work_retail
+
+  - path_id: work_hospitality
+    label: Hospitality / catering / bar
+    sector_id: sector_work_hospitality
+    matches:
+      direction: leaving_for_work
+      job_keywords: [bar, waiter, waitress, restaurant, cafe, hotel, kitchen porter, barista, hospitality]
+    soc4: [9263, 9264, 9265, 9266]
+    scoring: {R: 2, Y: 3, D: 0, S: 0}
+    total: 5
+    tier: 4
+    exposure_score: 3
+    rationale_key: work_hospitality
+
+  - path_id: work_office_admin
+    label: Office / admin / call centre
+    sector_id: sector_work_office_admin
+    matches:
+      direction: leaving_for_work
+      job_keywords: [office, admin, administration, receptionist, secretary, data entry, call centre]
+    soc4: [4159, 4216, 7219, 7211]
+    scoring: {R: 0, Y: 2, D: 0, S: 0}
+    total: 2
+    tier: 4
+    exposure_score: 10
+    rationale_key: work_office_admin
+
+  - path_id: work_construction_labourer
+    label: Construction labourer (stepping stone into trades)
+    sector_id: sector_work_construction
+    matches:
+      direction: leaving_for_work
+      job_keywords: [labourer, construction, building site, groundworker]
+    soc4: [9121, 9129]
+    scoring: {R: 3, Y: 3, D: 2, S: 1}
+    total: 9
+    tier: 2
+    exposure_score: 0
+    rationale_key: work_construction_labourer
+
+  - path_id: work_sales_sdr
+    label: Sales / SDR / business development
+    sector_id: sector_work_office_admin
+    matches:
+      direction: leaving_for_work
+      job_keywords: [sdr, sales development, business development, telesales, account executive, inside sales]
+    soc4: [3552, 7113, 7211]
+    scoring: {R: 0, Y: 2, D: 0, S: 0}
+    total: 2
+    tier: 4
+    exposure_score: 10
+    rationale_key: work_sales_sdr
+
+  - path_id: work_driving_delivery
+    label: Driving / delivery / transport
+    sector_id: sector_work_driving
+    matches:
+      direction: leaving_for_work
+      job_keywords: [driver, driving, delivery, courier, lorry, hgv, taxi, uber, deliveroo]
+    soc4: [8211, 8213, 8214]
+    scoring: {R: 0, Y: 2, D: 0, S: 0}
+    total: 2
+    tier: 4
+    exposure_score: 10
+    rationale_key: work_driving_delivery
+
+  # ============================== undec / other paths ==============================
+
+  - path_id: undecided_default
+    label: Undecided
+    sector_id: sector_undecided
+    matches:
+      direction: undecided
+      job_keywords: ["*"]
+    soc4: null
+    scoring: {R: 1, Y: 2, D: 1, S: 1}
+    total: 5
+    tier: 4
+    exposure_score: 7
+    rationale_key: undecided_default
+
+  - path_id: other_default
+    label: Other / not listed
+    sector_id: sector_other
+    matches:
+      direction: other
+      job_keywords: ["*"]
+    soc4: null
+    scoring: {R: 1, Y: 2, D: 1, S: 1}
+    total: 5
+    tier: 4
+    exposure_score: 7
+    rationale_key: other_default

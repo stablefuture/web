@@ -42,9 +42,10 @@ export function ThemeToggle() {
       title={label}
       className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border-soft text-ink transition-all duration-200 hover:scale-105 hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
-      {/* Render both glyphs; pick by class so SSR/CSR match before mount. */}
-      <SunIcon className="block h-5 w-5 dark:hidden" />
-      <MoonIcon className="hidden h-5 w-5 dark:block" />
+      {/* Render both glyphs; pick by class so SSR/CSR match before mount.
+          Icon shows the mode you'll switch TO: moon in light, sun in dark. */}
+      <MoonIcon className="block h-5 w-5 dark:hidden" />
+      <SunIcon className="hidden h-5 w-5 dark:block" />
     </button>
   );
 }
