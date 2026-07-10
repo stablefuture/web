@@ -15,7 +15,7 @@ export default function Home() {
                 For parents of Year 10–13 students
               </span>
               <h1 className="max-w-3xl text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-ink sm:text-5xl lg:text-6xl">
-                Is that path{" "}
+                Is your path{" "}
                 <span className="inline-block bg-accent px-3 py-0.5 text-on-accent">
                   future-proof?
                 </span>
@@ -35,10 +35,11 @@ export default function Home() {
       <Section className="bg-surface-alt" tight>
         <Container narrow>
           <p className="text-center text-sm leading-relaxed text-muted">
-            Each bar reads left-to-right as <span className="text-ink">stronger for your child</span>{" "}
-            (green) to <span className="text-ink">weaker</span> (red). Every figure links to its
-            source. Elasticity — whether AI grows or shrinks the field — is a model estimate, shown
-            with its reasoning. Figures are broad occupation groups; a call turns them into a plan.
+            Each bar reads left-to-right as <span className="text-ink">weaker</span> (red) to{" "}
+            <span className="text-ink">stronger for your child</span> (green). Hover the{" "}
+            <span className="text-ink">?</span> on any measure for what it means and its source.
+            Elasticity — whether AI grows or shrinks the field — is a model estimate. Figures are
+            broad occupation groups; a call turns them into a plan.
           </p>
         </Container>
       </Section>

@@ -47,6 +47,22 @@ const ORDER: Record<Entity["type"], string[]> = {
   apprenticeship: ["salary", "demand", "supply", "ai_exposure", "elasticity"],
 };
 
+// Plain-English explanation of each indicator, shown in the "?" tooltip.
+const DEFS: Record<string, string> = {
+  salary:
+    "Median full-time gross annual pay for this occupation. For a degree or apprenticeship, the average across the occupations it leads to.",
+  demand:
+    "How the number of jobs is projected to change (2024→2030), plus how many current workers are near retirement (replacement openings).",
+  supply:
+    "How many people enter this path each year versus other paths. A fuller bar means a more crowded field — more competition. The percentage is the recent trend.",
+  ai_exposure:
+    "How exposed the day-to-day tasks are to automation by AI — averaged from two independent 2025–26 research estimates.",
+  elasticity:
+    "As AI makes the work cheaper, does the field grow (more demand) or shrink (fewer people needed)? A model estimate — it matters most where AI exposure is high.",
+  grad_ft_employment: "Share of graduates in full-time employment 15 months after finishing.",
+  grad_unemployment: "Share of graduates unemployed 15 months after finishing.",
+};
+
 const EXAMPLES = ["Electrician", "Law", "Nursing", "Software developer", "Plumber", "Accountant", "Journalist"];
 
 export function Checker() {
@@ -175,6 +191,7 @@ function EntityPanel({
   const rows = ORDER[entity.type]
     .map((key) => ({ key, ind: entity.indicators[key], m: meta[key] }))
     .filter((r) => r.ind && r.m && r.ind.normalised != null);
+  const aiNorm = entity.indicators.ai_exposure?.normalised ?? null;
 
   return (
     <div className="sf-fade-in flex flex-col gap-6 rounded-2xl border border-border-soft bg-surface-alt p-6 sm:p-8">
@@ -198,7 +215,7 @@ function EntityPanel({
 
       <div className="flex flex-col divide-y divide-border-soft">
         {rows.map((r) => (
-          <IndicatorRow key={r.key} ind={r.ind!} m={r.m!} />
+          <IndicatorRow key={r.key} indKey={r.key} ind={r.ind!} m={r.m!} aiNorm={aiNorm} />
         ))}
       </div>
 
@@ -214,24 +231,59 @@ function EntityPanel({
   );
 }
 
-function IndicatorRow({ ind, m }: { ind: Indicator; m: IndicatorMeta }) {
+function InfoTip({ text, source }: { text: string; source: string }) {
+  return (
+    <span className="group relative inline-flex">
+      <button
+        type="button"
+        aria-label="What does this mean?"
+        className="flex h-5 w-5 items-center justify-center rounded-full border border-border-soft text-xs font-semibold text-muted transition hover:border-accent-strong hover:text-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+      >
+        ?
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute left-0 top-7 z-20 w-64 rounded-lg border border-border-soft bg-background p-3 text-left text-xs leading-relaxed opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+      >
+        <span className="block text-ink">{text}</span>
+        <span className="mt-1.5 block text-muted">Source: {source}</span>
+      </span>
+    </span>
+  );
+}
+
+function IndicatorRow({
+  indKey,
+  ind,
+  m,
+  aiNorm,
+}: {
+  indKey: string;
+  ind: Indicator;
+  m: IndicatorMeta;
+  aiNorm: number | null;
+}) {
   const n = ind.normalised ?? 0;
   // goodness: bar always reads "longer = better for the individual"
   const goodness = m.higher_is === "worse" ? 100 - n : n;
-  const color =
-    goodness >= 66 ? "#16a34a" : goodness >= 33 ? "#d97706" : "#dc2626";
+  const color = goodness >= 66 ? "#16a34a" : goodness >= 33 ? "#d97706" : "#dc2626";
+
+  // Elasticity only bites where AI exposure is high — dim it in proportion,
+  // and flag when exposure is low enough that it barely matters.
+  const isElast = indKey === "elasticity";
+  const sig = isElast && aiNorm != null ? aiNorm / 100 : 1;
+  const lowExposure = isElast && aiNorm != null && aiNorm < 40;
 
   return (
-    <div className="flex flex-col gap-1.5 py-4">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="font-semibold text-ink">
-          {m.label}
-          {m.estimate && (
-            <span className="ml-2 rounded bg-surface-alt px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
-              estimate
-            </span>
-          )}
-        </span>
+    <div className="flex flex-col gap-1.5 py-4" style={isElast ? { opacity: 0.4 + 0.6 * sig } : undefined}>
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-ink">{m.label}</span>
+        {m.estimate && (
+          <span className="rounded bg-surface-alt px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+            estimate
+          </span>
+        )}
+        <InfoTip text={DEFS[indKey] ?? ""} source={m.source} />
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-border-soft">
         <div
@@ -240,7 +292,9 @@ function IndicatorRow({ ind, m }: { ind: Indicator; m: IndicatorMeta }) {
         />
       </div>
       {ind.note && <p className="text-sm text-muted">{ind.note}</p>}
-      <p className="text-xs text-muted/70">Source: {m.source}</p>
+      {lowExposure && (
+        <p className="text-xs text-muted">AI exposure is low here, so this matters less.</p>
+      )}
     </div>
   );
 }
