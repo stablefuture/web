@@ -43,8 +43,8 @@ const TYPE_LABEL: Record<Entity["type"], string> = {
 // Order indicators are shown per entity type; missing ones are skipped.
 const ORDER: Record<Entity["type"], string[]> = {
   job: ["salary", "demand", "ai_exposure", "elasticity"],
-  degree: ["supply", "grad_ft_employment", "grad_unemployment", "salary", "ai_exposure", "elasticity"],
-  apprenticeship: ["salary", "demand", "supply", "ai_exposure", "elasticity"],
+  degree: ["competition", "grad_ft_employment", "grad_unemployment", "salary", "ai_exposure", "elasticity"],
+  apprenticeship: ["salary", "demand", "competition", "ai_exposure", "elasticity"],
 };
 
 // Plain-English explanation of each indicator, shown in the "?" tooltip.
@@ -53,8 +53,8 @@ const DEFS: Record<string, string> = {
     "Median full-time gross annual pay for this occupation. For a degree or apprenticeship, the average across the occupations it leads to.",
   demand:
     "How the number of jobs is projected to change (2024→2030), plus how many current workers are near retirement (replacement openings).",
-  supply:
-    "How many people enter this path each year versus other paths. A fuller bar means a more crowded field — more competition. The percentage is the recent trend.",
+  competition:
+    "How many people enter this path each year for every projected job opening in the fields it feeds. A fuller bar means fewer entrants per opening — better prospects. A rough relative guide, since many graduates work outside their exact field.",
   ai_exposure:
     "How exposed the day-to-day tasks are to automation by AI — averaged from two independent 2025–26 research estimates.",
   elasticity:
