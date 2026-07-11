@@ -28,7 +28,7 @@ updates instantly; push to `main` to go live.
 - **Table column headers** — "Occupation, Salary, Openings, Competition, AI risk,
   Elasticity" (lines 386–391)
 - **AI-risk words** — `AI_BANDS` labels "Very low → Very high" (~line 50)
-- **Elasticity words** — `EL_WORDS` = "Capped, Limited, Growing, Expanding" (line 61)
+- **Elasticity words** — `elWord` = High / Med / Low (~line 61)
 - **Entity-type chips** — `TYPE_LABEL` "Occupation / Degree / Apprenticeship" (line 33)
 - **Call-to-action** — "The data shows the shape of it…" (line 324)
 - **Toggle labels** — "Relevant / Similar / All jobs" (search for `Toggle`)

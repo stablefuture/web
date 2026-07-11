@@ -57,10 +57,9 @@ const AI_BANDS = [
 ];
 const aiBand = (n: number) => AI_BANDS.find((b) => n >= b.min) ?? AI_BANDS[4];
 
-// elasticity: 0-3 → a word + colour (higher = the field grows with AI)
-const EL_WORDS = ["Capped", "Limited", "Growing", "Expanding"];
-const elWord = (s: number) => EL_WORDS[Math.max(0, Math.min(3, s))];
-const elColor = (s: number) => colorFor((s / 3) * 100);
+// elasticity: 0-3 → High / Med / Low + matching colour (high = the field grows with AI)
+const elWord = (s: number) => (s >= 3 ? "High" : s >= 2 ? "Med" : "Low");
+const elColor = (s: number) => (s >= 3 ? GREEN : s >= 2 ? AMBER : RED);
 
 // definitions for the "?" tooltips
 const DEFS: Record<string, string> = {
@@ -186,7 +185,7 @@ function InfoTip({ text, source, align = "left" }: { text: string; source?: stri
         ?
       </button>
       <span role="tooltip"
-        className={`pointer-events-none absolute ${align === "right" ? "right-0" : "left-0"} top-6 z-30 w-60 rounded-lg border border-border-soft bg-background p-3 text-left text-xs font-normal normal-case leading-relaxed opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100`}>
+        className={`pointer-events-none absolute ${align === "right" ? "right-0" : "left-0"} top-6 z-50 w-60 rounded-lg border border-border-soft bg-background p-3 text-left text-xs font-normal normal-case leading-relaxed opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100`}>
         <span className="block text-ink">{text}</span>
         {source && <span className="mt-1.5 block text-muted">Source: {source}</span>}
       </span>
@@ -379,7 +378,9 @@ function OccupationTable({
   );
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border-soft">
+    // clip-and-scroll on small screens; on desktop the table fits, so let
+    // tooltips overflow the box instead of being cut off by it.
+    <div className="overflow-x-auto rounded-xl border border-border-soft md:overflow-x-visible">
       <table className="w-full min-w-[680px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-border-soft bg-surface-alt">
@@ -433,7 +434,7 @@ function ElCell({ score, note, ai }: { score: number; note: string; ai: number |
       </span>
       {note && (
         <span role="tooltip"
-          className="pointer-events-none absolute right-0 top-6 z-30 w-60 rounded-lg border border-border-soft bg-background p-3 text-left text-xs font-normal normal-case leading-relaxed text-muted opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
+          className="pointer-events-none absolute right-0 top-6 z-50 w-60 rounded-lg border border-border-soft bg-background p-3 text-left text-xs font-normal normal-case leading-relaxed text-muted opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
           {note}
         </span>
       )}
