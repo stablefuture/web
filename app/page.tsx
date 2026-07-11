@@ -21,8 +21,8 @@ export default function Home() {
                 </span>
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-                Search any job, degree or apprenticeship. See its pay, demand,
-                supply and AI exposure — from real UK data, not opinion.
+                Search any job, degree or apprenticeship. See its pay, openings,
+                competition and AI exposure — from real UK data, not opinion.
               </p>
             </div>
 
@@ -35,11 +35,11 @@ export default function Home() {
       <Section className="bg-surface-alt" tight>
         <Container narrow>
           <p className="text-center text-sm leading-relaxed text-muted">
-            Each bar reads left-to-right as <span className="text-ink">weaker</span> (red) to{" "}
-            <span className="text-ink">stronger for your child</span> (green). Hover the{" "}
+            Search a field to see the occupations it leads to. <span className="text-ink">Green</span>{" "}
+            means stronger for your child, <span className="text-ink">red</span> weaker. Sort any
+            column, switch to <span className="text-ink">All jobs</span>, and hover the{" "}
             <span className="text-ink">?</span> on any measure for what it means and its source.
-            Elasticity — whether AI grows or shrinks the field — is a model estimate. Figures are
-            broad occupation groups; a call turns them into a plan.
+            Competition and openings are modelled estimates; a call turns the figures into a plan.
           </p>
         </Container>
       </Section>
