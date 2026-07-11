@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Stable Future",
   description:
-    "Helping parents prepare their Y9-13 teenagers for a rapidly changing, AI-shaped job market.",
+    "Helping parents prepare their Y10-13 teenagers for a rapidly changing, AI-shaped job market.",
 };
 
 // Inline before-paint script: sets `.dark` on <html> based on stored choice

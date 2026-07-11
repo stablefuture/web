@@ -46,14 +46,27 @@ const fmtOpenings = (v?: number | null) =>
 const colorFor = (goodness: number) => (goodness >= 66 ? GREEN : goodness >= 33 ? AMBER : RED);
 // competition: fuller/greener = fewer entrants per opening (ratio 3+ = maxed)
 const compGoodness = (ratio: number) => 100 - Math.min(100, (ratio / 3) * 100);
-const aiLabel = (n: number) =>
-  n >= 80 ? "Very high" : n >= 60 ? "High" : n >= 40 ? "Moderate" : n >= 20 ? "Low" : "Very low";
+
+// AI exposure: five named risk bands, each its own colour (higher = worse)
+const AI_BANDS = [
+  { min: 80, label: "Very high", color: "#dc2626" },
+  { min: 60, label: "High", color: "#ea580c" },
+  { min: 40, label: "Moderate", color: "#d97706" },
+  { min: 20, label: "Low", color: "#65a30d" },
+  { min: 0, label: "Very low", color: "#16a34a" },
+];
+const aiBand = (n: number) => AI_BANDS.find((b) => n >= b.min) ?? AI_BANDS[4];
+
+// elasticity: 0-3 → a word + colour (higher = the field grows with AI)
+const EL_WORDS = ["Capped", "Limited", "Growing", "Expanding"];
+const elWord = (s: number) => EL_WORDS[Math.max(0, Math.min(3, s))];
+const elColor = (s: number) => colorFor((s / 3) * 100);
 
 // definitions for the "?" tooltips
 const DEFS: Record<string, string> = {
   salary: "Median full-time gross annual pay for the occupation (ONS ASHE). For a degree, the average across the occupations it feeds.",
   openings: "Projected job openings per year = new jobs (growth) + people leaving/retiring. A modelled estimate, not a live vacancy count.",
-  competition: "Graduates (or apprentice starts) entering each year for every projected opening. Fewer per opening = better prospects. A rough relative guide — many graduates work outside their exact field.",
+  competition: "Everyone entering this occupation each year (graduates from every field that feeds it + apprentices) for each projected opening. Fewer per opening = better prospects. A modelled estimate.",
   ai_exposure: "How exposed the day-to-day tasks are to automation by AI — averaged from two independent 2025–26 research estimates. Higher = more exposed.",
   elasticity: "As AI makes the work cheaper, does the field grow (more demand) or shrink? A model estimate — it matters most where AI exposure is high.",
 };
@@ -102,7 +115,7 @@ export function Checker() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="relative">
+      <div className="relative mx-auto w-full max-w-2xl">
         <input
           type="search"
           value={query}
@@ -133,7 +146,7 @@ export function Checker() {
       </div>
 
       {!query && !selected && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="mx-auto flex w-full max-w-2xl flex-wrap items-center justify-center gap-2">
           <span className="text-sm text-muted">Try:</span>
           {EXAMPLES.map((ex) => (
             <button key={ex} onClick={() => setQuery(ex)}
@@ -165,7 +178,7 @@ function TypeChip({ type }: { type: Entity["type"] }) {
   );
 }
 
-function InfoTip({ text, source }: { text: string; source?: string }) {
+function InfoTip({ text, source, align = "left" }: { text: string; source?: string; align?: "left" | "right" }) {
   return (
     <span className="group relative inline-flex align-middle">
       <button type="button" aria-label="What does this mean?"
@@ -173,7 +186,7 @@ function InfoTip({ text, source }: { text: string; source?: string }) {
         ?
       </button>
       <span role="tooltip"
-        className="pointer-events-none absolute left-0 top-6 z-30 w-60 rounded-lg border border-border-soft bg-background p-3 text-left text-xs font-normal normal-case leading-relaxed opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+        className={`pointer-events-none absolute ${align === "right" ? "right-0" : "left-0"} top-6 z-30 w-60 rounded-lg border border-border-soft bg-background p-3 text-left text-xs font-normal normal-case leading-relaxed opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100`}>
         <span className="block text-ink">{text}</span>
         {source && <span className="mt-1.5 block text-muted">Source: {source}</span>}
       </span>
@@ -187,9 +200,11 @@ type Row = {
   salary: number | null;
   openings: number | null;
   ai: number | null;
-  competition: number | null; // grads/starts per opening, when there is an entrant pool
+  competition: number | null; // entrants per opening, a property of the occupation
+  elScore: number | null;
+  elNote: string;
 };
-type SortKey = "label" | "salary" | "openings" | "competition" | "ai";
+type SortKey = "label" | "salary" | "openings" | "competition" | "ai" | "elasticity";
 
 function EntityView({
   entity, data, jobByCode, onSelect, onBack,
@@ -204,9 +219,6 @@ function EntityView({
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "openings", dir: -1 });
   useEffect(() => { setView("relevant"); setSort({ key: "openings", dir: -1 }); }, [entity.id]);
 
-  const pool = entity.type === "degree" ? entity.grads
-    : entity.type === "apprenticeship" ? entity.indicators.competition?.starts ?? null : null;
-
   const linked = useMemo(() => {
     const codes = Array.isArray(entity.linked_soc4)
       ? entity.linked_soc4
@@ -218,35 +230,31 @@ function EntityView({
     return codes.map((c) => jobByCode.get(c)).filter(Boolean) as Entity[];
   }, [entity, data, jobByCode]);
 
-  const rowFor = (job: Entity): Row => {
-    const openings = job.openings ?? null;
-    return {
+  const rows = useMemo(() => {
+    const rowFor = (job: Entity): Row => ({
       job,
       salary: job.indicators.salary?.raw ?? null,
-      openings,
+      openings: job.openings ?? null,
       ai: job.indicators.ai_exposure?.normalised ?? null,
-      competition: pool && openings ? pool / openings : null,
-    };
-  };
-
-  const rows = useMemo(() => {
-    const base = view === "all" ? data.jobs : linked;
-    const r = base.map(rowFor);
-    const v = (x: Row) =>
-      sort.key === "label" ? x.job.label.toLowerCase() : (x[sort.key] ?? -Infinity);
-    return [...r].sort((a, b) => {
-      const av = v(a), bv = v(b);
-      if (av < bv) return -1 * sort.dir;
-      if (av > bv) return 1 * sort.dir;
-      return 0;
+      competition: job.indicators.competition?.raw ?? null,
+      elScore: job.indicators.elasticity?.raw ?? null,
+      elNote: job.indicators.elasticity?.note ?? "",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, linked, data, sort, pool]);
+    const base = view === "all" ? data.jobs : linked;
+    const key: SortKey = sort.key;
+    const v = (x: Row) =>
+      key === "label" ? x.job.label.toLowerCase()
+      : key === "elasticity" ? (x.elScore ?? -Infinity)
+      : (x[key] ?? -Infinity);
+    return base.map(rowFor).sort((a, b) => {
+      const av = v(a), bv = v(b);
+      return av < bv ? -sort.dir : av > bv ? sort.dir : 0;
+    });
+  }, [view, linked, data, sort]);
 
   const totalOpenings = linked.reduce((s, j) => s + (j.openings ?? 0), 0);
   const comp = entity.indicators.competition;
   const ai = entity.indicators.ai_exposure?.normalised ?? null;
-  const el = entity.indicators.elasticity;
 
   return (
     <div className="sf-fade-in flex flex-col gap-6">
@@ -267,15 +275,16 @@ function EntityView({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {entity.type === "job" ? (
           <>
-            <Card label="Entry salary" k="salary" value={fmtSalary(entity.indicators.salary?.raw)} />
-            <Card label="Openings" k="openings" value={`${fmtOpenings(entity.openings)}/yr`} />
+            <Card label="Salary" k="salary" value={fmtSalary(entity.indicators.salary?.raw)} sub="median full-time" />
+            <Card label="Projected openings" k="openings" value={`${fmtOpenings(entity.openings)}/yr`} />
             <Card label="AI exposure" k="ai_exposure" value={ai != null ? `${ai}` : "—"}
-              sub={ai != null ? aiLabel(ai) : ""} color={ai != null ? colorFor(100 - ai) : undefined} />
+              sub={ai != null ? aiBand(ai).label : ""} color={ai != null ? aiBand(ai).color : undefined} />
           </>
         ) : (
           <>
-            <Card label={entity.type === "degree" ? "Openings in linked fields" : "Advertised wage"}
+            <Card label={entity.type === "degree" ? "Projected openings" : "Advertised wage"}
               k={entity.type === "degree" ? "openings" : "salary"}
+              sub={entity.type === "degree" ? "in linked fields, per year" : "median"}
               value={entity.type === "degree" ? `${fmtOpenings(totalOpenings)}/yr` : fmtSalary(entity.indicators.salary?.raw)} />
             <Card label="Competition" k="competition"
               value={comp?.raw != null ? `${comp.raw}×` : "—"}
@@ -285,24 +294,11 @@ function EntityView({
               k={entity.type === "degree" ? "salary" : "ai_exposure"}
               value={entity.type === "degree" ? fmtSalary(entity.indicators.salary?.raw)
                 : (ai != null ? `${ai}` : "—")}
-              sub={entity.type === "degree" ? "linked occupations" : (ai != null ? aiLabel(ai) : "")}
-              color={entity.type === "degree" ? undefined : (ai != null ? colorFor(100 - ai) : undefined)} />
+              sub={entity.type === "degree" ? "linked occupations" : (ai != null ? aiBand(ai).label : "")}
+              color={entity.type === "degree" ? undefined : (ai != null ? aiBand(ai).color : undefined)} />
           </>
         )}
       </div>
-
-      {/* elasticity line (our differentiator) — dimmed where AI exposure is low */}
-      {el?.note && (
-        <div className="rounded-xl border border-border-soft bg-surface-alt p-4"
-          style={ai != null ? { opacity: 0.5 + 0.5 * (ai / 100) } : undefined}>
-          <p className="text-sm">
-            <span className="font-semibold text-ink">Demand elasticity</span>
-            <span className="ml-2 rounded bg-background px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">estimate</span>
-            <InfoTip text={DEFS.elasticity} source={data.meta.indicators.elasticity?.source} />
-            <span className="ml-1 text-muted"> — {el.note}</span>
-          </p>
-        </div>
-      )}
 
       {/* related occupations table */}
       <div className="flex flex-col gap-3">
@@ -315,7 +311,6 @@ function EntityView({
 
         <OccupationTable
           rows={rows}
-          showCompetition={pool != null && view === "relevant"}
           sort={sort}
           onSort={(key) => setSort((s) => ({ key, dir: s.key === key ? (s.dir === 1 ? -1 : 1) : -1 }))}
           onSelect={onSelect}
@@ -363,10 +358,9 @@ function Toggle({ active, onClick, children }: { active: boolean; onClick: () =>
 }
 
 function OccupationTable({
-  rows, showCompetition, sort, onSort, onSelect, metaIndicators,
+  rows, sort, onSort, onSelect, metaIndicators,
 }: {
   rows: Row[];
-  showCompetition: boolean;
   sort: { key: SortKey; dir: 1 | -1 };
   onSort: (k: SortKey) => void;
   onSelect: (id: string) => void;
@@ -376,54 +370,50 @@ function OccupationTable({
     <span className="ml-1 text-[10px] text-accent-strong">{sort.key === k ? (sort.dir === 1 ? "▲" : "▼") : ""}</span>
   );
   const Th = ({ k, label, meta, right }: { k: SortKey; label: string; meta?: string; right?: boolean }) => (
-    <th className={`px-3 py-2 ${right ? "text-right" : "text-left"}`}>
+    <th className={`px-4 py-3 ${right ? "text-right" : "text-left"}`}>
       <button onClick={() => onSort(k)} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted hover:text-ink">
         {label}<Arrow k={k} />
       </button>
-      {meta && <InfoTip text={DEFS[meta] ?? ""} source={metaIndicators[meta]?.source} />}
+      {meta && <InfoTip text={DEFS[meta] ?? ""} source={metaIndicators[meta]?.source} align="right" />}
     </th>
   );
 
   return (
     <div className="overflow-x-auto rounded-xl border border-border-soft">
-      <table className="w-full min-w-[560px] border-collapse text-sm">
+      <table className="w-full min-w-[680px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-border-soft bg-surface-alt">
             <Th k="label" label="Occupation" />
             <Th k="salary" label="Salary" meta="salary" right />
             <Th k="openings" label="Openings" meta="openings" right />
-            {showCompetition && <Th k="competition" label="Competition" meta="competition" right />}
+            <Th k="competition" label="Competition" meta="competition" right />
             <Th k="ai" label="AI risk" meta="ai_exposure" right />
+            <Th k="elasticity" label="Elasticity" meta="elasticity" right />
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
-            <tr><td colSpan={5} className="px-3 py-6 text-center text-muted">No linked occupations resolved.</td></tr>
+            <tr><td colSpan={6} className="px-4 py-6 text-center text-muted">No linked occupations resolved.</td></tr>
           )}
           {rows.map((r) => (
             <tr key={r.job.id}
               onClick={() => onSelect(r.job.id)}
               className="cursor-pointer border-b border-border-soft/60 transition last:border-0 hover:bg-surface-alt">
-              <td className="px-3 py-3">
+              <td className="px-4 py-3">
                 <div className="font-medium text-ink">{r.job.label}</div>
                 <div className="text-xs text-muted">{r.job.category}</div>
               </td>
-              <td className="px-3 py-3 text-right tabular-nums text-ink">{fmtSalary(r.salary)}</td>
-              <td className="px-3 py-3 text-right tabular-nums text-ink">{fmtOpenings(r.openings)}</td>
-              {showCompetition && (
-                <td className="px-3 py-3 text-right tabular-nums">
-                  <Dot color={r.competition != null ? colorFor(compGoodness(r.competition)) : "transparent"} />
-                  <span className="text-ink">{r.competition != null ? `${r.competition.toFixed(1)}×` : "—"}</span>
-                </td>
-              )}
-              <td className="px-3 py-3 text-right tabular-nums">
-                {r.ai != null ? (
-                  <>
-                    <Dot color={colorFor(100 - r.ai)} />
-                    <span className="text-ink">{r.ai}</span>
-                    <span className="ml-1 text-xs text-muted">{aiLabel(r.ai)}</span>
-                  </>
-                ) : <span className="text-muted">—</span>}
+              <td className="px-4 py-3 text-right tabular-nums text-ink">{fmtSalary(r.salary)}</td>
+              <td className="px-4 py-3 text-right tabular-nums text-ink">{fmtOpenings(r.openings)}</td>
+              <td className="px-4 py-3 text-right tabular-nums font-medium"
+                style={{ color: r.competition != null ? colorFor(compGoodness(r.competition)) : undefined }}>
+                {r.competition != null ? `${r.competition.toFixed(1)}×` : <span className="text-muted">—</span>}
+              </td>
+              <td className="px-4 py-3 text-right font-medium" style={{ color: r.ai != null ? aiBand(r.ai).color : undefined }}>
+                {r.ai != null ? aiBand(r.ai).label : <span className="text-muted">—</span>}
+              </td>
+              <td className="px-4 py-3 text-right">
+                {r.elScore != null ? <ElCell score={r.elScore} note={r.elNote} ai={r.ai} /> : <span className="text-muted">—</span>}
               </td>
             </tr>
           ))}
@@ -433,6 +423,20 @@ function OccupationTable({
   );
 }
 
-function Dot({ color }: { color: string }) {
-  return <span className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle" style={{ backgroundColor: color }} />;
+// Elasticity cell: a coloured word, dimmed where AI exposure is low (it bites
+// most when the work is being automated), with the reasoning in an opaque hover.
+function ElCell({ score, note, ai }: { score: number; note: string; ai: number | null }) {
+  return (
+    <span className="group relative inline-flex items-center justify-end gap-1">
+      <span className="font-medium" style={{ color: elColor(score), opacity: ai != null ? 0.45 + 0.55 * (ai / 100) : 1 }}>
+        {elWord(score)}
+      </span>
+      {note && (
+        <span role="tooltip"
+          className="pointer-events-none absolute right-0 top-6 z-30 w-60 rounded-lg border border-border-soft bg-background p-3 text-left text-xs font-normal normal-case leading-relaxed text-muted opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
+          {note}
+        </span>
+      )}
+    </span>
+  );
 }

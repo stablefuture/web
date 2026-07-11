@@ -8,7 +8,7 @@ export default function Home() {
     <main>
       {/* Hero + checker */}
       <Section as="section">
-        <Container narrow>
+        <Container>
           <div className="flex flex-col gap-8">
             <div className="flex flex-col items-center gap-5 text-center">
               <span className="text-xs font-bold uppercase tracking-widest text-accent-strong">
@@ -22,7 +22,7 @@ export default function Home() {
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
                 Search any job, degree or apprenticeship. See its pay, openings,
-                competition and AI exposure — from real UK data, not opinion.
+                competition and AI exposure from real UK data, not opinion.
               </p>
             </div>
 
@@ -35,11 +35,7 @@ export default function Home() {
       <Section className="bg-surface-alt" tight>
         <Container narrow>
           <p className="text-center text-sm leading-relaxed text-muted">
-            Search a field to see the occupations it leads to. <span className="text-ink">Green</span>{" "}
-            means stronger for your child, <span className="text-ink">red</span> weaker. Sort any
-            column, switch to <span className="text-ink">All jobs</span>, and hover the{" "}
-            <span className="text-ink">?</span> on any measure for what it means and its source.
-            Competition and openings are modelled estimates; a call turns the figures into a plan.
+            Competition and openings are modelled estimates. A call turns the figures into a plan.
           </p>
         </Container>
       </Section>
