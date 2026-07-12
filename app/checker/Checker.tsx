@@ -63,11 +63,11 @@ const elColor = (s: number) => (s >= 3 ? GREEN : s >= 2 ? AMBER : RED);
 
 // definitions for the "?" tooltips
 const DEFS: Record<string, string> = {
-  salary: "Median full-time gross annual pay for the occupation (ONS ASHE). For a degree, the average across the occupations it feeds.",
-  openings: "Projected job openings per year = new jobs (growth) + people leaving/retiring. A modelled estimate, not a live vacancy count.",
-  competition: "Everyone entering this occupation each year (graduates from every field that feeds it + apprentices) for each projected opening. Fewer per opening = better prospects. A modelled estimate.",
-  ai_exposure: "How exposed the day-to-day tasks are to automation by AI — averaged from two independent 2025–26 research estimates. Higher = more exposed.",
-  elasticity: "As AI makes the work cheaper, does the field grow (more demand) or shrink? A model estimate — it matters most where AI exposure is high.",
+  salary: "Median full-time gross annual pay for the occupation. For a degree, the average across the occupations it feeds. (ONS)",
+  openings: "Projected job openings per year = new jobs (growth) + people leaving/retiring. 2030 projection, not a live vacancy count. (ONS)",
+  competition: "Everyone entering this occupation each year (graduates from every field that feeds it + apprentices) for each projected opening. Fewer per opening = better prospects. (HESA, ONS)",
+  ai_exposure: "How exposed the day-to-day tasks are to automation by AI. Higher = more exposed. Exposure does not mean a job will disappear, nor account for demand elasticity and regulatory barriers. (Karpathy 2025, Teeselink 2026)",
+  elasticity: "As AI makes the work cheaper, does the field grow (more demand) or shrink? It matters most when AI exposure is high. (Stable Future, LLM classification)",
 };
 
 export function Checker() {
@@ -320,7 +320,7 @@ function EntityView({
       {/* CTA */}
       <div className="flex flex-col items-center gap-3 rounded-xl border border-border-soft bg-surface-alt p-6 text-center">
         <p className="max-w-md text-muted">
-          The data shows the shape of it. A call turns it into a plan for <span className="text-ink">your</span> child.
+          The data is general. A call turns it into a specific plan for <span className="text-ink">your</span> teen.
         </p>
         <BookCall size="md" />
       </div>
