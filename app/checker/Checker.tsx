@@ -63,11 +63,11 @@ const elColor = (s: number) => (s >= 3 ? GREEN : s >= 2 ? AMBER : RED);
 
 // definitions for the "?" tooltips
 const DEFS: Record<string, string> = {
-  salary: "Median full-time gross annual pay for the occupation. For a degree, the average across the occupations it feeds. (ONS)",
-  openings: "Projected job openings per year = new jobs (growth) + people leaving/retiring. 2030 projection, not a live vacancy count. (ONS)",
-  competition: "Everyone entering this occupation each year (graduates from every field that feeds it + apprentices) for each projected opening. Fewer per opening = better prospects. (HESA, ONS)",
-  ai_exposure: "How exposed the day-to-day tasks are to automation by AI. Higher = more exposed. Exposure does not mean a job will disappear, nor account for demand elasticity and regulatory barriers. (Karpathy 2025, Teeselink 2026)",
-  elasticity: "As AI makes the work cheaper, does the field grow (more demand) or shrink? It matters most when AI exposure is high. (Stable Future, LLM classification)",
+  salary: "Median full-time gross annual pay for the occupation. For a degree, the average across the occupations it feeds.",
+  openings: "Projected job openings per year = new jobs (growth) + people leaving/retiring. 2030 projection, not a live vacancy count.",
+  competition: "Everyone entering this occupation each year (graduates from every field that feeds it + apprentices) for each projected opening. Lower = easier.",
+  ai_exposure: "How exposed the day-to-day tasks are to automation by AI. Higher = more exposed. Exposure does not mean a job will disappear, nor account for demand elasticity and regulatory barriers.",
+  elasticity: "As AI makes the work cheaper, does the field grow (more demand) or shrink? It matters most when AI exposure is high.",
 };
 
 export function Checker() {
@@ -274,27 +274,27 @@ function EntityView({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {entity.type === "job" ? (
           <>
-            <Card label="Salary" k="salary" value={fmtSalary(entity.indicators.salary?.raw)} sub="median full-time" />
-            <Card label="Projected openings" k="openings" value={`${fmtOpenings(entity.openings)}/yr`} />
+            <Card label="Salary" k="salary" value={fmtSalary(entity.indicators.salary?.raw)} sub="median full-time" metaIndicators={data.meta.indicators} />
+            <Card label="Projected openings" k="openings" value={`${fmtOpenings(entity.openings)}/yr`} metaIndicators={data.meta.indicators} />
             <Card label="AI exposure" k="ai_exposure" value={ai != null ? `${ai}` : "—"}
-              sub={ai != null ? aiBand(ai).label : ""} color={ai != null ? aiBand(ai).color : undefined} />
+              sub={ai != null ? aiBand(ai).label : ""} color={ai != null ? aiBand(ai).color : undefined} metaIndicators={data.meta.indicators} />
           </>
         ) : (
           <>
             <Card label={entity.type === "degree" ? "Projected openings" : "Advertised wage"}
               k={entity.type === "degree" ? "openings" : "salary"}
               sub={entity.type === "degree" ? "in linked fields, per year" : "median"}
-              value={entity.type === "degree" ? `${fmtOpenings(totalOpenings)}/yr` : fmtSalary(entity.indicators.salary?.raw)} />
+              value={entity.type === "degree" ? `${fmtOpenings(totalOpenings)}/yr` : fmtSalary(entity.indicators.salary?.raw)} metaIndicators={data.meta.indicators} />
             <Card label="Competition" k="competition"
               value={comp?.raw != null ? `${comp.raw}×` : "—"}
               sub={comp?.raw != null ? "per opening" : ""}
-              color={comp?.raw != null ? colorFor(compGoodness(comp.raw)) : undefined} />
+              color={comp?.raw != null ? colorFor(compGoodness(comp.raw)) : undefined} metaIndicators={data.meta.indicators} />
             <Card label={entity.type === "degree" ? "Avg salary" : "AI exposure"}
               k={entity.type === "degree" ? "salary" : "ai_exposure"}
               value={entity.type === "degree" ? fmtSalary(entity.indicators.salary?.raw)
                 : (ai != null ? `${ai}` : "—")}
               sub={entity.type === "degree" ? "linked occupations" : (ai != null ? aiBand(ai).label : "")}
-              color={entity.type === "degree" ? undefined : (ai != null ? aiBand(ai).color : undefined)} />
+              color={entity.type === "degree" ? undefined : (ai != null ? aiBand(ai).color : undefined)} metaIndicators={data.meta.indicators} />
           </>
         )}
       </div>
@@ -328,14 +328,15 @@ function EntityView({
   );
 }
 
-function Card({ label, k, value, sub, color }: {
+function Card({ label, k, value, sub, color, metaIndicators }: {
   label: string; k: string; value: string; sub?: string; color?: string;
+  metaIndicators: Record<string, Meta>;
 }) {
   return (
     <div className="rounded-xl border border-border-soft bg-surface-alt p-5">
       <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
         {label}
-        <InfoTip text={DEFS[k] ?? ""} />
+        <InfoTip text={DEFS[k] ?? ""} source={metaIndicators[k]?.source} />
       </div>
       <div className="mt-1 text-3xl font-extrabold tracking-tight" style={{ color: color ?? "var(--ink)" }}>
         {value}
@@ -388,7 +389,7 @@ function OccupationTable({
             <Th k="salary" label="Salary" meta="salary" right />
             <Th k="openings" label="Openings" meta="openings" right />
             <Th k="competition" label="Competition" meta="competition" right />
-            <Th k="ai" label="AI risk" meta="ai_exposure" right />
+            <Th k="ai" label="AI exposure" meta="ai_exposure" right />
             <Th k="elasticity" label="Elasticity" meta="elasticity" right />
           </tr>
         </thead>

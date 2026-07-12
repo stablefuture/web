@@ -31,15 +31,6 @@ export default function Home() {
         </Container>
       </Section>
 
-      {/* How to read it */}
-      <Section className="bg-surface-alt" tight>
-        <Container narrow>
-          <p className="text-center text-sm leading-relaxed text-muted">
-            Competition and openings are modelled estimates. A call turns the figures into a plan.
-          </p>
-        </Container>
-      </Section>
-
       {/* Footer */}
       <footer className="border-t border-border-soft bg-background py-8 text-muted">
         <Container>

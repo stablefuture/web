@@ -25,7 +25,7 @@ updates instantly; push to `main` to go live.
 - **Summary-card labels** — "Salary" / "Projected openings" / "AI exposure" (lines
   278–280) and "Projected openings" / "Competition" / "Avg salary" for degrees
   (lines 289+).
-- **Table column headers** — "Occupation, Salary, Openings, Competition, AI risk,
+- **Table column headers** — "Occupation, Salary, Openings, Competition, AI exposure,
   Elasticity" (lines 386–391)
 - **AI-risk words** — `AI_BANDS` labels "Very low → Very high" (~line 50)
 - **Elasticity words** — `elWord` = High / Med / Low (~line 61)
