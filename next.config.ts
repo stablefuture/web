@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/email",
-        destination: "https://stable-future.kit.com/career-checker",
+        destination: "https://stablefuture.kit.com/email",
         permanent: false,
       },
     ];
