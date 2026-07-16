@@ -23,7 +23,7 @@ export function BookCall({
 
   return (
     <Button href={BOOKING_URL} size={size} className={cls}>
-      Book a call →
+      Free career strategy call →
     </Button>
   );
 }

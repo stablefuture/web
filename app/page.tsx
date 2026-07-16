@@ -6,40 +6,34 @@ import { Wordmark } from "@/app/components/Logo";
 export default function Home() {
   return (
     <main>
+      {/* Logo sits inline with the fixed ThemeToggle (top-right, in layout). */}
+      <Wordmark className="fixed left-4 top-4 z-50 h-8 text-ink" />
+
       {/* Hero + checker */}
       <Section as="section">
         <Container>
           <div className="flex flex-col gap-8">
             <div className="flex flex-col items-center gap-5 text-center">
               <span className="text-xs font-bold uppercase tracking-widest text-accent-strong">
-                For parents of Year 10–13 students
+                Parents with Y10-13 Students
               </span>
               <h1 className="max-w-3xl text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-ink sm:text-5xl lg:text-6xl">
-                Is your path{" "}
+                is their path{" "}
                 <span className="inline-block bg-accent px-3 py-0.5 text-on-accent">
                   future-proof?
                 </span>
               </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-                Search any job, degree or apprenticeship. See its pay, openings,
-                competition and AI exposure from real UK data, not opinion.
-              </p>
             </div>
+
+            <p className="mx-auto max-w-xl text-center text-lg leading-relaxed text-muted">
+              Search any job, degree or apprenticeship. See its pay, openings,
+              competition and AI exposure from real UK data, not opinion.
+            </p>
 
             <Checker />
           </div>
         </Container>
       </Section>
-
-      {/* Footer */}
-      <footer className="border-t border-border-soft bg-background py-8 text-muted">
-        <Container>
-          <div className="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
-            <Wordmark className="h-7 text-ink" />
-            <span>© {new Date().getFullYear()} Stable Future. All rights reserved.</span>
-          </div>
-        </Container>
-      </footer>
     </main>
   );
 }
