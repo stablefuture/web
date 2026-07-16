@@ -65,7 +65,7 @@ const elColor = (s: number) => (s >= 3 ? GREEN : s >= 2 ? AMBER : RED);
 const DEFS: Record<string, string> = {
   salary: "Median full-time gross annual pay for the occupation. For a degree, the average across the occupations it feeds.",
   openings: "Projected job openings per year = new jobs (growth) + people leaving/retiring. 2030 projection, not a live vacancy count.",
-  competition: "Everyone entering this occupation each year (graduates from every field that feeds it + apprentices) for each projected opening. Lower = easier.",
+  competition: "Everyone entering this occupation each year (graduates + apprentices from every field that feeds it) for each projected opening. Lower = easier.",
   ai_exposure: "How exposed the day-to-day tasks are to automation by AI. Higher = more exposed. Exposure does not mean a job will disappear, nor account for demand elasticity and regulatory barriers.",
   elasticity: "As AI makes the work cheaper, does the field grow (more demand) or shrink? It matters most when AI exposure is high.",
 };
@@ -319,7 +319,7 @@ function EntityView({
 
       {/* CTA */}
       <div className="flex flex-col items-center gap-3 rounded-xl border border-border-soft bg-surface-alt p-6 text-center">
-        <p className="max-w-md text-muted">
+        <p className="max-w-2xl text-muted">
           The data is general. A call turns it into a specific plan for <span className="text-ink">your</span> teen.
         </p>
         <BookCall size="md" />
