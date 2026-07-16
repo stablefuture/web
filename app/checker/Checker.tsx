@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BookCall } from "@/app/components/BookCall";
 
 // ---- shapes (mirror jobs/pipeline/build.py output) -------------------------
 type Ind = { raw?: number | null; normalised?: number | null; note?: string;
@@ -315,14 +314,6 @@ function EntityView({
           onSelect={onSelect}
           metaIndicators={data.meta.indicators}
         />
-      </div>
-
-      {/* CTA */}
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-border-soft bg-surface-alt p-6 text-center">
-        <p className="max-w-2xl text-muted">
-          The data is general. A call turns it into a specific plan for <span className="text-ink">your</span> teen.
-        </p>
-        <BookCall size="md" />
       </div>
     </div>
   );

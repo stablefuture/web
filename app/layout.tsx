@@ -40,7 +40,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>
-          <div className="fixed right-4 top-4 z-50">
+          <div className="fixed right-6 top-6 z-50">
             <ThemeToggle />
           </div>
           {children}

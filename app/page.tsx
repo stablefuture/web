@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <main>
       {/* Logo sits inline with the fixed ThemeToggle (top-right, in layout). */}
-      <Wordmark className="fixed left-4 top-4 z-50 h-8 text-ink" />
+      <Wordmark className="fixed left-6 top-6 z-50 h-8 text-ink" />
 
       {/* Hero + checker */}
       <Section as="section">
