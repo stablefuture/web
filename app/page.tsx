@@ -15,10 +15,10 @@ export default function Home() {
           <div className="flex flex-col gap-8">
             <div className="flex flex-col items-center gap-5 text-center">
               <span className="text-xs font-bold uppercase tracking-widest text-accent-strong">
-                Parents with Y10-13 Students
+                If you're thinking about early careers...
               </span>
               <h1 className="max-w-3xl text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-ink sm:text-5xl lg:text-6xl">
-                is their path{" "}
+                is that path{" "}
                 <span className="inline-block bg-accent px-3 py-0.5 text-on-accent">
                   future-proof?
                 </span>
