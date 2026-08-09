@@ -107,6 +107,9 @@ export default function Home() {
                   </li>
                 </ul>
                 <p>And many more.</p>
+                <h2 className="text-2xl font-extrabold tracking-tight text-ink">
+                  The Intelligence Curse
+                </h2>
                 <p>
                   In{" "}
                   <Ext href="https://intelligence-curse.ai/">
@@ -196,7 +199,7 @@ export default function Home() {
               />
               <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
                 <p>
-                  Which brings us to the final trillion-dollar question: which
+                  Which brings us to our final trillion-dollar question: which
                   tasks will AI struggle with not just now, but in the future? As
                   always, the answer lies in the data.
                 </p>
@@ -261,18 +264,18 @@ export default function Home() {
                   </li>
                   <li>
                     Go where humans using AI beat AI on its own (i.e. jobs
-                    complemented by AI, augmentation vs automation).
+                    that resist substitution by AI).
                   </li>
                 </ol>
                 <p>
-                  This creates our two key measures: learnability and
-                  substitution.
+                  This creates our two key measures: AI Learnability and
+                  Substitution.
                 </p>
                 <ul className="flex flex-col gap-2 pl-5 [&>li]:list-disc">
                   <li>Surgeons are low learnability, low substitution.</li>
                   <li>
                     Accountants are high learnability, high substitution: we
-                    don&rsquo;t recommend launching your career in accountancy.
+                    won&rsquo;t need junior accountants much longer.
                   </li>
                 </ul>
               </div>
