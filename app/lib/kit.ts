@@ -1,17 +1,20 @@
 const KIT_BASE = "https://api.kit.com/v4";
 
-// Upserts the subscriber, then attaches them to the given form. When the form
-// has double opt-in enabled, the form-add step triggers Kit's confirmation
-// ("Incentive") email — so we deliberately do NOT pass state: "active", which
-// would pre-confirm them and suppress the email. Returns true on success.
-// Never throws.
+// Upserts the subscriber, then attaches them to the given form.
+// state "active" = single opt-in, no confirmation email. Call bookers are
+// covered by the PECR soft opt-in (reg 22(3)), and a "confirm your
+// subscription" email after booking a call only sheds leads. This overrides the
+// form's own double opt-in setting; the hosted newsletter form is unaffected.
+// Returns true on success. Never throws.
 export async function subscribeViaKit(
   email: string,
   formId: string | undefined,
   firstName?: string
 ): Promise<boolean> {
-  const apiKey = process.env.KIT_API_KEY;
-  if (!apiKey || !formId) {
+  // trim: a whitespace-only env value is truthy and would 404 the form-add.
+  const apiKey = process.env.KIT_API_KEY?.trim();
+  const form = formId?.trim();
+  if (!apiKey || !form) {
     console.error("Kit not configured: KIT_API_KEY / form id missing.");
     return false;
   }
@@ -28,6 +31,7 @@ export async function subscribeViaKit(
       headers,
       body: JSON.stringify({
         email_address: email,
+        state: "active",
         ...(firstName ? { first_name: firstName } : {}),
       }),
     });
@@ -42,7 +46,7 @@ export async function subscribeViaKit(
 
     // 2. Attach to the form — triggers the double opt-in confirmation email and
     //    records which source this lead came from.
-    const attached = await fetch(`${KIT_BASE}/forms/${formId}/subscribers`, {
+    const attached = await fetch(`${KIT_BASE}/forms/${form}/subscribers`, {
       method: "POST",
       headers,
       body: JSON.stringify({ email_address: email }),

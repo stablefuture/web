@@ -40,7 +40,7 @@
   --ink: #0f0520;
   --muted: #6b5c8a;
   --surface-alt: #faf5ff;
-  --border-soft: #f3e8ff;
+  --border-soft: #d8b4fe;
   /* Accent: the bright purple identity (#a855f7 = brand-500) shows through
      for highlight boxes and glow. Solid filled buttons need deeper purple
      to hit WCAG AA against white text. */
@@ -57,7 +57,7 @@
   --ink: #f5edff;
   --muted: #b2a4cf;
   --surface-alt: #100620;
-  --border-soft: #281047;
+  --border-soft: #46286f;
   --accent: #a855f7;
   --accent-strong: #9333ea; /* button fill on dark; AA on white text */
   --accent-glow: #c084fc; /* VSL halo only in dark */

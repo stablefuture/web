@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { ThemeToggle } from "./components/ThemeToggle";
+import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +16,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stable Future",
+  metadataBase: new URL("https://www.stablefuture.uk"),
+  title: "Stable Future | Is That Career Future-Proof? UK Job Data",
   description:
-    "Helping parents prepare their Y10-13 teenagers for a rapidly changing, AI-shaped job market.",
+    "Check any UK job, degree or apprenticeship against real data on pay, openings, competition and AI learnability. Built for parents of teenagers deciding what comes next.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Stable Future | Is That Career Future-Proof? UK Job Data",
+    description:
+      "Search any UK job, degree or apprenticeship. See its pay, openings, competition and AI learnability from real data, not opinion.",
+    url: "/",
+    siteName: "Stable Future",
+    locale: "en_GB",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stable Future | Is That Career Future-Proof?",
+    description:
+      "Search any UK job, degree or apprenticeship. Real data on pay, openings, competition and AI learnability.",
+  },
 };
 
 // Inline before-paint script: sets `.dark` on <html> based on stored choice
@@ -40,10 +58,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>
-          <div className="fixed right-6 top-6 z-50">
-            <ThemeToggle />
-          </div>
+          <Header />
           {children}
+          <Footer />
         </Providers>
       </body>
     </html>

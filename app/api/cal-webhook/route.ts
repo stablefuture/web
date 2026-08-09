@@ -7,7 +7,8 @@ export const runtime = "nodejs";
 // attendee to the Kit "calls" list. Consent basis: PECR soft opt-in — they're
 // booking a sales call and the booking page carries the opt-out notice.
 export async function POST(req: Request) {
-  const secret = process.env.CAL_WEBHOOK_SECRET;
+  // trim: a stray newline pasted into the env value silently breaks the HMAC.
+  const secret = process.env.CAL_WEBHOOK_SECRET?.trim();
   if (!secret) {
     console.error("Cal webhook not configured: CAL_WEBHOOK_SECRET missing.");
     return new Response("Not configured", { status: 500 });
