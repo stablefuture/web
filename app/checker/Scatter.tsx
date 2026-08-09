@@ -85,6 +85,16 @@ export function Scatter({
           role="img"
           aria-label="Every unit plotted by how much of the work AI could learn to do and how likely employers are to substitute it. The table beside this lists the same units."
         >
+          {/* higher-risk quadrant: both AI Learnability and Substitution above
+              50. Painted first so gridlines and marks sit on top of it. */}
+          <rect
+            x={px(50)} y={py(100)}
+            width={px(100) - px(50)} height={py(50) - py(100)}
+            fill="var(--accent)" fillOpacity={0.08}
+            stroke="var(--accent-strong)" strokeOpacity={0.5}
+            strokeWidth={1} strokeDasharray="4 3"
+          />
+
           {[0, 25, 50, 75, 100].map((t) => (
             <g key={t} className="text-border-soft">
               <line x1={px(t)} y1={py(0)} x2={px(t)} y2={py(100)} stroke="currentColor" strokeWidth={1} />

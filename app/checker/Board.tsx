@@ -48,7 +48,7 @@ const fmtPct = (v: number) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v)}
 export function Board() {
   const [data, setData] = useState<V3 | null>(null);
 
-  const [path, setPath] = useState<Path | null>(null);
+  const [path, setPath] = useState<Path | null>("jobs");
   const [sector, setSector] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export function Board() {
         // (e.g. a renamed path id) would make data.sectors[path] undefined and
         // crash the render, with reload looping on the same bad state.
         /* eslint-disable-next-line react-hooks/set-state-in-effect */
-        setPath(PATHS.some((p) => p.id === s.path) ? s.path : null);
+        setPath(PATHS.some((p) => p.id === s.path) ? s.path : "jobs");
         setSector(s.sector ?? null);
         setName(s.name ?? "");
         setSelectedId(s.selectedId ?? null);
@@ -232,14 +232,13 @@ export function Board() {
         <select
           value={path ?? ""}
           onChange={(e) => {
-            setPath((e.target.value || null) as Path | null);
+            setPath(e.target.value as Path);
             setSector(null);
             setSelectedId(null);
           }}
           aria-label="Path"
           className="mx-auto w-full max-w-xs rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-center font-semibold text-ink outline-none transition focus:border-accent-strong"
         >
-          <option value="">paths after education</option>
           {PATHS.map((p) => (
             <option key={p.id} value={p.id}>{p.label}</option>
           ))}
