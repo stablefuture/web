@@ -148,7 +148,7 @@ export default function Home() {
                     Stage 1 is already underway
                   </Ext>
                   , but the later stages are not an inevitability. They would
-                  unfold over the next two decades. To put it mildly, we&rsquo;d
+                  unfold over the coming decades. To put it mildly, we&rsquo;d
                   quite like to prevent this from happening.
                 </p>
               </div>

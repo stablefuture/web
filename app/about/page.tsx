@@ -52,7 +52,7 @@ export default function About() {
                   analyse it, and make it available to everyone. 
                   That is what the{" "}
                   <a
-                    href="/"
+                    href="/checker"
                     className="underline underline-offset-4 hover:text-ink"
                   >
                     career checker
@@ -104,7 +104,7 @@ export default function About() {
 
             <section className="border-t border-border-soft pt-8">
               <a
-                href="/"
+                href="/checker"
                 className="text-sm text-muted underline underline-offset-4 hover:text-ink"
               >
                 ← Back to the checker

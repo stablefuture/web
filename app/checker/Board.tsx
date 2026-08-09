@@ -554,7 +554,7 @@ function RelatedRoles({ roles, onJump }: { roles: Unit[]; onJump: (id: string) =
         Roles this leads to
       </p>
       <p className="mb-1 text-xs text-muted">
-        {roles.length} job{roles.length === 1 ? "" : "s"} at O*NET level, least at risk
+        {roles.length} job{roles.length === 1 ? "" : "s"}, least at risk
         first. These are what the figures above are averaged from.
       </p>
       {shown.map((r) => (
