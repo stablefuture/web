@@ -43,127 +43,136 @@ export default function Home() {
       <Section as="section">
         <Container narrow>
           <div className="flex flex-col gap-12">
-            <section className="flex flex-col gap-4">
-              <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-                Work in the AI Era
-              </h1>
-              <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
-                <p>
-                  Tech companies are in a trillion-dollar arms race to build
-                  artificial general intelligence (AGI): an autonomous system
-                  capable of automating almost all work. Whoever gets there will
-                  gain trillions more.
-                </p>
-                <p>
-                  There are strong reasons to believe this is achievable. There
-                  has been rapid and exponential progress in AI&rsquo;s ability
-                  to:
-                </p>
-                <ul className="flex flex-col gap-2 pl-5 [&>li]:list-disc">
-                  <li>
-                    Complete work across{" "}
-                    <Ext href="https://artificialanalysis.ai/?intelligence=agentic-index&media-leaderboards=text-to-image&capability-index=agentic#capability-indices">
-                      various sectors
-                    </Ext>
-                    .
-                  </li>
-                  <li>
-                    Automate complex{" "}
-                    <Ext href="https://metr.org/time-horizons/">
-                      software engineering tasks
-                    </Ext>
-                    .
-                  </li>
-                  <li>
-                    Solve{" "}
-                    <Ext href="https://x.com/QiaochuYuan/status/2079087083663278170">
-                      frontier maths problems
-                    </Ext>
-                    .
-                  </li>
-                  <li>
-                    Automate{" "}
-                    <Ext href="https://dashboard.safe.ai/#automation">
-                      remote labour
-                    </Ext>
-                    , with significant progress occurring in <em>months</em>, not
-                    years.
-                  </li>
-                  <li>
-                    Use{" "}
-                    <Ext href="https://osworld-v2.xlang.ai/">computers</Ext> for
-                    real-world tasks.
-                  </li>
-                  <li>
-                    Beat humans at{" "}
-                    <Ext href="https://www.metaculus.com/">
-                      forecasting global events
-                    </Ext>
-                    .
-                  </li>
-                  <li>
-                    <Ext href="https://arxiv.org/abs/2606.16475">Out-persuade</Ext>{" "}
-                    expert humans.
-                  </li>
-                </ul>
-                <p>And many more.</p>
+            <section className="flex flex-col gap-12">
+              <div className="flex flex-col gap-4">
+                <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+                  Work in the AI Era
+                </h1>
+                <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
+                  <p>
+                    Tech companies are in a trillion-dollar arms race to build
+                    artificial general intelligence (AGI): an autonomous system
+                    capable of automating almost all work. Whoever gets there will
+                    gain trillions more.
+                  </p>
+                  <p>
+                    There are strong reasons to believe this is achievable. There
+                    has been rapid and exponential progress in AI&rsquo;s ability
+                    to:
+                  </p>
+                  <ul className="flex flex-col gap-2 pl-5 [&>li]:list-disc">
+                    <li>
+                      Complete work across{" "}
+                      <Ext href="https://artificialanalysis.ai/?intelligence=agentic-index&media-leaderboards=text-to-image&capability-index=agentic#capability-indices">
+                        various sectors
+                      </Ext>
+                      .
+                    </li>
+                    <li>
+                      Automate complex{" "}
+                      <Ext href="https://metr.org/time-horizons/">
+                        software engineering tasks
+                      </Ext>
+                      .
+                    </li>
+                    <li>
+                      Solve{" "}
+                      <Ext href="https://x.com/QiaochuYuan/status/2079087083663278170">
+                        frontier maths problems
+                      </Ext>
+                      .
+                    </li>
+                    <li>
+                      Automate{" "}
+                      <Ext href="https://dashboard.safe.ai/#automation">
+                        remote labour
+                      </Ext>
+                      , with significant progress occurring in <em>months</em>,
+                      not years.
+                    </li>
+                    <li>
+                      Use{" "}
+                      <Ext href="https://osworld-v2.xlang.ai/">computers</Ext> for
+                      real-world tasks.
+                    </li>
+                    <li>
+                      Beat humans at{" "}
+                      <Ext href="https://www.metaculus.com/">
+                        forecasting global events
+                      </Ext>
+                      .
+                    </li>
+                    <li>
+                      <Ext href="https://arxiv.org/abs/2606.16475">
+                        Out-persuade
+                      </Ext>{" "}
+                      expert humans.
+                    </li>
+                  </ul>
+                  <p>And many more.</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
                 <h2 className="text-2xl font-extrabold tracking-tight text-ink">
                   The Intelligence Curse
                 </h2>
-                <p>
-                  In{" "}
-                  <Ext href="https://intelligence-curse.ai/">
-                    The Intelligence Curse
-                  </Ext>
-                  , Luke Drago and Rudolf Laine depict how this automation could
-                  play out:
-                </p>
-                <ol className="flex flex-col gap-2 pl-6 [&>li]:list-decimal">
-                  <li>
-                    Powerful AI will push automation through existing
-                    organisations, starting with entry-level hiring freezes and
-                    moving upwards.
-                  </li>
-                  <li>
-                    AI will outcompete even elite talent, ending social mobility
-                    and the progress it drives.
-                  </li>
-                  <li>
-                    Non-human factors of production (like capital, resources, and
-                    control over AI) will become overwhelmingly more important
-                    than humans.
-                  </li>
-                  <li>
-                    This disincentivises powerful actors around the world (like
-                    governments or leaders of organisations) to care about humans
-                    as they are no longer required for productivity.
-                  </li>
-                  <li>
-                    This could result in the disempowerment of the vast majority
-                    of humanity.
-                  </li>
-                </ol>
-                <p>
-                  <Ext href="https://www.reveliolabs.com/ai-labor-market-tracker">
-                    Stage 1 is already underway
-                  </Ext>
-                  , but the later stages are not an inevitability. They would
-                  unfold over the coming decades. To put it mildly, we&rsquo;d
-                  quite like to prevent this from happening.
-                </p>
-              </div>
-              <Figure
-                src="/about-intelligence-curse.png"
-                alt="The five stages of the intelligence curse, from automation to human disempowerment."
-                source={
-                  <>
-                    Source: Luke Drago &amp; Rudolf Laine,{" "}
+                <Figure
+                  src="/about-intelligence-curse.png"
+                  alt="The five stages of the intelligence curse, from automation to human disempowerment."
+                  source={
+                    <>
+                      Source: Luke Drago &amp; Rudolf Laine,{" "}
+                      <Ext href="https://intelligence-curse.ai/">
+                        The Intelligence Curse
+                      </Ext>
+                    </>
+                  }
+                />
+                <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
+                  <p>
+                    In{" "}
                     <Ext href="https://intelligence-curse.ai/">
                       The Intelligence Curse
                     </Ext>
-                  </>
-                }
-              />
+                    , Luke Drago and Rudolf Laine depict how this automation could
+                    play out:
+                  </p>
+                  <ol className="flex flex-col gap-2 pl-6 [&>li]:list-decimal">
+                    <li>
+                      Powerful AI will push automation through existing
+                      organisations, starting with entry-level hiring freezes and
+                      moving upwards.
+                    </li>
+                    <li>
+                      AI will outcompete even elite talent, ending social mobility
+                      and the progress it drives.
+                    </li>
+                    <li>
+                      Non-human factors of production (like capital, resources, and
+                      control over AI) will become overwhelmingly more important
+                      than humans.
+                    </li>
+                    <li>
+                      This disincentivises powerful actors around the world (like
+                      governments or leaders of organisations) to care about humans
+                      as they are no longer required for productivity.
+                    </li>
+                    <li>
+                      This could result in the disempowerment of the vast majority
+                      of humanity.
+                    </li>
+                  </ol>
+                  <p>
+                    <Ext href="https://www.reveliolabs.com/ai-labor-market-tracker">
+                      Stage 1 is already underway
+                    </Ext>
+                    , but the later stages are not an inevitability. They would
+                    unfold over the coming decades. To put it mildly, we&rsquo;d
+                    quite like to prevent this from happening.
+                  </p>
+                </div>
+              </div>
             </section>
 
             <section className="flex flex-col gap-4">
