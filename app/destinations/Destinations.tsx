@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { band, Dot } from "@/app/lib/bands";
 import { type Sort, SortButton, sortRows } from "@/app/lib/sort";
@@ -22,7 +22,7 @@ type Subject = {
   id: string;
   label: string;
   cah1_label: string | null;
-  headline: { label: string; comp: number; entrants: number; openings: number; trains: Role[] } | null;
+  headline: { comp: number; entrants: number; openings: number; trains: Role[] } | null;
   pay: Record<string, Record<string, number | null>>;
   occupations: number[] | null;
 };
@@ -108,6 +108,9 @@ export function Destinations() {
   const slice = industries[subject.id]?.[q]?.[y] ?? null;
   const h = subject.headline;
   const who = subject.id === "all" ? "graduates" : `${midSentence(subject.label)} graduates`;
+  // "an allied health degree", "a law degree". Every vowel-initial subject label
+  // takes "an"; none of them start with a sounded consonant like "European".
+  const aDegree = `${/^[aeiou]/i.test(subject.label) ? "an" : "a"} ${midSentence(subject.label)} degree`;
 
   // The jobs the subject trains for go first inside each SOC group; both halves
   // stay most-openings-first, which is how the builder sorted them.
@@ -143,32 +146,28 @@ export function Destinations() {
           <div className="flex max-w-2xl flex-col gap-1 lg:items-start">
             <p className="text-xl leading-snug text-ink sm:text-2xl">
               <strong className="text-4xl font-extrabold tracking-tight text-accent-strong sm:text-5xl">
-                {h.comp >= 2 ? `1 in ${Math.round(h.comp)}` : `${h.comp.toFixed(1)}×`}
+                {h.comp.toFixed(1)}
               </strong>{" "}
-              {h.comp >= 2
-                ? "get the jobs this degree typically trains for."
-                : "graduates for every opening in the jobs this degree typically trains for."}
+              graduates per job opening each year, for jobs that {aDegree} typically
+              leads to.
             </p>
             <p className="text-sm text-muted">
-              {h.label} trains about {near(h.entrants)} graduates a year for around{" "}
-              {near(h.openings)} openings.
+              {near(h.entrants)} graduates per year, divided by {near(h.openings)} job
+              openings per year.
             </p>
           </div>
         )}
       </div>
 
-      {/* Four panels. Laptop: pay and industries down the left (both follow the
-          chosen qualification and year), jobs and risk down the right. Phone:
-          jobs first, then pay, industries, kinds of job. Panels keep their own
-          height, so opening a row in one never stretches its neighbour. */}
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-x-10 lg:gap-y-8">
-        {h && h.trains.length > 0 && (
-          <Panel title="Jobs this degree trains for" className="order-1 lg:order-none lg:col-start-2 lg:row-start-1">
-            <RoleList roles={h.trains} limit={TOP} />
-          </Panel>
-        )}
-
-        <Panel title="Compare outcomes" className="order-2 lg:order-none lg:col-start-1 lg:row-start-1">
+      {/* Four panels. Laptop: two independent columns, pay and industries
+          down the left (both follow the chosen qualification and year), jobs
+          and risk down the right, so a list growing in one column never moves
+          the other. Phone: the column wrappers vanish (display: contents) and
+          the order classes stack jobs first, then pay, industries, kinds of
+          job. */}
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-x-10">
+        <div className="contents lg:flex lg:flex-col lg:gap-8">
+        <Panel title="Compare outcomes" className="order-2 lg:order-none">
           <div className="mb-3 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
             {YEARS.map((yy) => (
               <button
@@ -210,19 +209,24 @@ export function Destinations() {
 
         {/* Always rendered, so the grid never reflows while a subject's
             industries load. */}
-        <Panel title={`Industries ${who} work in`} className="order-3 lg:order-none lg:col-start-1 lg:row-start-2">
+        <Panel title={`Industries ${who} work in`} className="order-3 lg:order-none">
           {slice ? <IndustryList slice={slice} /> : <p className="text-sm text-muted">Loading…</p>}
         </Panel>
+        </div>
+
+        <div className="contents lg:flex lg:flex-col lg:gap-8">
+        {h && h.trains.length > 0 && (
+          <Panel title="Jobs these degrees train for" className="order-1 lg:order-none">
+            <RoleList roles={h.trains} limit={TOP} />
+          </Panel>
+        )}
 
         {occ && (
-          <Panel
-            title={`Jobs ${who} do, and their AI risk`}
-            // With no trains-for panel (all subjects), this one fills the column.
-            className={`order-4 lg:order-none lg:col-start-2 ${h && h.trains.length > 0 ? "lg:row-start-2" : "lg:row-span-2 lg:row-start-1"}`}
-          >
+          <Panel title={`Jobs ${who} do, and their AI risk`} className="order-4 lg:order-none">
             <GroupList rows={rows} order={order} trainIds={trainIds} />
           </Panel>
         )}
+        </div>
       </div>
 
       <details className="text-sm leading-relaxed text-muted">
@@ -252,11 +256,12 @@ export function Destinations() {
             <strong className="text-ink">AI risk</strong>: the{" "}
             <a href="/checker" className="underline underline-offset-4 hover:text-ink">career checker</a>
             &rsquo;s score for each SOC 2020 job, weighted by openings within each
-            group. <strong className="text-ink">Jobs a degree trains for</strong>: our
+            group. <strong className="text-ink">Jobs these degrees train for</strong>: our
             own mapping of each subject to the jobs it prepares people for, not a
-            record of where graduates went. <strong className="text-ink">Competition</strong>:
-            graduates entering the subject&rsquo;s main route each year, divided by
-            projected openings in those jobs. See the{" "}
+            record of where graduates went. Every subject in the group counts, so the
+            list is wider than any one degree. <strong className="text-ink">Competition</strong>:
+            everyone qualifying into those jobs each year — from any subject or
+            apprenticeship that feeds them — divided by their projected openings. See the{" "}
             <a href="/methodology" className="underline underline-offset-4 hover:text-ink">methodology</a>.
           </p>
         </div>
@@ -285,11 +290,22 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
-function ShowAll({ all, total, top, onToggle }: { all: boolean; total: number; top: number; onToggle: () => void }) {
+// Folding a long list scrolls its top back into view, so the reader is not
+// left at the bottom of a page that just got shorter.
+function ShowAll({
+  all, total, top, box, onToggle,
+}: {
+  all: boolean; total: number; top: number; box: React.RefObject<HTMLDivElement | null>; onToggle: () => void;
+}) {
   if (total <= top) return null;
+  const toggle = () => {
+    onToggle();
+    // After the fold has laid out, so the scroll lands on the shorter page.
+    if (all) requestAnimationFrame(() => box.current?.scrollIntoView({ block: "start", behavior: "smooth" }));
+  };
   return (
-    <button onClick={onToggle} className="mt-2 self-start text-xs text-accent-strong hover:underline">
-      {all ? `Show top ${top}` : `Show all ${total}`}
+    <button onClick={toggle} className="mt-2 self-start text-xs text-accent-strong hover:underline">
+      {all ? "Show less" : `Show all ${total}`}
     </button>
   );
 }
@@ -312,9 +328,10 @@ function Share({ share }: { share: number }) {
 function IndustryList({ slice }: { slice: Slice }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
+  const box = useRef<HTMLDivElement>(null);
   const shown = all ? slice.sections : slice.sections.slice(0, TOP);
   return (
-    <div className="flex flex-col">
+    <div ref={box} className="flex scroll-mt-24 flex-col">
       <ul>
         {shown.map((s) => {
           const inside = slice.groups[s.sec] ?? [];
@@ -364,7 +381,7 @@ function IndustryList({ slice }: { slice: Slice }) {
           );
         })}
       </ul>
-      <ShowAll all={all} total={slice.sections.length} top={TOP} onToggle={() => setAll(!all)} />
+      <ShowAll all={all} total={slice.sections.length} top={TOP} box={box} onToggle={() => setAll(!all)} />
     </div>
   );
 }
@@ -379,10 +396,11 @@ function GroupList({
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort<"risk">>(null);
+  const box = useRef<HTMLDivElement>(null);
   const sorted = sortRows(rows, sort, (r) => r.g.risk);
   const shown = all ? sorted : sorted.slice(0, TOP);
   return (
-    <div className="flex flex-col">
+    <div ref={box} className="flex scroll-mt-24 flex-col">
       <div className="flex justify-end border-b border-border-soft/60 pb-1">
         <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
       </div>
@@ -427,7 +445,7 @@ function GroupList({
           );
         })}
       </ul>
-      <ShowAll all={all} total={rows.length} top={TOP} onToggle={() => setAll(!all)} />
+      <ShowAll all={all} total={rows.length} top={TOP} box={box} onToggle={() => setAll(!all)} />
     </div>
   );
 }
@@ -450,10 +468,11 @@ function RoleList({ roles, mapped, limit }: { roles: Role[]; mapped?: Set<string
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort<"risk">>(null);
+  const box = useRef<HTMLDivElement>(null);
   const rows = sortRows(roles, sort, (r) => r.risk);
   const shown = all ? rows : rows.slice(0, limit);
   return (
-    <div className="flex flex-col">
+    <div ref={box} className="flex scroll-mt-24 flex-col">
       <div className={`${ROLE_ROW} border-b border-border-soft/40 pb-1`}>
         <span />
         <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
@@ -502,7 +521,7 @@ function RoleList({ roles, mapped, limit }: { roles: Role[]; mapped?: Set<string
           );
         })}
       </ul>
-      <ShowAll all={all} total={roles.length} top={limit} onToggle={() => setAll(!all)} />
+      <ShowAll all={all} total={roles.length} top={limit} box={box} onToggle={() => setAll(!all)} />
     </div>
   );
 }
