@@ -61,6 +61,7 @@ const midSentence = (s: string) =>
 
 export function Destinations() {
   const [data, setData] = useState<Data | null>(null);
+  const [failed, setFailed] = useState(false);
   const [subjectId, setSubjectId] = useState(DEFAULT);
   const [qual, setQual] = useState("First degree");
   const [yag, setYag] = useState("5");
@@ -68,7 +69,18 @@ export function Destinations() {
   const [industries, setIndustries] = useState<Record<string, Industries>>({});
 
   useEffect(() => {
-    fetch("/destinations/index.json").then((r) => r.json()).then(setData).catch(() => setData(null));
+    // A failed load must say so: setting data to null looks exactly like a
+    // load still in flight, and the page sat on "Loading…" for ever.
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 15000);
+    fetch("/destinations/index.json", { signal: ctl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`index.json ${r.status}`);
+        return r.json();
+      })
+      .then(setData)
+      .catch(() => setFailed(true))
+      .finally(() => clearTimeout(timer));
     const s = new URLSearchParams(window.location.search).get("subject");
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     if (s) setSubjectId(s);
@@ -92,7 +104,19 @@ export function Destinations() {
     window.history.replaceState(null, "", `?subject=${encodeURIComponent(id)}`);
   };
 
-  if (!data) return <p className="py-16 text-center text-muted">Loading…</p>;
+  if (!data)
+    return failed ? (
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <p className="text-ink">The graduate data did not load.</p>
+        <p className="text-sm text-muted">
+          Check your connection and reload the page. If it keeps failing, a
+          content blocker or a private-browsing setting may be stopping the
+          download.
+        </p>
+      </div>
+    ) : (
+      <p className="py-16 text-center text-muted">Loading…</p>
+    );
 
   const subject =
     data.subjects.find((s) => s.id === subjectId) ??

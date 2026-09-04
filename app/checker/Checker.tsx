@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { LABELS, TOOLTIPS } from "./copy";
 import { JobMap } from "./Map";
@@ -98,6 +98,7 @@ function filter(units: Unit[], q: string): Row[] {
 
 export function Checker() {
   const [data, setData] = useState<V3 | null>(null);
+  const [failed, setFailed] = useState(false);
   const [tab, setTab] = useState<Path>("jobs");
   const [sector, setSector] = useState("");
   const [q, setQ] = useState("");
@@ -108,20 +109,37 @@ export function Checker() {
   // The row under the pointer, marked on the map.
   const [hoverId, setHoverId] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Everything on this page comes from one file, so a load that fails has to
+  // say so. It used to fall back to null, which is what an unfinished load
+  // looks like, and the page sat on "Loading…" for ever with nothing to act on.
+  const load = useCallback(() => {
     // The chosen unit lives in the URL so a parent can send the link on.
     const id = new URLSearchParams(window.location.search).get("id");
-    fetch("/v3.json")
-      .then((r) => r.json())
+    // A request that never settles is the same silent hang by another route.
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 15000);
+    fetch("/v3.json", { signal: ctl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`v3.json ${r.status}`);
+        return r.json();
+      })
       .then((d: V3) => {
         setData(d);
         setSelectedId(id);
         const u = id ? d.units.find((x) => x.id === id) : null;
         const nav: Nav = { id: u ? u.id : null, tab: u ? u.path : "jobs", sector: "", q: "" };
         setTab(nav.tab);
-        window.history.replaceState(nav, "");
+        // History is a convenience, never a reason to lose a loaded board.
+        try {
+          window.history.replaceState(nav, "");
+        } catch {}
       })
-      .catch(() => setData(null));
+      .catch(() => setFailed(true))
+      .finally(() => clearTimeout(timer));
+  }, []);
+
+  useEffect(() => {
+    load();
     // Back restores the pick and the finder as they were.
     const onPop = (e: PopStateEvent) => {
       const n = e.state as Nav | null;
@@ -134,7 +152,7 @@ export function Checker() {
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, []);
+  }, [load]);
 
   const jobs = useMemo(() => data?.units.filter((u) => u.path === "jobs") ?? [], [data]);
   const byId = useMemo(
@@ -194,7 +212,25 @@ export function Checker() {
   }, [selected, leads, sector, pool, jobs]);
   const rows = useMemo(() => filter(pool, q), [pool, q]);
 
-  if (!data) return <p className="py-16 text-center text-muted">Loading…</p>;
+  if (!data) {
+    if (!failed) return <p className="py-16 text-center text-muted">Loading…</p>;
+    return (
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <p className="text-ink">The career data did not load.</p>
+        <p className="text-sm text-muted">
+          Check your connection and try again. If it keeps failing, a content
+          blocker or a private-browsing setting may be stopping the download.
+        </p>
+        <button
+          type="button"
+          onClick={() => { setFailed(false); load(); }}
+          className="rounded-lg border border-border-soft px-4 py-2 text-sm font-semibold text-accent-strong transition hover:bg-surface-alt"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   const options = data.sectors[tab].map((s) => ({ id: s.id, label: SECTOR_LABEL[s.id] ?? s.label }));
   // Job sectors keep ONS code order (managers down to elementary), which
