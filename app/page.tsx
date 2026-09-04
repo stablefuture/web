@@ -2,7 +2,7 @@ import { Container } from "@/app/components/Container";
 import { Section } from "@/app/components/Section";
 
 export const metadata = {
-  title: "Stable Future | Work in the AI Era",
+  title: "Stable Future | Career Advice for the AI Era",
   description:
     "Why AI will reshape work, which jobs resist it, and how to stay economically empowered. The thinking behind Stable Future's career checker.",
   alternates: { canonical: "/" },
