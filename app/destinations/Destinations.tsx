@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { band, Dot } from "@/app/lib/bands";
+import { loadError } from "@/app/lib/loadError";
 import { type Sort, SortButton, sortRows } from "@/app/lib/sort";
 
 type Section = { sec: string; share: number; count: number; earn: number | null; other?: boolean };
@@ -61,7 +62,7 @@ const midSentence = (s: string) =>
 
 export function Destinations() {
   const [data, setData] = useState<Data | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
   const [subjectId, setSubjectId] = useState(DEFAULT);
   const [qual, setQual] = useState("First degree");
   const [yag, setYag] = useState("5");
@@ -79,7 +80,7 @@ export function Destinations() {
         return r.json();
       })
       .then(setData)
-      .catch(() => setFailed(true))
+      .catch((e) => setFailed(loadError(e)))
       .finally(() => clearTimeout(timer));
     const s = new URLSearchParams(window.location.search).get("subject");
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
@@ -107,7 +108,7 @@ export function Destinations() {
   if (!data)
     return failed ? (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-ink">The graduate data did not load.</p>
+        <p className="text-ink">The graduate data did not load. {failed}</p>
         <p className="text-sm text-muted">
           Check your connection and reload the page. If it keeps failing, a
           content blocker or a private-browsing setting may be stopping the

@@ -6,6 +6,7 @@ import { LABELS, TOOLTIPS } from "./copy";
 import { JobMap } from "./Map";
 import { SECTOR_LABEL } from "./sectors";
 import { band, Dot, type Tone } from "@/app/lib/bands";
+import { loadError } from "@/app/lib/loadError";
 import { type Sort, SortButton, sortRows } from "@/app/lib/sort";
 
 export type Path = "jobs" | "degrees" | "apprenticeships";
@@ -98,7 +99,7 @@ function filter(units: Unit[], q: string): Row[] {
 
 export function Checker() {
   const [data, setData] = useState<V3 | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
   const [tab, setTab] = useState<Path>("jobs");
   const [sector, setSector] = useState("");
   const [q, setQ] = useState("");
@@ -134,7 +135,7 @@ export function Checker() {
           window.history.replaceState(nav, "");
         } catch {}
       })
-      .catch(() => setFailed(true))
+      .catch((e) => setFailed(loadError(e)))
       .finally(() => clearTimeout(timer));
   }, []);
 
@@ -216,14 +217,14 @@ export function Checker() {
     if (!failed) return <p className="py-16 text-center text-muted">Loading…</p>;
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-ink">The career data did not load.</p>
+        <p className="text-ink">The career data did not load. {failed}</p>
         <p className="text-sm text-muted">
           Check your connection and try again. If it keeps failing, a content
           blocker or a private-browsing setting may be stopping the download.
         </p>
         <button
           type="button"
-          onClick={() => { setFailed(false); load(); }}
+          onClick={() => { setFailed(null); load(); }}
           className="rounded-lg border border-border-soft px-4 py-2 text-sm font-semibold text-accent-strong transition hover:bg-surface-alt"
         >
           Try again
@@ -486,7 +487,7 @@ function TrendFact({ t }: { t: Trend }) {
 function TrendCell({ g }: { g: number | null | undefined }) {
   const t = trendOf(g);
   return (
-    <span className="flex items-center justify-end text-muted">
+    <span className="flex items-center justify-start text-muted">
       {t === "none" ? <span className="text-xs">—</span> : <TrendIcon t={t} className="h-4 w-4" />}
       <span className="sr-only">{TREND_WORD[t]}</span>
     </span>
@@ -508,7 +509,7 @@ function Cols({
 }) {
   return (
     <div className={`flex justify-end ${wide ? "gap-8" : "gap-3"} ${className}`}>
-      <SortButton k="growth" label="Growth" sort={sort} onSort={onSort} align="right" className="min-w-[3.5rem]" />
+      <SortButton k="growth" label="Growth" sort={sort} onSort={onSort} className="min-w-[3.5rem]" />
       <SortButton k="risk" label="AI risk" sort={sort} onSort={onSort} className="w-[3.25rem]" />
     </div>
   );
