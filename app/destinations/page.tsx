@@ -15,7 +15,7 @@ export default function DestinationsPage() {
         <Container>
           <div className="flex flex-col gap-6">
             <h1 className="text-center text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-              Where graduates actually end up
+              Where <span className="text-accent-strong">graduates</span> actually end up
             </h1>
             <Destinations />
           </div>

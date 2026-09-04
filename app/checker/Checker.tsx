@@ -462,7 +462,7 @@ function Table({
   const sorted = sortRows(rows, sort, (r, k) => r.unit[k]);
   const what = GROUP[path].toLowerCase();
   return (
-    <div className="flex flex-col gap-1">
+    <div className="mt-2 flex flex-col gap-1">
       <div className="flex items-end justify-between gap-3 px-4">
         <span className="text-xs text-muted">
           {rows.length === total ? `${count(total)} ${what}` : `${count(rows.length)} of ${count(total)} ${what}`}

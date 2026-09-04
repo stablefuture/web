@@ -46,7 +46,7 @@ const GLOSS: Record<string, string> = {
   "9": "Entry-level manual work: warehouse, cleaning, hospitality",
 };
 
-const DEFAULT = "psychology";
+const DEFAULT = "all";
 // One, five and ten years on. Three years is in the data but adds little.
 const YEARS = ["1", "5", "10"];
 // How much shows before "Show all": enough for a snapshot, not a wall.
@@ -124,9 +124,10 @@ export function Destinations() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* The picker, then the one number that matters, both centred. */}
-      <div className="flex flex-col items-center gap-6 text-center">
-        <label className="flex w-full max-w-sm flex-col gap-2 text-sm text-muted">
+      {/* One panel: the picker beside the one number that matters. All
+          subjects has no headline, so the picker can stand alone. */}
+      <div className="flex flex-col items-center justify-center gap-6 rounded-2xl border border-border-soft p-5 text-center sm:p-6 lg:flex-row lg:gap-12 lg:text-left">
+        <label className="flex w-full max-w-sm flex-col gap-2 text-sm text-muted lg:w-80 lg:shrink-0">
           Degree subject
           <select
             value={subject.id}
@@ -139,7 +140,7 @@ export function Destinations() {
           </select>
         </label>
         {h && (
-          <div className="flex max-w-2xl flex-col gap-1">
+          <div className="flex max-w-2xl flex-col gap-1 lg:items-start">
             <p className="text-xl leading-snug text-ink sm:text-2xl">
               <strong className="text-4xl font-extrabold tracking-tight text-accent-strong sm:text-5xl">
                 {h.comp >= 2 ? `1 in ${Math.round(h.comp)}` : `${h.comp.toFixed(1)}×`}
@@ -213,7 +214,11 @@ export function Destinations() {
         </Panel>
 
         {occ && (
-          <Panel title={`Jobs ${who} do, and their AI risk`} className="order-4 lg:order-none lg:col-start-2 lg:row-start-2">
+          <Panel
+            title={`Jobs ${who} do, and their AI risk`}
+            // With no trains-for panel (all subjects), this one fills the column.
+            className={`order-4 lg:order-none lg:col-start-2 ${h && h.trains.length > 0 ? "lg:row-start-2" : "lg:row-span-2 lg:row-start-1"}`}
+          >
             <GroupList rows={rows} order={order} trainIds={trainIds} />
           </Panel>
         )}
@@ -307,9 +312,6 @@ function IndustryList({ slice }: { slice: Slice }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const shown = all ? slice.sections : slice.sections.slice(0, TOP);
-  // The Other bucket sits last but can be the largest share of all
-  // (engineering: 53 divisions, 23.9%), so scale on the true max.
-  const max = Math.max(...slice.sections.map((x) => x.share));
   return (
     <div className="flex flex-col">
       <ul>
@@ -339,7 +341,7 @@ function IndustryList({ slice }: { slice: Slice }) {
                       // takes the accent even when it is the longest bar.
                       s.other ? "bg-muted/25" : "bg-accent/40"
                     }`}
-                    style={{ width: `${(s.share / max) * 100}%` }}
+                    style={{ width: `${s.share}%` }}
                   />
                 </span>
                 <span className="ml-[18px] text-xs text-muted">{count(s.count)} graduates</span>
@@ -378,7 +380,6 @@ function GroupList({
   const [sort, setSort] = useState<Sort<"risk">>(null);
   const sorted = sortRows(rows, sort, (r) => r.g.risk);
   const shown = all ? sorted : sorted.slice(0, TOP);
-  const max = rows[0]?.share ?? 1;
   return (
     <div className="flex flex-col">
       <div className="flex justify-end border-b border-border-soft/60 pb-1">
@@ -407,7 +408,7 @@ function GroupList({
                 <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
                   <span
                     className="block h-full rounded-r-[3px] bg-accent/40"
-                    style={{ width: `${(share / max) * 100}%` }}
+                    style={{ width: `${share}%` }}
                   />
                 </span>
                 <span className="ml-[18px] text-xs text-muted">{GLOSS[g.id]}</span>
