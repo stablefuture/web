@@ -19,12 +19,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.stablefuture.uk"),
   title: "Stable Future | Is That Career Future-Proof? UK Job Data",
   description:
-    "Check any UK job, degree or apprenticeship against real data on pay, sector growth and AI learnability. Built for parents of teenagers deciding what comes next.",
+    "Check any UK job, degree or apprenticeship against real data on AI risk and pay. Built for parents of teenagers deciding what comes next.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Stable Future | Is That Career Future-Proof? UK Job Data",
     description:
-      "Search any UK job, degree or apprenticeship. See its pay, sector growth and AI learnability from real data, not opinion.",
+      "Search any UK job, degree or apprenticeship. See its AI risk and pay from real data, not opinion.",
     url: "/",
     siteName: "Stable Future",
     locale: "en_GB",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Stable Future | Is That Career Future-Proof?",
     description:
-      "Search any UK job, degree or apprenticeship. Real data on pay, sector growth and AI learnability.",
+      "Search any UK job, degree or apprenticeship. Real data on AI risk and pay.",
   },
 };
 

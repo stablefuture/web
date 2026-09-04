@@ -142,13 +142,13 @@ export function Destinations() {
           them - each answer under the control that changes it. Right: the kinds
           of job they do and the AI risk of each, all nine groups at once. */}
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-x-10">
-        <div className="flex flex-col gap-6">
-          <label className="flex flex-col gap-2 text-sm text-muted">
+        <div className="flex min-w-0 flex-col gap-6">
+          <label className="flex min-w-0 flex-col gap-2 text-sm text-muted">
             Degree subject
             <select
               value={subject.id}
               onChange={(e) => choose(e.target.value)}
-              className="rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-base font-semibold text-ink outline-none transition focus:border-accent-strong"
+              className="w-full min-w-0 rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-base font-semibold text-ink outline-none transition focus:border-accent-strong"
             >
               {data.subjects.map((s) => (
                 <option key={s.id} value={s.id}>{s.label}</option>

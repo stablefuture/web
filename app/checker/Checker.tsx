@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { LABELS, TOOLTIPS } from "./copy";
 import { JobMap } from "./Map";
@@ -25,7 +25,6 @@ export type Unit = {
   risk: number | null;
   salary: number | null;
   openings: number | null;
-  growth?: number | null;
 };
 
 type Sector = { id: string; label: string };
@@ -50,20 +49,6 @@ const money = (v: number) => `£${(Math.round(v / 100) * 100).toLocaleString("en
 const count = (v: number) => v.toLocaleString("en-GB");
 const typeOf = (u: Unit) => `${TYPE[u.path]}${u.level ? ` · Level ${u.level}` : ""}`;
 const byOpenings = (a: Unit, b: Unit) => (b.openings ?? -1) - (a.openings ?? -1);
-
-// Projected change in the sector's jobs, 2024 to 2030. Two per cent either way
-// over six years is flat: the projection is a trend carried forward, not a
-// forecast, so a number that small is not a direction.
-const FLAT = 2;
-type Trend = "up" | "flat" | "down" | "none";
-const trendOf = (g: number | null | undefined): Trend =>
-  g == null ? "none" : g > FLAT ? "up" : g < -FLAT ? "down" : "flat";
-const TREND_WORD: Record<Trend, string> = {
-  up: "Growing",
-  flat: "Flat",
-  down: "Shrinking",
-  none: "No figure",
-};
 
 const words = (s: string) =>
   s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map((w) => w.replace(/s$/, ""));
@@ -166,9 +151,18 @@ export function Checker() {
     const nav: Nav = { id, tab, sector, q };
     window.history.pushState(nav, "", id ? `?id=${encodeURIComponent(id)}` : window.location.pathname);
   };
+  // On a phone the result sits under the finder, off-screen. A pick brings it
+  // into view; on a laptop it is already beside the list, so nothing moves.
+  const resultRef = useRef<HTMLDivElement>(null);
   const select = (id: string) => {
     if (id !== selectedId) setPrevId(selectedId);
     go(id);
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      resultRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start",
+      });
+    }
   };
   const back = () => window.history.back();
   const clear = () => {
@@ -296,7 +290,7 @@ export function Checker() {
       </section>
 
       <div className="flex flex-col gap-6">
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_23rem]">
+        <div ref={resultRef} className="grid scroll-mt-16 gap-6 md:grid-cols-2">
           <Card unit={selected} prev={prev} onBack={back} onClear={clear} />
           <div className="flex items-center justify-center rounded-2xl border border-border-soft p-4">
             <div className="w-full max-w-xs md:max-w-none">
@@ -327,7 +321,6 @@ function Card({
   onClear: () => void;
 }) {
   const tone = (v: number | null | undefined): Tone => (v == null ? "none" : band(v).tone);
-  const hasAi = unit != null && unit.exposure != null && unit.substitution != null;
   const ink = unit ? "text-ink" : "text-muted";
   return (
     <div className="flex flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
@@ -365,32 +358,21 @@ function Card({
             {unit.aka.length > 5 ? ` and ${unit.aka.length - 5} more` : ""}
           </p>
         )}
-        {unit && unit.risk == null ? (
+        {unit && unit.risk == null && (
           <p className="mt-1 text-sm text-muted">
             No AI figures: no scored occupation sits underneath this one.
-          </p>
-        ) : (
-          <p className={`mt-1 flex items-center gap-2 text-lg ${ink}`}>
-            <Dot tone={tone(unit?.risk)} />
-            <strong className={unit ? "text-accent-strong" : ""}>AI risk:</strong> {unit?.risk ?? 0} / 100
           </p>
         )}
       </div>
 
       <dl className={`grid grid-cols-2 gap-3 ${ink}`}>
+        <Fact label="AI risk">
+          <Score v={unit ? unit.risk : 0} tone={unit ? tone(unit.risk) : "none"} />
+        </Fact>
         <Fact label={LABELS.salary}>
           <span className="text-2xl font-extrabold">
             {unit ? (unit.salary == null ? "—" : money(unit.salary)) : "£0"}
           </span>
-        </Fact>
-        <Fact label={LABELS.growth}>
-          <TrendFact t={unit ? trendOf(unit.growth) : "flat"} />
-        </Fact>
-        <Fact label={LABELS.exposure}>
-          <Score v={unit ? unit.exposure : 0} tone={unit ? tone(unit.exposure) : "none"} />
-        </Fact>
-        <Fact label={LABELS.substitution}>
-          <Score v={unit ? unit.substitution : 0} tone={unit ? tone(unit.substitution) : "none"} />
         </Fact>
       </dl>
 
@@ -398,27 +380,12 @@ function Card({
         <summary className="cursor-pointer hover:text-ink">What these numbers mean</summary>
         <dl className="mt-2 flex flex-col gap-2">
           <div>
+            <dt className="font-semibold text-ink">AI risk</dt>
+            <dd>{TOOLTIPS.risk}</dd>
+          </div>
+          <div>
             <dt className="font-semibold text-ink">{LABELS.salary}</dt>
             <dd>{TOOLTIPS.salary}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-ink">{LABELS.growth}</dt>
-            <dd>
-              {TOOLTIPS.growth} Projected change in the number of jobs across
-              this sector between 2024 and 2030, on trends measured before
-              generative AI. Within 2% either way we call it flat.
-            </dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-ink">{LABELS.exposure}</dt>
-            <dd>{TOOLTIPS.exposure}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-ink">{LABELS.substitution}</dt>
-            <dd>
-              {TOOLTIPS.substitution}
-              {hasAi && " The risk above combines these two scores."}
-            </dd>
           </div>
         </dl>
       </details>
@@ -446,62 +413,14 @@ function Score({ v, tone }: { v: number | null; tone: Tone }) {
   );
 }
 
-// A share line that rises, falls or runs level. It carries no colour: the
-// shape is the whole message, and a green or red arrow would read as a verdict
-// on a projection that does not deserve one.
-const TREND_PATH: Record<Exclude<Trend, "none">, string> = {
-  up: "M3 17l5.5-5.5 3.5 3.5L21 7M15 7h6v6",
-  down: "M3 7l5.5 5.5 3.5-3.5L21 17M15 17h6v-6",
-  flat: "M3 12h13M16 8l4 4-4 4",
-};
-
-function TrendIcon({ t, className }: { t: Exclude<Trend, "none">; className: string }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d={TREND_PATH[t]} />
-    </svg>
-  );
-}
-
-// On the card: the line beside the word it stands for.
-function TrendFact({ t }: { t: Trend }) {
-  if (t === "none") return <span className="text-2xl font-extrabold">—</span>;
-  return (
-    <span className="flex items-center gap-2">
-      <TrendIcon t={t} className="h-6 w-6 shrink-0" />
-      <span className="text-xl font-extrabold">{TREND_WORD[t]}</span>
-    </span>
-  );
-}
-
-// In a list: the line alone, with the word for anyone not reading pixels.
-function TrendCell({ g }: { g: number | null | undefined }) {
-  const t = trendOf(g);
-  return (
-    <span className="flex items-center justify-start text-muted">
-      {t === "none" ? <span className="text-xs">—</span> : <TrendIcon t={t} className="h-4 w-4" />}
-      <span className="sr-only">{TREND_WORD[t]}</span>
-    </span>
-  );
-}
-
-type Col = "growth" | "risk";
+type Col = "salary" | "risk";
 // Fixed tracks for the two figure columns; the name takes the rest and wraps,
 // so the list never grows past its box on a phone. The wide leads panel puts
 // more air between the two figures.
-const ROW = "grid grid-cols-[minmax(0,1fr)_3.5rem_3.25rem] items-center gap-3";
-const WIDE_ROW = "grid grid-cols-[minmax(0,1fr)_3.5rem_3.25rem] items-center gap-8";
+const ROW = "grid grid-cols-[minmax(0,1fr)_4.25rem_3.25rem] items-center gap-3";
+const WIDE_ROW = "grid grid-cols-[minmax(0,1fr)_4.25rem_3.25rem] items-center gap-8";
 
-// Column labels over a job list: growth and risk, each sortable.
+// Column labels over a job list: salary and risk, each sortable.
 function Cols({
   sort, onSort, wide = false, className = "",
 }: {
@@ -509,9 +428,17 @@ function Cols({
 }) {
   return (
     <div className={`flex justify-end ${wide ? "gap-8" : "gap-3"} ${className}`}>
-      <SortButton k="growth" label="Growth" sort={sort} onSort={onSort} className="min-w-[3.5rem]" />
+      <SortButton k="salary" label="Salary" sort={sort} onSort={onSort} className="min-w-[4.25rem]" />
       <SortButton k="risk" label="AI risk" sort={sort} onSort={onSort} className="w-[3.25rem]" />
     </div>
+  );
+}
+
+function SalaryCell({ salary }: { salary: number | null }) {
+  return (
+    <span className="whitespace-nowrap text-xs tabular-nums text-muted">
+      {salary == null ? "—" : money(salary)}
+    </span>
   );
 }
 
@@ -533,8 +460,8 @@ const hoverProps = (id: string, onHover: (id: string | null) => void) => ({
   onBlur: () => onHover(null),
 });
 
-// The finder's table: a fixed box that scrolls, so 674 apprenticeship
-// standards take no more room than four degrees.
+// The finder's table: as tall as the rows it holds, capped so 674
+// apprenticeship standards take no more room than four degrees.
 function Table({
   rows, total, path, selectedId, onPick, onHover,
 }: {
@@ -556,7 +483,7 @@ function Table({
         </span>
         <Cols sort={sort} onSort={setSort} />
       </div>
-      <ul className="h-[26rem] divide-y divide-border-soft/60 overflow-y-auto rounded-xl border border-border-soft">
+      <ul className="max-h-[26rem] divide-y divide-border-soft/60 overflow-y-auto rounded-xl border border-border-soft">
         {sorted.map(({ unit: u, via }) => (
           <li key={u.id}>
             <button
@@ -572,7 +499,7 @@ function Table({
                 {u.level && <span className="text-muted"> · L{u.level}</span>}
                 {via && <span className="text-muted"> · includes {via}</span>}
               </span>
-              <TrendCell g={u.growth} />
+              <SalaryCell salary={u.salary} />
               <RiskTag risk={u.risk} />
             </button>
           </li>
@@ -625,7 +552,7 @@ function Leads({
                   className={`${WIDE_ROW} w-full py-2 text-left text-sm hover:text-accent-strong`}
                 >
                   <span className="min-w-0 break-words text-ink">{r.label}</span>
-                  <TrendCell g={r.growth} />
+                  <SalaryCell salary={r.salary} />
                   <RiskTag risk={r.risk} />
                 </button>
               </li>
