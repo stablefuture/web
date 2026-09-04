@@ -159,8 +159,9 @@ export function Destinations() {
 
       {/* Four panels. Laptop: pay and industries down the left (both follow the
           chosen qualification and year), jobs and risk down the right. Phone:
-          jobs first, then pay, industries, kinds of job. */}
-      <div className="grid gap-6 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-8">
+          jobs first, then pay, industries, kinds of job. Panels keep their own
+          height, so opening a row in one never stretches its neighbour. */}
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-x-10 lg:gap-y-8">
         {h && h.trains.length > 0 && (
           <Panel title="Jobs this degree trains for" className="order-1 lg:order-none lg:col-start-2 lg:row-start-1">
             <RoleList roles={h.trains} limit={TOP} />
