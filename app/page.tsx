@@ -43,6 +43,18 @@ export default function Home() {
       <Section as="section">
         <Container narrow>
           <div className="flex flex-col gap-12">
+            <section className="flex flex-col items-start gap-4 rounded-xl border border-border-soft p-6">
+              <p className="text-lg leading-relaxed text-ink">
+                Assess your career with our AI impact checker.
+              </p>
+              <a
+                href="/checker"
+                className="inline-block rounded-xl bg-accent-strong px-5 py-3 text-sm font-semibold text-on-accent transition hover:opacity-90"
+              >
+                Open the career checker →
+              </a>
+            </section>
+
             <section className="flex flex-col gap-12">
               <div className="flex flex-col gap-4">
                 <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
@@ -288,18 +300,6 @@ export default function Home() {
                   </li>
                 </ul>
               </div>
-            </section>
-
-            <section className="flex flex-col items-start gap-4 border-t border-border-soft pt-8">
-              <p className="text-lg leading-relaxed text-ink">
-                Assess your career with our AI impact checker.
-              </p>
-              <a
-                href="/checker"
-                className="inline-block rounded-xl bg-accent-strong px-5 py-3 text-sm font-semibold text-on-accent transition hover:opacity-90"
-              >
-                Open the career checker →
-              </a>
             </section>
           </div>
         </Container>

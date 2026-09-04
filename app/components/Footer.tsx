@@ -9,7 +9,8 @@ const SOURCES = [
 ];
 
 const PAGES = [
-  ["Career checker", "/"],
+  ["Career checker", "/checker"],
+  ["Graduate destinations", "/destinations"],
   ["Methodology", "/methodology"],
   ["About", "/about"],
 ];
