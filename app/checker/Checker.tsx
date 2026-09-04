@@ -280,6 +280,8 @@ function Card({
   const tone = (v: number | null | undefined): Tone => (v == null ? "none" : band(v).tone);
   const hasAi = unit != null && unit.exposure != null && unit.substitution != null;
   const ink = unit ? "text-ink" : "text-muted";
+  // The empty placeholder keeps the job card's shape.
+  const isJob = unit == null || unit.path === "jobs";
   return (
     <div className="flex flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
       <div className="flex flex-col gap-1">
@@ -334,10 +336,23 @@ function Card({
             {unit ? (unit.salary == null ? "—" : money(unit.salary)) : "£0"}
           </span>
         </Fact>
-        <Fact label={LABELS.competition}>
-          <span className="text-2xl font-extrabold">{unit ? (unit.competition ?? "—") : 0}</span>
-          <span className="text-sm text-muted"> per opening</span>
-        </Fact>
+        {/* Competition belongs to the occupation: its entrants and its openings
+            describe the same job. A degree or apprenticeship leads to many jobs,
+            and summing their entrants would count other subjects' graduates as
+            its own, so those cards show the openings they lead to instead. */}
+        {isJob ? (
+          <Fact label={LABELS.competition}>
+            <span className="text-2xl font-extrabold">{unit ? (unit.competition ?? "—") : 0}</span>
+            <span className="text-sm text-muted"> per opening</span>
+          </Fact>
+        ) : (
+          <Fact label={LABELS.openings}>
+            <span className="text-2xl font-extrabold">
+              {unit!.openings == null ? "—" : count(unit!.openings)}
+            </span>
+            <span className="text-sm text-muted"> a year</span>
+          </Fact>
+        )}
         <Fact label={LABELS.exposure}>
           <Score v={unit ? unit.exposure : 0} tone={unit ? tone(unit.exposure) : "none"} />
         </Fact>
@@ -354,11 +369,13 @@ function Card({
             <dd>{TOOLTIPS.salary}</dd>
           </div>
           <div>
-            <dt className="font-semibold text-ink">{LABELS.competition}</dt>
+            <dt className="font-semibold text-ink">
+              {isJob ? LABELS.competition : LABELS.openings}
+            </dt>
             <dd>
-              {TOOLTIPS.competition}
-              {unit && unit.entrants != null && unit.openings != null && (
-                <> Here, {count(unit.entrants)} entrants a year for {count(unit.openings)} openings.</>
+              {isJob ? TOOLTIPS.competition : TOOLTIPS.openings}
+              {isJob && unit && unit.entrants != null && unit.openings != null && (
+                <> Here, {count(unit.entrants)} graduates a year for {count(unit.openings)} openings.</>
               )}
             </dd>
           </div>

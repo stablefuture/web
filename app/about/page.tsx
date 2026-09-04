@@ -2,7 +2,7 @@ import { Container } from "@/app/components/Container";
 import { Section } from "@/app/components/Section";
 
 export const metadata = {
-  title: "About | Stable Future — UK Careers Data for Parents",
+  title: "About | Stable Future",
   description:
     "Why Stable Future exists, who builds it, and how we help parents guide teenagers towards work that lasts through the AI transition.",
   alternates: { canonical: "/about" },
@@ -57,14 +57,7 @@ export default function About() {
                   >
                     career checker
                   </a>{" "}
-                  does, and the{" "}
-                  <a
-                    href="/methodology"
-                    className="underline underline-offset-4 hover:text-ink"
-                  >
-                    methodology
-                  </a>{" "}
-                  page shows exactly how.
+                  does.
                 </p>
               </div>
             </section>

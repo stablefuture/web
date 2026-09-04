@@ -22,7 +22,6 @@ type Subject = {
   id: string;
   label: string;
   cah1_label: string | null;
-  headline: { comp: number; entrants: number; openings: number; trains: Role[] } | null;
   pay: Record<string, Record<string, number | null>>;
   occupations: number[] | null;
 };
@@ -51,7 +50,6 @@ const DEFAULT = "all";
 const YEARS = ["1", "5", "10"];
 // How much shows before "Show all": enough for a snapshot, not a wall.
 const TOP = 5;
-const near = (n: number) => (Math.round(n / 100) * 100).toLocaleString("en-GB");
 // Pay to the nearest hundred, shares to the nearest percent: a snapshot, not a ledger.
 const gbp = (n: number | null) => (n == null ? "—" : `£${(Math.round(n / 100) * 100).toLocaleString("en-GB")}`);
 const count = (n: number) => n.toLocaleString("en-GB");
@@ -106,19 +104,7 @@ export function Destinations() {
   const q = has(qual, yag) ? qual : data.meta.quals.map(([id]) => id).find((id) => has(id, yag)) ?? qual;
   const y = has(q, yag) ? yag : YEARS.find((id) => has(q, id)) ?? yag;
   const slice = industries[subject.id]?.[q]?.[y] ?? null;
-  const h = subject.headline;
   const who = subject.id === "all" ? "graduates" : `${midSentence(subject.label)} graduates`;
-  // "an allied health degree", "a law degree". Every vowel-initial subject label
-  // takes "an"; none of them start with a sounded consonant like "European".
-  const aDegree = `${/^[aeiou]/i.test(subject.label) ? "an" : "a"} ${midSentence(subject.label)} degree`;
-
-  // The jobs the subject trains for go first inside each SOC group; both halves
-  // stay most-openings-first, which is how the builder sorted them.
-  const trainIds = new Set((h?.trains ?? []).map((r) => r.id));
-  const order = (roles: Role[]) =>
-    trainIds.size
-      ? [...roles.filter((r) => trainIds.has(r.id)), ...roles.filter((r) => !trainIds.has(r.id))]
-      : roles;
 
   const occ = subject.occupations;
   const rows = occ
@@ -127,106 +113,76 @@ export function Destinations() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* One panel: the picker beside the one number that matters. All
-          subjects has no headline, so the picker can stand alone. */}
-      <div className="flex flex-col items-center justify-center gap-6 rounded-2xl border border-border-soft p-5 text-center sm:p-6 lg:flex-row lg:gap-12 lg:text-left">
-        <label className="flex w-full max-w-sm flex-col gap-2 text-sm text-muted lg:w-80 lg:shrink-0">
-          Degree subject
-          <select
-            value={subject.id}
-            onChange={(e) => choose(e.target.value)}
-            className="rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-base font-semibold text-ink outline-none transition focus:border-accent-strong"
-          >
-            {data.subjects.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
-        </label>
-        {h && (
-          <div className="flex max-w-2xl flex-col gap-1 lg:items-start">
-            <p className="text-xl leading-snug text-ink sm:text-2xl">
-              <strong className="text-4xl font-extrabold tracking-tight text-accent-strong sm:text-5xl">
-                {h.comp.toFixed(1)}
-              </strong>{" "}
-              graduates per job opening each year, for jobs that {aDegree} typically
-              leads to.
-            </p>
-            <p className="text-sm text-muted">
-              {near(h.entrants)} graduates per year, divided by {near(h.openings)} job
-              openings per year.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Four panels. Laptop: two independent columns, pay and industries
-          down the left (both follow the chosen qualification and year), jobs
-          and risk down the right, so a list growing in one column never moves
-          the other. Phone: the column wrappers vanish (display: contents) and
-          the order classes stack jobs first, then pay, industries, kinds of
-          job. */}
+      {/* Two columns. Left: pick a subject, then what it pays and who hires
+          them - each answer under the control that changes it. Right: the kinds
+          of job they do and the AI risk of each, all nine groups at once. */}
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-x-10">
-        <div className="contents lg:flex lg:flex-col lg:gap-8">
-        <Panel title="Compare outcomes" className="order-2 lg:order-none">
-          <div className="mb-3 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
-            {YEARS.map((yy) => (
-              <button
-                key={yy}
-                type="button"
-                aria-pressed={yy === y}
-                onClick={() => setYag(yy)}
-                className={`flex-1 rounded-md px-2 py-1.5 text-sm transition ${
-                  yy === y ? "bg-background font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"
-                }`}
-              >
-                {yearsLabel(yy)}
-              </button>
-            ))}
-          </div>
-          <ul className="divide-y divide-border-soft/40">
-            {data.meta.quals
-              .filter(([id]) => subject.pay[id]?.[y] != null)
-              .map(([id, label]) => {
-                const on = id === q;
-                return (
-                  <li key={id}>
-                    <button
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => setQual(id)}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm transition ${
-                        on ? "bg-accent-strong text-on-accent" : "text-ink hover:bg-surface-alt"
-                      }`}
-                    >
-                      <span className={on ? "font-semibold" : ""}>{label}</span>
-                      <span className="font-bold tabular-nums">{gbp(subject.pay[id][y])}</span>
-                    </button>
-                  </li>
-                );
-              })}
-          </ul>
-        </Panel>
+        <div className="flex flex-col gap-6">
+          <label className="flex flex-col gap-2 text-sm text-muted">
+            Degree subject
+            <select
+              value={subject.id}
+              onChange={(e) => choose(e.target.value)}
+              className="rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-base font-semibold text-ink outline-none transition focus:border-accent-strong"
+            >
+              {data.subjects.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </label>
 
-        {/* Always rendered, so the grid never reflows while a subject's
-            industries load. */}
-        <Panel title={`Industries ${who} work in`} className="order-3 lg:order-none">
-          {slice ? <IndustryList slice={slice} /> : <p className="text-sm text-muted">Loading…</p>}
-        </Panel>
-        </div>
-
-        <div className="contents lg:flex lg:flex-col lg:gap-8">
-        {h && h.trains.length > 0 && (
-          <Panel title="Jobs these degrees train for" className="order-1 lg:order-none">
-            <RoleList roles={h.trains} limit={TOP} />
+          <Panel title="Compare outcomes">
+            <div className="mb-3 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
+              {YEARS.map((yy) => (
+                <button
+                  key={yy}
+                  type="button"
+                  aria-pressed={yy === y}
+                  onClick={() => setYag(yy)}
+                  className={`flex-1 rounded-md px-2 py-1.5 text-sm transition ${
+                    yy === y ? "bg-background font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"
+                  }`}
+                >
+                  {yearsLabel(yy)}
+                </button>
+              ))}
+            </div>
+            <ul className="divide-y divide-border-soft/40">
+              {data.meta.quals
+                .filter(([id]) => subject.pay[id]?.[y] != null)
+                .map(([id, label]) => {
+                  const on = id === q;
+                  return (
+                    <li key={id}>
+                      <button
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => setQual(id)}
+                        className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm transition ${
+                          on ? "bg-accent-strong text-on-accent" : "text-ink hover:bg-surface-alt"
+                        }`}
+                      >
+                        <span className={on ? "font-semibold" : ""}>{label}</span>
+                        <span className="font-bold tabular-nums">{gbp(subject.pay[id][y])}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+            </ul>
           </Panel>
-        )}
+
+          {/* Always rendered, so the column never reflows while a subject's
+              industries load. */}
+          <Panel title={`Industries ${who} work in`}>
+            {slice ? <IndustryList slice={slice} /> : <p className="text-sm text-muted">Loading…</p>}
+          </Panel>
+        </div>
 
         {occ && (
-          <Panel title={`Jobs ${who} do, and their AI risk`} className="order-4 lg:order-none">
-            <GroupList rows={rows} order={order} trainIds={trainIds} />
+          <Panel title={`Jobs ${who} do, and their AI risk`}>
+            <GroupList rows={rows} />
           </Panel>
         )}
-        </div>
       </div>
 
       <details className="text-sm leading-relaxed text-muted">
@@ -256,13 +212,7 @@ export function Destinations() {
             <strong className="text-ink">AI risk</strong>: the{" "}
             <a href="/checker" className="underline underline-offset-4 hover:text-ink">career checker</a>
             &rsquo;s score for each SOC 2020 job, weighted by openings within each
-            group. <strong className="text-ink">Jobs these degrees train for</strong>: our
-            own mapping of each subject to the jobs it prepares people for, not a
-            record of where graduates went. Every subject in the group counts, so the
-            list is wider than any one degree. <strong className="text-ink">Competition</strong>:
-            everyone qualifying into those jobs each year — from any subject or
-            apprenticeship that feeds them — divided by their projected openings. See the{" "}
-            <a href="/methodology" className="underline underline-offset-4 hover:text-ink">methodology</a>.
+            group. Expanding a group lists the jobs inside it with the same score.
           </p>
         </div>
       </details>
@@ -386,29 +336,20 @@ function IndustryList({ slice }: { slice: Slice }) {
   );
 }
 
-function GroupList({
-  rows, order, trainIds,
-}: {
-  rows: { g: Group; share: number }[];
-  order: (roles: Role[]) => Role[];
-  trainIds: Set<string>;
-}) {
-  const [all, setAll] = useState(false);
+function GroupList({ rows }: { rows: { g: Group; share: number }[] }) {
   const [open, setOpen] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort<"risk">>(null);
-  const box = useRef<HTMLDivElement>(null);
-  const sorted = sortRows(rows, sort, (r) => r.g.risk);
-  const shown = all ? sorted : sorted.slice(0, TOP);
+  // All nine SOC major groups, always. There are only nine, and hiding four of
+  // them behind "show all" hid the low-risk trades a parent came to find.
+  const shown = sortRows(rows, sort, (r) => r.g.risk);
   return (
-    <div ref={box} className="flex scroll-mt-24 flex-col">
+    <div className="flex flex-col">
       <div className="flex justify-end border-b border-border-soft/60 pb-1">
         <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
       </div>
       <ul>
         {shown.map(({ g, share }) => {
           const isOpen = open === g.id;
-          const roles = order(g.roles);
-          const mapped = roles.filter((x) => trainIds.has(x.id)).length;
           return (
             <li key={g.id} className="border-b border-border-soft/60 last:border-0">
               <button
@@ -436,16 +377,14 @@ function GroupList({
                 <div className="mb-2 ml-[18px]">
                   <p className="mb-1 text-xs text-muted">
                     {g.n} jobs, most job openings first.
-                    {mapped > 0 && " The ones this degree trains for come first."}
                   </p>
-                  <RoleList roles={roles} mapped={trainIds} limit={Math.max(TOP, mapped)} />
+                  <RoleList roles={g.roles} limit={TOP} />
                 </div>
               )}
             </li>
           );
         })}
       </ul>
-      <ShowAll all={all} total={rows.length} top={TOP} box={box} onToggle={() => setAll(!all)} />
     </div>
   );
 }
@@ -464,7 +403,7 @@ const ROLE_ROW = "grid grid-cols-[minmax(0,1fr)_3.5rem] items-center gap-x-2";
 
 // A job row that opens in place to the checker's figures, so nobody has to
 // leave the page to see one job.
-function RoleList({ roles, mapped, limit }: { roles: Role[]; mapped?: Set<string>; limit: number }) {
+function RoleList({ roles, limit }: { roles: Role[]; limit: number }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort<"risk">>(null);
@@ -491,11 +430,6 @@ function RoleList({ roles, mapped, limit }: { roles: Role[]; mapped?: Set<string
                 <span className="flex min-w-0 items-center gap-1.5">
                   <Chevron open={isOpen} />
                   <span className="min-w-0 break-words text-ink">{r.label}</span>
-                  {mapped?.has(r.id) && (
-                    <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold text-accent-strong">
-                      Trains for
-                    </span>
-                  )}
                 </span>
                 <Risk risk={r.risk} />
               </button>

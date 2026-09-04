@@ -1,7 +1,6 @@
 import { Container } from "@/app/components/Container";
 
-// Primary sources behind the checker. These are the same bodies credited on
-// /methodology — kept here so every page carries outbound citations.
+// Primary sources behind the checker, so every page carries outbound citations.
 const SOURCES = [
   ["Office for National Statistics", "https://www.ons.gov.uk/employmentandlabourmarket"],
   ["HESA Graduate Outcomes", "https://www.hesa.ac.uk/data-and-analysis/graduates"],
@@ -11,7 +10,6 @@ const SOURCES = [
 const PAGES = [
   ["Career checker", "/checker"],
   ["Graduate destinations", "/destinations"],
-  ["Methodology", "/methodology"],
   ["About", "/about"],
 ];
 

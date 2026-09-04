@@ -9,7 +9,6 @@ import { ThemeToggle } from "@/app/components/ThemeToggle";
 const NAV = [
   ["Career checker", "/checker"],
   ["Graduate destinations", "/destinations"],
-  ["Methodology", "/methodology"],
   ["About", "/about"],
 ];
 
