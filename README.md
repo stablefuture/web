@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stable Future website
 
-## Getting Started
+Next.js application. Main routes include `/`, `/checker` and `/destinations`. Check `app/` for the full current route list.
 
-First, run the development server:
+## Local preview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+From this directory, install dependencies with `npm ci` when needed, then run `npm run dev`. Open the local address printed by the server. Reuse an existing server before starting another.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Checks
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run build` checks the production build.
+- `npm run lint` runs ESLint.
+- Check changed layouts in a browser at mobile and desktop widths.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Data and services
 
-## Learn More
+The checker loads `public/v3.json`; graduate destinations load files in `public/destinations/`. The sibling `jobs/` repository holds the pipelines. Its `run_all.sh` is not a full website rebuild.
 
-To learn more about Next.js, take a look at the following resources:
+The outreach server action uses OpenRouter; the calendar webhook uses Kit. Check the source files for required environment variable names. Keep local secrets in ignored environment files and out of Git and chat.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Existing deployment notes identify Vercel with automatic deployment from `main`. Verify the connection before deployment. Committing locally does not require pushing.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Shared current context: `../docs/PROJECT-CONTEXT.md`. The `archive/` folder holds previous designs.

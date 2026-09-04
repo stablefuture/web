@@ -1,1 +1,1 @@
-after changes, always `cd ~/build/stablefuture/web`, `npm run dev` to localhost:3000 so ben can inspect.
+Read `AGENTS.md` in this directory for the current instructions.
