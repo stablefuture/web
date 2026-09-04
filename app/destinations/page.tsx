@@ -1,5 +1,4 @@
 import { Container } from "@/app/components/Container";
-import { Section } from "@/app/components/Section";
 import { Destinations } from "@/app/destinations/Destinations";
 
 export const metadata = {
@@ -12,16 +11,16 @@ export const metadata = {
 export default function DestinationsPage() {
   return (
     <main>
-      <Section as="section">
+      <section className="pb-12 pt-6 lg:pb-16 lg:pt-8">
         <Container>
-          <div className="flex flex-col gap-10">
-            <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+          <div className="flex flex-col gap-6">
+            <h1 className="text-center text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
               Where graduates actually end up
             </h1>
             <Destinations />
           </div>
         </Container>
-      </Section>
+      </section>
     </main>
   );
 }

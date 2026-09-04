@@ -114,27 +114,43 @@ function Marker({ u, strong = false }: { u: Unit; strong?: boolean }) {
   );
 }
 
+// Names wrap at about 26 characters so a long degree title stays inside the
+// box; a degree or apprenticeship adds a line saying what its point is.
+function wrap(name: string, max = 26): string[] {
+  const lines: string[] = [];
+  let line = "";
+  for (const w of name.split(" ")) {
+    if (line && (line + " " + w).length > max) { lines.push(line); line = w; }
+    else line = line ? `${line} ${w}` : w;
+  }
+  if (line) lines.push(line);
+  return lines.slice(0, 3);
+}
+
 function Label({ u }: { u: Unit }) {
   const cx = px(u.exposure!);
   const cy = py(u.substitution!);
-  // Long unit-group titles would run off the box.
-  const name = u.label.length > 40 ? `${u.label.slice(0, 38)}…` : u.label;
-  const half = Math.min(name.length * 3.3, W / 2);
-  const x = Math.max(PAD.l + half, Math.min(S - PAD.r - half, cx));
+  const lines = wrap(u.label);
   const n = u.roles?.length ?? 0;
   const note = u.path !== "jobs" && n > 0 ? `average of ${n} jobs` : null;
-  // Below the point when the point is near the top, else above; a second line
-  // for the average note.
-  const below = cy < PAD.t + (note ? 40 : 26);
-  const y = below ? cy + 24 : cy - (note ? 28 : 16);
+  const LINE = 13;
+  const height = lines.length * LINE + (note ? LINE : 0);
+  const widest = Math.max(...lines.map((l) => l.length));
+  const half = Math.min(widest * 3.3, W / 2);
+  const x = Math.max(PAD.l + half, Math.min(S - PAD.r - half, cx));
+  // Above the point unless that would leave the plot; then below.
+  const below = cy - 14 - height < PAD.t;
+  const top = below ? cy + 22 : cy - 14 - height + LINE;
   return (
     <text
-      x={x} y={y} textAnchor="middle" fontSize={12} fontWeight={600}
+      x={x} y={top} textAnchor="middle" fontSize={12} fontWeight={600}
       fill="var(--ink)" stroke="var(--background)" strokeWidth={3} paintOrder="stroke"
     >
-      {name}
+      {lines.map((l, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? 0 : LINE}>{l}</tspan>
+      ))}
       {note && (
-        <tspan x={x} dy={13} fontSize={10} fontWeight={500} fill="var(--muted)">
+        <tspan x={x} dy={LINE} fontSize={10} fontWeight={500} fill="var(--muted)">
           {note}
         </tspan>
       )}

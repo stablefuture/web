@@ -124,9 +124,9 @@ export function Destinations() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* One row on a laptop: the picker, then the one number that matters. */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:gap-12">
-        <label className="flex flex-col gap-2 text-sm text-muted lg:w-80 lg:shrink-0">
+      {/* The picker, then the one number that matters, both centred. */}
+      <div className="flex flex-col items-center gap-6 text-center">
+        <label className="flex w-full max-w-sm flex-col gap-2 text-sm text-muted">
           Degree subject
           <select
             value={subject.id}
@@ -139,7 +139,7 @@ export function Destinations() {
           </select>
         </label>
         {h && (
-          <div className="flex flex-col gap-1">
+          <div className="flex max-w-2xl flex-col gap-1">
             <p className="text-xl leading-snug text-ink sm:text-2xl">
               <strong className="text-4xl font-extrabold tracking-tight text-accent-strong sm:text-5xl">
                 {h.comp >= 2 ? `1 in ${Math.round(h.comp)}` : `${h.comp.toFixed(1)}×`}
@@ -288,48 +288,30 @@ function ShowAll({ all, total, top, onToggle }: { all: boolean; total: number; t
   );
 }
 
-// Share, then name, then the one figure on the right (pay or AI risk). The
-// tracks are fixed so a long name wraps instead of pushing the figure out of
-// the box on a phone.
-const ROW = "grid grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] items-center gap-x-2";
-
-function Share({ open, share }: { open: boolean; share: number }) {
-  return (
-    <span className="flex items-center gap-1">
-      <Chevron open={open} />
-      <span className="font-bold tabular-nums text-accent-strong">{Math.round(share)}%</span>
-    </span>
-  );
-}
-
 function Risk({ risk }: { risk: number | null }) {
-  if (risk == null) return <span className="text-right text-xs text-muted">—</span>;
+  if (risk == null) return <span className="shrink-0 text-xs text-muted">—</span>;
   return (
-    <span className="flex items-center justify-end gap-1.5 whitespace-nowrap text-xs tabular-nums text-muted">
+    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs tabular-nums text-muted">
       <Dot tone={band(risk).tone} />
       {risk}
     </span>
   );
 }
 
-type IndCol = "share" | "earn";
+// The share sits on the name's own line; the bar and the count hang under it.
+function Share({ share }: { share: number }) {
+  return <span className="shrink-0 font-bold tabular-nums text-accent-strong">{Math.round(share)}%</span>;
+}
 
 function IndustryList({ slice }: { slice: Slice }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const [sort, setSort] = useState<Sort<IndCol>>(null);
-  const rows = sortRows(slice.sections, sort, (x, k) => x[k]);
-  const shown = all ? rows : rows.slice(0, TOP);
+  const shown = all ? slice.sections : slice.sections.slice(0, TOP);
   // The Other bucket sits last but can be the largest share of all
   // (engineering: 53 divisions, 23.9%), so scale on the true max.
   const max = Math.max(...slice.sections.map((x) => x.share));
   return (
     <div className="flex flex-col">
-      <div className={`${ROW} border-b border-border-soft/60 pb-1`}>
-        <SortButton k="share" label="Share" sort={sort} onSort={setSort} />
-        <span />
-        <SortButton k="earn" label="Pay" sort={sort} onSort={setSort} align="right" />
-      </div>
       <ul>
         {shown.map((s) => {
           const inside = slice.groups[s.sec] ?? [];
@@ -340,12 +322,17 @@ function IndustryList({ slice }: { slice: Slice }) {
                 onClick={() => setOpen(isOpen ? null : s.sec)}
                 disabled={!inside.length}
                 aria-expanded={isOpen}
-                className={`${ROW} w-full min-w-0 gap-y-1 py-2.5 text-left text-sm enabled:hover:bg-surface-alt/60`}
+                className="flex w-full min-w-0 flex-col gap-1 py-2.5 text-left enabled:hover:bg-surface-alt/60"
               >
-                <Share open={isOpen} share={s.share} />
-                <span className="min-w-0 break-words font-semibold text-ink">{s.sec}</span>
-                <span className="text-right text-xs tabular-nums text-muted">{gbp(s.earn)}</span>
-                <span className="col-span-2 col-start-2 h-2.5 rounded-r-[3px] bg-border-soft/30">
+                <span className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="flex min-w-0 items-baseline gap-1.5">
+                    <Chevron open={isOpen} />
+                    <Share share={s.share} />
+                    <span className="min-w-0 break-words font-semibold text-ink">{s.sec}</span>
+                  </span>
+                  <span className="shrink-0 text-xs tabular-nums text-muted">{gbp(s.earn)}</span>
+                </span>
+                <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
                   <span
                     className={`block h-full rounded-r-[3px] ${
                       // Other is a residual, not one industry, so it never
@@ -355,10 +342,10 @@ function IndustryList({ slice }: { slice: Slice }) {
                     style={{ width: `${(s.share / max) * 100}%` }}
                   />
                 </span>
-                <span className="col-span-2 col-start-2 text-xs text-muted">{count(s.count)} graduates</span>
+                <span className="ml-[18px] text-xs text-muted">{count(s.count)} graduates</span>
               </button>
               {isOpen && (
-                <ul className="mb-2 ml-[3.5rem] text-sm">
+                <ul className="mb-2 ml-[18px] text-sm">
                   {inside.map((i) => (
                     <li key={i.name} className="flex items-center justify-between gap-3 py-1">
                       <span className="min-w-0 break-words text-ink">{i.name}</span>
@@ -379,8 +366,6 @@ function IndustryList({ slice }: { slice: Slice }) {
   );
 }
 
-type GroupCol = "share" | "risk";
-
 function GroupList({
   rows, order, trainIds,
 }: {
@@ -390,15 +375,13 @@ function GroupList({
 }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const [sort, setSort] = useState<Sort<GroupCol>>(null);
-  const sorted = sortRows(rows, sort, (r, k) => (k === "share" ? r.share : r.g.risk));
+  const [sort, setSort] = useState<Sort<"risk">>(null);
+  const sorted = sortRows(rows, sort, (r) => r.g.risk);
   const shown = all ? sorted : sorted.slice(0, TOP);
   const max = rows[0]?.share ?? 1;
   return (
     <div className="flex flex-col">
-      <div className={`${ROW} border-b border-border-soft/60 pb-1`}>
-        <SortButton k="share" label="Share" sort={sort} onSort={setSort} />
-        <span />
+      <div className="flex justify-end border-b border-border-soft/60 pb-1">
         <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
       </div>
       <ul>
@@ -411,21 +394,26 @@ function GroupList({
               <button
                 onClick={() => setOpen(isOpen ? null : g.id)}
                 aria-expanded={isOpen}
-                className={`${ROW} w-full min-w-0 gap-y-1 py-2.5 text-left text-sm hover:bg-surface-alt/60`}
+                className="flex w-full min-w-0 flex-col gap-1 py-2.5 text-left hover:bg-surface-alt/60"
               >
-                <Share open={isOpen} share={share} />
-                <span className="min-w-0 break-words font-semibold text-ink">{g.name}</span>
-                <Risk risk={g.risk} />
-                <span className="col-span-2 col-start-2 h-2.5 rounded-r-[3px] bg-border-soft/30">
+                <span className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="flex min-w-0 items-baseline gap-1.5">
+                    <Chevron open={isOpen} />
+                    <Share share={share} />
+                    <span className="min-w-0 break-words font-semibold text-ink">{g.name}</span>
+                  </span>
+                  <Risk risk={g.risk} />
+                </span>
+                <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
                   <span
                     className="block h-full rounded-r-[3px] bg-accent/40"
                     style={{ width: `${(share / max) * 100}%` }}
                   />
                 </span>
-                <span className="col-span-2 col-start-2 text-xs text-muted">{GLOSS[g.id]}</span>
+                <span className="ml-[18px] text-xs text-muted">{GLOSS[g.id]}</span>
               </button>
               {isOpen && (
-                <div className="mb-2 ml-[3.5rem]">
+                <div className="mb-2 ml-[18px]">
                   <p className="mb-1 text-xs text-muted">
                     {g.n} jobs, most job openings first.
                     {mapped > 0 && " The ones this degree trains for come first."}

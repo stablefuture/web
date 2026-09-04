@@ -1,6 +1,5 @@
 import { Checker } from "@/app/checker/Checker";
 import { Container } from "@/app/components/Container";
-import { Section } from "@/app/components/Section";
 
 export const metadata = {
   title: "Career checker | Check your career path against AI",
@@ -12,8 +11,8 @@ export const metadata = {
 export default function CheckerPage() {
   return (
     <main>
-      <Section as="section" tight>
-        <Container>
+      <section className="pb-12 pt-6 lg:pb-16 lg:pt-8">
+        <Container wide>
           <div className="flex flex-col gap-6">
             <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
               Check your <span className="text-accent-strong">career path</span> against{" "}
@@ -22,7 +21,7 @@ export default function CheckerPage() {
             <Checker />
           </div>
         </Container>
-      </Section>
+      </section>
     </main>
   );
 }

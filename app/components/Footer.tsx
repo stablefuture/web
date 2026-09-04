@@ -18,7 +18,7 @@ const PAGES = [
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-border-soft py-10">
-      <Container>
+      <Container wide>
         <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
           <nav className="flex flex-col gap-2">
             <h2 className="text-xs font-bold uppercase tracking-widest text-accent-strong">

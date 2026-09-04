@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { LABELS, TOOLTIPS } from "./copy";
 import { JobMap } from "./Map";
@@ -31,6 +31,8 @@ export type Unit = {
 
 type Sector = { id: string; label: string };
 type V3 = { sectors: Record<Path, Sector[]>; units: Unit[] };
+// One history entry: the pick and the finder that led to it.
+type Nav = { id: string | null; tab: Path; sector: string; q: string };
 
 const PATHS: Path[] = ["jobs", "degrees", "apprenticeships"];
 const TYPE: Record<Path, string> = {
@@ -58,7 +60,7 @@ type Row = { unit: Unit; via: string | null };
 // Every typed word must start a word in the title, so "robotics engineer" does
 // not drag in every engineer. A job's O*NET titles count too, one rank lower,
 // so "web developer" reaches the unit group it sits in and the row says which
-// title matched.
+// title matched. Ties keep the order they came in.
 function filter(units: Unit[], q: string): Row[] {
   const toks = words(q);
   if (!toks.length) return units.map((unit) => ({ unit, via: null }));
@@ -71,14 +73,14 @@ function filter(units: Unit[], q: string): Row[] {
       : toks.every((t) => lw.some((w) => w.startsWith(t))) ? 1
       : 0;
   };
-  const hits: [Row, number][] = [];
-  for (const unit of units) {
+  const hits: [Row, number, number][] = [];
+  units.forEach((unit, i) => {
     const own = score(unit.label);
-    if (own) { hits.push([{ unit, via: null }, own]); continue; }
+    if (own) { hits.push([{ unit, via: null }, own, i]); return; }
     const via = (unit.aka ?? []).find((a) => score(a) > 0);
-    if (via) hits.push([{ unit, via }, 0.5]);
-  }
-  hits.sort((a, b) => b[1] - a[1] || byOpenings(a[0].unit, b[0].unit));
+    if (via) hits.push([{ unit, via }, 0.5, i]);
+  });
+  hits.sort((a, b) => b[1] - a[1] || a[2] - b[2]);
   return hits.map(([r]) => r);
 }
 
@@ -93,7 +95,6 @@ export function Checker() {
   const [prevId, setPrevId] = useState<string | null>(null);
   // The row under the pointer, marked on the map.
   const [hoverId, setHoverId] = useState<string | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // The chosen unit lives in the URL so a parent can send the link on.
@@ -104,9 +105,23 @@ export function Checker() {
         setData(d);
         setSelectedId(id);
         const u = id ? d.units.find((x) => x.id === id) : null;
-        if (u) setTab(u.path);
+        const nav: Nav = { id: u ? u.id : null, tab: u ? u.path : "jobs", sector: "", q: "" };
+        setTab(nav.tab);
+        window.history.replaceState(nav, "");
       })
       .catch(() => setData(null));
+    // Back restores the pick and the finder as they were.
+    const onPop = (e: PopStateEvent) => {
+      const n = e.state as Nav | null;
+      if (!n) return;
+      setSelectedId(n.id);
+      setTab(n.tab);
+      setSector(n.sector);
+      setQ(n.q);
+      setPrevId(null);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
 
   const jobs = useMemo(() => data?.units.filter((u) => u.path === "jobs") ?? [], [data]);
@@ -115,25 +130,19 @@ export function Checker() {
     [data],
   );
 
-  const show = (id: string) => {
+  const go = (id: string | null) => {
     setSelectedId(id);
-    window.history.replaceState(null, "", `?id=${encodeURIComponent(id)}`);
-    requestAnimationFrame(() =>
-      cardRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }),
-    );
+    const nav: Nav = { id, tab, sector, q };
+    window.history.pushState(nav, "", id ? `?id=${encodeURIComponent(id)}` : window.location.pathname);
   };
   const select = (id: string) => {
     if (id !== selectedId) setPrevId(selectedId);
-    show(id);
+    go(id);
   };
-  const back = () => {
-    if (prevId) show(prevId);
-    setPrevId(null);
-  };
+  const back = () => window.history.back();
   const clear = () => {
-    setSelectedId(null);
     setPrevId(null);
-    window.history.replaceState(null, "", window.location.pathname);
+    go(null);
   };
 
   const selected = (selectedId && byId.get(selectedId)) || null;
@@ -150,9 +159,8 @@ export function Checker() {
         : (selected.roles ?? []).map((i) => jobs[i]).filter(Boolean);
     return [...list].sort(byOpenings);
   }, [selected, jobs]);
-  const lit = useMemo(() => new Set(leads.map((u) => u.id)), [leads]);
 
-  // The finder's rows: this path, this sector, this search.
+  // The finder's rows: this path, this sector, this search; most openings first.
   const pool = useMemo(
     () =>
       (data?.units ?? [])
@@ -160,6 +168,18 @@ export function Checker() {
         .sort(byOpenings),
     [data, tab, sector],
   );
+  // Every job the chosen sector reaches: its own jobs, or the jobs its degrees
+  // or apprenticeships lead to. A pick narrows the lit dots to what it leads to.
+  const lit = useMemo(() => {
+    if (selected) return new Set(leads.map((u) => u.id));
+    const ids = new Set<string>();
+    if (!sector) return ids;
+    for (const u of pool) {
+      if (u.path === "jobs") ids.add(u.id);
+      else for (const i of u.roles ?? []) if (jobs[i]) ids.add(jobs[i].id);
+    }
+    return ids;
+  }, [selected, leads, sector, pool, jobs]);
   const rows = useMemo(() => filter(pool, q), [pool, q]);
 
   if (!data) return <p className="py-16 text-center text-muted">Loading…</p>;
@@ -176,7 +196,7 @@ export function Checker() {
   // Laptop: the finder down the left; on the right the card beside the map,
   // and under them the jobs the path leads to. A phone stacks the same order.
   return (
-    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[24rem_minmax(0,1fr)] lg:items-start lg:gap-x-10">
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[26rem_minmax(0,1fr)] lg:items-start lg:gap-x-10">
       <section aria-label="Find a path" className="flex flex-col gap-3">
         <div role="group" aria-label="Path" className="flex gap-1 rounded-lg bg-surface-alt p-1">
           {PATHS.map((p) => (
@@ -193,7 +213,7 @@ export function Checker() {
             </button>
           ))}
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
           <select
             aria-label="Sector"
             value={sector}
@@ -205,6 +225,7 @@ export function Checker() {
               <option key={s.id} value={s.id}>{s.label}</option>
             ))}
           </select>
+          <span aria-hidden className="text-center text-[11px] font-semibold uppercase tracking-wider text-muted">or</span>
           <input
             type="search"
             value={q}
@@ -226,9 +247,9 @@ export function Checker() {
       </section>
 
       <div className="flex flex-col gap-6">
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_20rem]">
-          <Card ref={cardRef} unit={selected} prev={prev} onBack={back} onClear={clear} />
-          <div className="flex justify-center rounded-2xl border border-border-soft p-4">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_23rem]">
+          <Card unit={selected} prev={prev} onBack={back} onClear={clear} />
+          <div className="flex items-center justify-center rounded-2xl border border-border-soft p-4">
             <div className="w-full max-w-xs md:max-w-none">
               <JobMap jobs={jobs} selected={selected} hover={hover} lit={lit} />
             </div>
@@ -249,9 +270,8 @@ export function Checker() {
 // The chosen path's figures. With nothing chosen it shows its own shape in
 // grey, so the page reads the same before and after a pick.
 function Card({
-  ref, unit, prev, onBack, onClear,
+  unit, prev, onBack, onClear,
 }: {
-  ref: React.Ref<HTMLDivElement>;
   unit: Unit | null;
   prev: Unit | null;
   onBack: () => void;
@@ -261,7 +281,7 @@ function Card({
   const hasAi = unit != null && unit.exposure != null && unit.substitution != null;
   const ink = unit ? "text-ink" : "text-muted";
   return (
-    <div ref={ref} className="flex scroll-mt-24 flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
+    <div className="flex flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -303,7 +323,7 @@ function Card({
         ) : (
           <p className={`mt-1 flex items-center gap-2 text-lg ${ink}`}>
             <Dot tone={tone(unit?.risk)} />
-            <strong>Risk:</strong> {unit?.risk ?? 0} / 100
+            <strong className={unit ? "text-accent-strong" : ""}>AI risk:</strong> {unit?.risk ?? 0} / 100
           </p>
         )}
       </div>
@@ -319,10 +339,10 @@ function Card({
           <span className="text-sm text-muted"> per opening</span>
         </Fact>
         <Fact label={LABELS.exposure}>
-          <Score v={unit ? unit.exposure : 0} />
+          <Score v={unit ? unit.exposure : 0} tone={unit ? tone(unit.exposure) : "none"} />
         </Fact>
         <Fact label={LABELS.substitution}>
-          <Score v={unit ? unit.substitution : 0} />
+          <Score v={unit ? unit.substitution : 0} tone={unit ? tone(unit.substitution) : "none"} />
         </Fact>
       </dl>
 
@@ -369,10 +389,10 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 }
 
 // A 0 to 100 score with its colour; grey when there is no figure yet.
-function Score({ v }: { v: number | null }) {
+function Score({ v, tone }: { v: number | null; tone: Tone }) {
   return (
     <span className="flex items-center gap-2">
-      <Dot tone={v == null ? "none" : band(v).tone} />
+      <Dot tone={tone} />
       <span className="text-2xl font-extrabold">{v ?? "—"}</span>
       <span className="text-sm text-muted">/ 100</span>
     </span>
@@ -389,13 +409,19 @@ function Openings({ n }: { n: number | null }) {
 
 type Col = "openings" | "risk";
 // Fixed tracks for the two figure columns; the name takes the rest and wraps,
-// so the list never grows past its box on a phone.
+// so the list never grows past its box on a phone. The wide leads panel puts
+// more air between the two figures.
 const ROW = "grid grid-cols-[minmax(0,1fr)_5rem_3.25rem] items-center gap-3";
+const WIDE_ROW = "grid grid-cols-[minmax(0,1fr)_5rem_3.25rem] items-center gap-8";
 
 // Column labels over a job list: openings and risk, each sortable.
-function Cols({ sort, onSort, className = "" }: { sort: Sort<Col>; onSort: (s: Sort<Col>) => void; className?: string }) {
+function Cols({
+  sort, onSort, wide = false, className = "",
+}: {
+  sort: Sort<Col>; onSort: (s: Sort<Col>) => void; wide?: boolean; className?: string;
+}) {
   return (
-    <div className={`flex justify-end gap-3 ${className}`}>
+    <div className={`flex justify-end ${wide ? "gap-8" : "gap-3"} ${className}`}>
       <SortButton k="openings" label="Yearly openings" sort={sort} onSort={onSort} align="right" className="min-w-[5rem]" />
       <SortButton k="risk" label="AI risk" sort={sort} onSort={onSort} className="w-[3.25rem]" />
     </div>
@@ -502,14 +528,14 @@ function Leads({
       </div>
       {rows.length > 0 && (
         <>
-          <Cols sort={sort} onSort={setSort} className="pb-1" />
+          <Cols sort={sort} onSort={setSort} wide className="pb-1" />
           <ul className="max-h-[24rem] divide-y divide-border-soft/60 overflow-y-auto">
             {sorted.map((r) => (
               <li key={r.id}>
                 <button
                   onClick={() => onPick(r)}
                   {...hoverProps(r.id, onHover)}
-                  className={`${ROW} w-full py-2 text-left text-sm hover:text-accent-strong`}
+                  className={`${WIDE_ROW} w-full py-2 text-left text-sm hover:text-accent-strong`}
                 >
                   <span className="min-w-0 break-words text-ink">{r.label}</span>
                   <Openings n={r.openings} />

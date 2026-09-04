@@ -17,7 +17,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-50 border-b border-border-soft bg-background/80 backdrop-blur">
-      <Container>
+      <Container wide>
         {/* Mobile: menu button left, wordmark centred, toggle right, nav in a
             panel under the bar. From sm: one row, wordmark then nav on the
             left, toggle right. */}
