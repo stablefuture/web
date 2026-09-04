@@ -160,12 +160,12 @@ export function Checker() {
     return [...list].sort(byOpenings);
   }, [selected, jobs]);
 
-  // The finder's rows: this path, this sector, this search; most openings first.
+  // The finder's rows: this path, this sector, this search; A to Z.
   const pool = useMemo(
     () =>
       (data?.units ?? [])
         .filter((u) => u.path === tab && (!sector || u.sectors.includes(sector)))
-        .sort(byOpenings),
+        .sort((a, b) => a.label.localeCompare(b.label)),
     [data, tab, sector],
   );
   // Every job the chosen sector reaches: its own jobs, or the jobs its degrees
