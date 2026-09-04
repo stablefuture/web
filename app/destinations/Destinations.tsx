@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { Dot, riskWord } from "@/app/lib/bands";
+import { band, Dot } from "@/app/lib/bands";
+import { type Sort, SortButton, sortRows } from "@/app/lib/sort";
 
 type Section = { sec: string; share: number; count: number; earn: number | null; other?: boolean };
 type Industry = { name: string; count: number; earn: number | null };
@@ -165,7 +166,7 @@ export function Destinations() {
           </Panel>
         )}
 
-        <Panel title="Average pay" className="order-2 lg:order-none lg:col-start-1 lg:row-start-1">
+        <Panel title="Compare outcomes" className="order-2 lg:order-none lg:col-start-1 lg:row-start-1">
           <div className="mb-3 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
             {YEARS.map((yy) => (
               <button
@@ -287,15 +288,48 @@ function ShowAll({ all, total, top, onToggle }: { all: boolean; total: number; t
   );
 }
 
+// Share, then name, then the one figure on the right (pay or AI risk). The
+// tracks are fixed so a long name wraps instead of pushing the figure out of
+// the box on a phone.
+const ROW = "grid grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] items-center gap-x-2";
+
+function Share({ open, share }: { open: boolean; share: number }) {
+  return (
+    <span className="flex items-center gap-1">
+      <Chevron open={open} />
+      <span className="font-bold tabular-nums text-accent-strong">{Math.round(share)}%</span>
+    </span>
+  );
+}
+
+function Risk({ risk }: { risk: number | null }) {
+  if (risk == null) return <span className="text-right text-xs text-muted">—</span>;
+  return (
+    <span className="flex items-center justify-end gap-1.5 whitespace-nowrap text-xs tabular-nums text-muted">
+      <Dot tone={band(risk).tone} />
+      {risk}
+    </span>
+  );
+}
+
+type IndCol = "share" | "earn";
+
 function IndustryList({ slice }: { slice: Slice }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const shown = all ? slice.sections : slice.sections.slice(0, TOP);
+  const [sort, setSort] = useState<Sort<IndCol>>(null);
+  const rows = sortRows(slice.sections, sort, (x, k) => x[k]);
+  const shown = all ? rows : rows.slice(0, TOP);
   // The Other bucket sits last but can be the largest share of all
   // (engineering: 53 divisions, 23.9%), so scale on the true max.
   const max = Math.max(...slice.sections.map((x) => x.share));
   return (
     <div className="flex flex-col">
+      <div className={`${ROW} border-b border-border-soft/60 pb-1`}>
+        <SortButton k="share" label="Share" sort={sort} onSort={setSort} />
+        <span />
+        <SortButton k="earn" label="Pay" sort={sort} onSort={setSort} align="right" />
+      </div>
       <ul>
         {shown.map((s) => {
           const inside = slice.groups[s.sec] ?? [];
@@ -306,19 +340,12 @@ function IndustryList({ slice }: { slice: Slice }) {
                 onClick={() => setOpen(isOpen ? null : s.sec)}
                 disabled={!inside.length}
                 aria-expanded={isOpen}
-                className="flex w-full flex-col gap-1 py-2.5 text-left enabled:hover:bg-surface-alt/60"
+                className={`${ROW} w-full min-w-0 gap-y-1 py-2.5 text-left text-sm enabled:hover:bg-surface-alt/60`}
               >
-                <span className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="flex min-w-0 items-baseline gap-1.5">
-                    <Chevron open={isOpen} />
-                    <span title={s.sec} className="min-w-0 font-semibold text-ink lg:truncate">{s.sec}</span>
-                  </span>
-                  <span className="flex shrink-0 items-baseline gap-3">
-                    <span className="text-xs text-muted">{gbp(s.earn)}</span>
-                    <span className="w-11 text-right font-bold text-accent-strong">{Math.round(s.share)}%</span>
-                  </span>
-                </span>
-                <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
+                <Share open={isOpen} share={s.share} />
+                <span className="min-w-0 break-words font-semibold text-ink">{s.sec}</span>
+                <span className="text-right text-xs tabular-nums text-muted">{gbp(s.earn)}</span>
+                <span className="col-span-2 col-start-2 h-2.5 rounded-r-[3px] bg-border-soft/30">
                   <span
                     className={`block h-full rounded-r-[3px] ${
                       // Other is a residual, not one industry, so it never
@@ -328,13 +355,13 @@ function IndustryList({ slice }: { slice: Slice }) {
                     style={{ width: `${(s.share / max) * 100}%` }}
                   />
                 </span>
-                <span className="ml-[18px] text-xs text-muted">{count(s.count)} graduates</span>
+                <span className="col-span-2 col-start-2 text-xs text-muted">{count(s.count)} graduates</span>
               </button>
               {isOpen && (
-                <ul className="mb-2 ml-[18px] text-sm">
+                <ul className="mb-2 ml-[3.5rem] text-sm">
                   {inside.map((i) => (
                     <li key={i.name} className="flex items-center justify-between gap-3 py-1">
-                      <span className="min-w-0 truncate text-ink">{i.name}</span>
+                      <span className="min-w-0 break-words text-ink">{i.name}</span>
                       <span className="flex shrink-0 gap-3 text-xs text-muted">
                         <span>{count(i.count)} grads</span>
                         <span className="w-14 text-right">{gbp(i.earn)}</span>
@@ -352,6 +379,8 @@ function IndustryList({ slice }: { slice: Slice }) {
   );
 }
 
+type GroupCol = "share" | "risk";
+
 function GroupList({
   rows, order, trainIds,
 }: {
@@ -361,13 +390,19 @@ function GroupList({
 }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const shown = all ? rows : rows.slice(0, TOP);
+  const [sort, setSort] = useState<Sort<GroupCol>>(null);
+  const sorted = sortRows(rows, sort, (r, k) => (k === "share" ? r.share : r.g.risk));
+  const shown = all ? sorted : sorted.slice(0, TOP);
   const max = rows[0]?.share ?? 1;
   return (
     <div className="flex flex-col">
+      <div className={`${ROW} border-b border-border-soft/60 pb-1`}>
+        <SortButton k="share" label="Share" sort={sort} onSort={setSort} />
+        <span />
+        <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
+      </div>
       <ul>
         {shown.map(({ g, share }) => {
-          const r = g.risk == null ? null : riskWord(g.risk);
           const isOpen = open === g.id;
           const roles = order(g.roles);
           const mapped = roles.filter((x) => trainIds.has(x.id)).length;
@@ -376,33 +411,21 @@ function GroupList({
               <button
                 onClick={() => setOpen(isOpen ? null : g.id)}
                 aria-expanded={isOpen}
-                className="flex w-full flex-col gap-1 py-2.5 text-left hover:bg-surface-alt/60"
+                className={`${ROW} w-full min-w-0 gap-y-1 py-2.5 text-left text-sm hover:bg-surface-alt/60`}
               >
-                <span className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="flex min-w-0 items-baseline gap-1.5">
-                    <Chevron open={isOpen} />
-                    <span className="font-semibold text-ink">{g.name}</span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-3">
-                    {r && (
-                      <span className="flex items-center gap-1.5 whitespace-nowrap text-xs text-muted">
-                        <Dot tone={r.tone} />
-                        {r.word} · {g.risk}
-                      </span>
-                    )}
-                    <span className="w-11 text-right font-bold text-accent-strong">{Math.round(share)}%</span>
-                  </span>
-                </span>
-                <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
+                <Share open={isOpen} share={share} />
+                <span className="min-w-0 break-words font-semibold text-ink">{g.name}</span>
+                <Risk risk={g.risk} />
+                <span className="col-span-2 col-start-2 h-2.5 rounded-r-[3px] bg-border-soft/30">
                   <span
                     className="block h-full rounded-r-[3px] bg-accent/40"
                     style={{ width: `${(share / max) * 100}%` }}
                   />
                 </span>
-                <span title={GLOSS[g.id]} className="ml-[18px] text-xs text-muted lg:truncate">{GLOSS[g.id]}</span>
+                <span className="col-span-2 col-start-2 text-xs text-muted">{GLOSS[g.id]}</span>
               </button>
               {isOpen && (
-                <div className="mb-2 ml-[18px]">
+                <div className="mb-2 ml-[3.5rem]">
                   <p className="mb-1 text-xs text-muted">
                     {g.n} jobs, most job openings first.
                     {mapped > 0 && " The ones this degree trains for come first."}
@@ -422,24 +445,31 @@ function GroupList({
 type NumKey = "exposure" | "substitution" | "salary" | "openings" | "entrants" | "competition";
 const FACTS: [NumKey, string, (v: number) => string][] = [
   ["exposure", "AI learnability", (v) => `${v} / 100`],
-  ["substitution", "Substitution", (v) => `${v} / 100`],
+  ["substitution", "AI substitution", (v) => `${v} / 100`],
   ["salary", "Salary", (v) => gbp(v)],
-  ["openings", "Openings a year", (v) => count(v)],
+  ["openings", "Yearly openings", (v) => count(v)],
   ["entrants", "Entrants a year", (v) => count(v)],
   ["competition", "Competition", (v) => `${v} per opening`],
 ];
+
+const ROLE_ROW = "grid grid-cols-[minmax(0,1fr)_3.5rem] items-center gap-x-2";
 
 // A job row that opens in place to the checker's figures, so nobody has to
 // leave the page to see one job.
 function RoleList({ roles, mapped, limit }: { roles: Role[]; mapped?: Set<string>; limit: number }) {
   const [all, setAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const shown = all ? roles : roles.slice(0, limit);
+  const [sort, setSort] = useState<Sort<"risk">>(null);
+  const rows = sortRows(roles, sort, (r) => r.risk);
+  const shown = all ? rows : rows.slice(0, limit);
   return (
     <div className="flex flex-col">
+      <div className={`${ROLE_ROW} border-b border-border-soft/40 pb-1`}>
+        <span />
+        <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
+      </div>
       <ul className="divide-y divide-border-soft/40">
         {shown.map((r) => {
-          const w = r.risk == null ? null : riskWord(r.risk);
           const isOpen = open === r.id;
           return (
             <li key={r.id}>
@@ -447,25 +477,18 @@ function RoleList({ roles, mapped, limit }: { roles: Role[]; mapped?: Set<string
                 type="button"
                 onClick={() => setOpen(isOpen ? null : r.id)}
                 aria-expanded={isOpen}
-                className="flex w-full items-center justify-between gap-3 py-2 text-left text-sm hover:text-accent-strong"
+                className={`${ROLE_ROW} w-full min-w-0 py-2 text-left text-sm hover:text-accent-strong`}
               >
                 <span className="flex min-w-0 items-center gap-1.5">
                   <Chevron open={isOpen} />
-                  <span className="min-w-0 truncate text-ink">{r.label}</span>
+                  <span className="min-w-0 break-words text-ink">{r.label}</span>
                   {mapped?.has(r.id) && (
                     <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold text-accent-strong">
                       Trains for
                     </span>
                   )}
                 </span>
-                {w ? (
-                  <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted">
-                    <Dot tone={w.tone} />
-                    {w.word} · {r.risk}
-                  </span>
-                ) : (
-                  <span className="shrink-0 text-xs text-muted">No AI figures</span>
-                )}
+                <Risk risk={r.risk} />
               </button>
               {isOpen && (
                 <div className="mb-3 ml-[18px] rounded-xl bg-surface-alt px-4 py-3">

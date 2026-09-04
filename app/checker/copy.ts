@@ -18,8 +18,8 @@ export const TOOLTIPS: Record<string, string> = {
 };
 
 export const LABELS: Record<string, string> = {
-  exposure: "AI Learnability",
-  substitution: "Substitution",
+  exposure: "AI learnability",
+  substitution: "AI substitution",
   risk: "Risk",
   salary: "Salary",
   openings: "Projected openings",

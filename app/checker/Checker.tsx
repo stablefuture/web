@@ -6,6 +6,7 @@ import { LABELS, TOOLTIPS } from "./copy";
 import { JobMap } from "./Map";
 import { SECTOR_LABEL } from "./sectors";
 import { band, Dot, riskWord } from "@/app/lib/bands";
+import { type Sort, SortButton, sortRows } from "@/app/lib/sort";
 
 export type Path = "jobs" | "degrees" | "apprenticeships";
 
@@ -47,14 +48,6 @@ const PICK: Record<Path, string> = {
   degrees: "Choose a degree area",
   apprenticeships: "Choose an apprenticeship route",
 };
-
-// Shown before anything is chosen, so the first screen is not empty.
-const EXAMPLES: [string, Path, string][] = [
-  ["Accountant", "jobs", "Chartered and certified accountants"],
-  ["Nurse", "jobs", "Other nursing professionals"],
-  ["Psychology degree", "degrees", "Psychology"],
-  ["Software apprenticeship", "apprenticeships", "Software developer"],
-];
 
 const money = (v: number) => `£${v.toLocaleString("en-GB")}`;
 const count = (v: number) => v.toLocaleString("en-GB");
@@ -122,14 +115,37 @@ export function Checker() {
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/v3.json").then((r) => r.json()).then(setData).catch(() => setData(null));
     // The chosen unit lives in the URL so a parent can send the link on.
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
-    setSelectedId(new URLSearchParams(window.location.search).get("id"));
+    const id = new URLSearchParams(window.location.search).get("id");
+    fetch("/v3.json")
+      .then((r) => r.json())
+      .then((d: V3) => {
+        setData(d);
+        setSelectedId(id);
+        const u = id ? d.units.find((x) => x.id === id) : null;
+        if (u) {
+          setBrowse(u.path);
+          setSector(u.sectors[0] ?? "");
+        }
+      })
+      .catch(() => setData(null));
   }, []);
 
+  const jobs = useMemo(() => data?.units.filter((u) => u.path === "jobs") ?? [], [data]);
+  const byId = useMemo(
+    () => new Map<string, Unit>((data?.units ?? []).map((u) => [u.id, u])),
+    [data],
+  );
+
+  // Choosing a unit also opens its sector in the browse list, so the similar
+  // options sit under the result and light up on the map.
   const show = (id: string) => {
     setSelectedId(id);
+    const u = byId.get(id);
+    if (u) {
+      setBrowse(u.path);
+      setSector(u.sectors[0] ?? "");
+    }
     window.history.replaceState(null, "", `?id=${encodeURIComponent(id)}`);
     requestAnimationFrame(() =>
       resultRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }),
@@ -149,11 +165,6 @@ export function Checker() {
     window.history.replaceState(null, "", window.location.pathname);
   };
 
-  const jobs = useMemo(() => data?.units.filter((u) => u.path === "jobs") ?? [], [data]);
-  const byId = useMemo(
-    () => new Map<string, Unit>((data?.units ?? []).map((u) => [u.id, u])),
-    [data],
-  );
   const selected = (selectedId && byId.get(selectedId)) || null;
   const prev = (prevId && byId.get(prevId)) || null;
 
@@ -168,7 +179,6 @@ export function Checker() {
         : [],
     [selected, jobs],
   );
-  const relatedIds = useMemo(() => new Set(related.map((r) => r.id)), [related]);
 
   // Every job a sector reaches: its own jobs, or the jobs its degrees or
   // apprenticeships lead to. Lit on the map so a sector can be browsed.
@@ -191,33 +201,17 @@ export function Checker() {
     SECTOR_LABEL[sector] ??
     PATHS.flatMap((p) => data.sectors[p]).find((s) => s.id === sector)?.label ??
     "";
-  const lit = relatedIds.size ? relatedIds : sectorJobs;
-  const litNote =
-    !relatedIds.size && sector
-      ? `The ${sectorJobs.size} jobs ${sectorLabel} leads to are lit.`
-      : null;
+  const options = data.sectors[browse].map((s) => ({ id: s.id, label: SECTOR_LABEL[s.id] ?? s.label }));
+  // Job sectors keep ONS code order (managers down to elementary), which
+  // means something; degree areas do not, so they go A to Z.
+  if (browse === "degrees") options.sort((a, b) => a.label.localeCompare(b.label));
+
+  // On a phone everything stacks in source order, the map between the sector
+  // picker and its list. On a laptop the map sits in a sticky right column.
   return (
-    <div className="flex flex-col gap-10 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-14">
+    <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_auto_1fr] lg:gap-x-14 lg:gap-y-8">
       <div className="flex flex-col gap-8">
         <Search units={data.units} onPick={(u) => select(u.id)} />
-
-        {!selected && (
-          <p className="flex flex-wrap items-center gap-2 text-sm text-muted">
-            Try:
-            {EXAMPLES.map(([text, path, label]) => {
-              const u = data.units.find((x) => x.path === path && x.label === label);
-              return u ? (
-                <button
-                  key={u.id}
-                  onClick={() => select(u.id)}
-                  className="rounded-full border border-border-soft px-3 py-1 text-ink transition hover:border-accent-strong hover:text-accent-strong"
-                >
-                  {text}
-                </button>
-              ) : null;
-            })}
-          </p>
-        )}
 
         {selected && (
           <Result
@@ -230,61 +224,61 @@ export function Checker() {
             onClear={clear}
           />
         )}
+      </div>
 
-        <div className="flex flex-col gap-3 text-sm text-muted">
-          <div className="flex items-baseline justify-between gap-3">
-            <span id="browse-label">Or browse, most job openings first</span>
-            {sector && (
-              <button
-                type="button"
-                onClick={() => setSector("")}
-                className="text-xs text-accent-strong hover:underline"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <div role="group" aria-labelledby="browse-label" className="flex gap-1 rounded-lg bg-surface-alt p-1">
-            {PATHS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                aria-pressed={browse === p}
-                onClick={() => { setBrowse(p); setSector(""); }}
-                className={`flex-1 rounded-md px-2 py-1.5 text-sm transition ${
-                  browse === p ? "bg-background font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"
-                }`}
-              >
-                {GROUP[p]}
-              </button>
-            ))}
-          </div>
-          <select
-            aria-label={PICK[browse]}
-            value={sector}
-            onChange={(e) => setSector(e.target.value)}
-            className="rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-base text-ink outline-none transition focus:border-accent-strong"
-          >
-            <option value="">{PICK[browse]}</option>
-            {data.sectors[browse].map((s) => (
-              <option key={s.id} value={s.id}>{SECTOR_LABEL[s.id] ?? s.label}</option>
-            ))}
-          </select>
+      <div className="flex flex-col gap-3 text-sm text-muted">
+        <div className="flex items-baseline justify-between gap-3">
+          <span id="browse-label">Or browse</span>
+          {sector && (
+            <button
+              type="button"
+              onClick={() => setSector("")}
+              className="text-xs text-accent-strong hover:underline"
+            >
+              Clear
+            </button>
+          )}
         </div>
-
-        {sector && (
-          <SectorList
-            title={sectorLabel}
-            units={sectorUnits}
-            selectedId={selectedId}
-            onPick={(u) => select(u.id)}
-          />
-        )}
+        <div role="group" aria-labelledby="browse-label" className="flex gap-1 rounded-lg bg-surface-alt p-1">
+          {PATHS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              aria-pressed={browse === p}
+              onClick={() => { setBrowse(p); setSector(""); }}
+              className={`flex-1 rounded-md px-2 py-1.5 text-sm transition ${
+                browse === p ? "bg-background font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"
+              }`}
+            >
+              {GROUP[p]}
+            </button>
+          ))}
+        </div>
+        <select
+          aria-label={PICK[browse]}
+          value={sector}
+          onChange={(e) => setSector(e.target.value)}
+          className="w-full rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-base text-ink outline-none transition focus:border-accent-strong"
+        >
+          <option value="">{PICK[browse]}</option>
+          {options.map((s) => (
+            <option key={s.id} value={s.id}>{s.label}</option>
+          ))}
+        </select>
       </div>
 
-      <div className="lg:sticky lg:top-24">
-        <JobMap jobs={jobs} selected={selected} lit={lit} litNote={litNote} onSelect={select} />
+      <div className="mx-auto w-full max-w-xs lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:mx-0 lg:max-w-none lg:self-start">
+        <JobMap jobs={jobs} selected={selected} lit={sectorJobs} />
       </div>
+
+      {sector && (
+        <SectorList
+          title={sectorLabel}
+          units={sectorUnits}
+          selectedId={selectedId}
+          onPick={(u) => select(u.id)}
+        />
+      )}
     </div>
   );
 }
@@ -329,7 +323,7 @@ function Search({ units, onPick }: { units: Unit[]; onPick: (u: Unit) => void })
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 120)}
         onKeyDown={onKeyDown}
-        placeholder="Job, degree or apprenticeship"
+        placeholder="Search..."
         aria-label="Search a job, degree or apprenticeship"
         role="combobox"
         aria-expanded={show}
@@ -384,11 +378,11 @@ function Result({
   onBack: () => void;
   onClear: () => void;
 }) {
-  const facts: [string][] = [["salary"], ["competition"], ["openings"], ["entrants"]];
   const risk = unit.risk == null ? null : riskWord(unit.risk);
+  const hasAi = unit.exposure != null && unit.substitution != null;
 
   return (
-    <div ref={ref} className="flex scroll-mt-24 flex-col gap-7 rounded-2xl border border-border-soft p-6">
+    <div ref={ref} className="flex scroll-mt-24 flex-col gap-6 rounded-2xl border border-border-soft p-5 sm:p-6">
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">{typeOf(unit)}</p>
@@ -396,7 +390,7 @@ function Result({
             <button
               type="button"
               onClick={onBack}
-              className="-mt-1 ml-auto rounded-md px-2 py-1 text-xs text-accent-strong transition hover:underline"
+              className="-mt-1 ml-auto min-w-0 truncate rounded-md px-2 py-1 text-xs text-accent-strong transition hover:underline"
             >
               ← Back to {prev.label}
             </button>
@@ -405,7 +399,7 @@ function Result({
             type="button"
             onClick={onClear}
             aria-label="Close this result"
-            className="-mr-2 -mt-1 rounded-md px-2 py-1 text-xs text-muted transition hover:text-ink"
+            className="-mr-2 -mt-1 shrink-0 rounded-md px-2 py-1 text-xs text-muted transition hover:text-ink"
           >
             Close ×
           </button>
@@ -431,76 +425,76 @@ function Result({
       </div>
 
       <div>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">Job market</p>
         <dl className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-surface-alt px-4 py-4">
-            <dt className="text-xs text-muted">{LABELS.salary}</dt>
-            <dd className="text-2xl font-extrabold text-ink">
-              {unit.salary == null ? "—" : money(unit.salary)}
-            </dd>
-          </div>
-          <div className="rounded-xl bg-surface-alt px-4 py-4">
-            <dt className="text-xs text-muted">{LABELS.competition}</dt>
-            <dd className="text-ink">
-              <span className="text-2xl font-extrabold">{unit.competition ?? "—"}</span>
-              {unit.competition != null && <span className="text-sm text-muted"> per opening</span>}
-            </dd>
-            {unit.entrants != null && unit.openings != null && (
-              <dd className="mt-1 text-xs text-muted">
-                {count(unit.entrants)} entrants for {count(unit.openings)} openings a year
-              </dd>
-            )}
-          </div>
+          <Fact label={LABELS.salary}>
+            <span className="text-2xl font-extrabold">{unit.salary == null ? "—" : money(unit.salary)}</span>
+          </Fact>
+          <Fact label={LABELS.competition}>
+            <span className="text-2xl font-extrabold">{unit.competition ?? "—"}</span>
+            {unit.competition != null && <span className="text-sm text-muted"> per opening</span>}
+          </Fact>
+          <Fact label={LABELS.exposure}>
+            <Score v={unit.exposure} />
+          </Fact>
+          <Fact label={LABELS.substitution}>
+            <Score v={unit.substitution} />
+          </Fact>
         </dl>
         <details className="mt-3 text-sm text-muted">
           <summary className="cursor-pointer hover:text-ink">What these numbers mean</summary>
           <dl className="mt-2 flex flex-col gap-2">
-            {facts.map(([k]) => (
-              <div key={k}>
-                <dt className="font-semibold text-ink">{LABELS[k]}</dt>
-                <dd>{TOOLTIPS[k]}</dd>
-              </div>
-            ))}
+            <div>
+              <dt className="font-semibold text-ink">{LABELS.salary}</dt>
+              <dd>{TOOLTIPS.salary}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">{LABELS.competition}</dt>
+              <dd>
+                {TOOLTIPS.competition}
+                {unit.entrants != null && unit.openings != null && (
+                  <> Here, {count(unit.entrants)} entrants a year for {count(unit.openings)} openings.</>
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">{LABELS.exposure}</dt>
+              <dd>{TOOLTIPS.exposure}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">{LABELS.substitution}</dt>
+              <dd>
+                {TOOLTIPS.substitution}
+                {hasAi && " The AI risk above combines these two scores."}
+              </dd>
+            </div>
           </dl>
         </details>
       </div>
-
-      {unit.exposure != null && unit.substitution != null && (
-        <div className="flex flex-col gap-5">
-          <Meter label={LABELS.exposure} value={unit.exposure} help={TOOLTIPS.exposure} />
-          <Meter label={LABELS.substitution} value={unit.substitution} help={TOOLTIPS.substitution} />
-        </div>
-      )}
 
       {related.length > 0 && <Related roles={related} onPick={onPick} />}
     </div>
   );
 }
 
-function Meter({ label, value, help }: { label: string; value: number; help: string }) {
-  const b = band(value);
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="font-semibold text-ink">{label}</span>
-        <span className="flex items-center gap-2 text-sm">
-          <Dot tone={b.tone} />
-          <span className="text-muted">{b.word}</span>
-          <span className="font-bold text-accent-strong">{value}</span>
-        </span>
-      </div>
-      <div
-        role="meter"
-        aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={value}
-        className="h-2 w-full overflow-hidden rounded-full bg-border-soft/40"
-      >
-        <div className="h-full rounded-full bg-accent/40" style={{ width: `${value}%` }} />
-      </div>
-      <p className="text-xs text-muted">{help}</p>
+    <div className="rounded-xl bg-surface-alt px-4 py-4">
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="text-ink">{children}</dd>
     </div>
+  );
+}
+
+// A 0 to 100 score with its colour and band, so the card reads without the map.
+function Score({ v }: { v: number | null }) {
+  if (v == null) return <span className="text-2xl font-extrabold">—</span>;
+  const b = band(v);
+  return (
+    <span className="flex items-center gap-2">
+      <Dot tone={b.tone} />
+      <span className="text-2xl font-extrabold">{v}</span>
+      <span className="text-sm text-muted">{b.word}</span>
+    </span>
   );
 }
 
@@ -512,49 +506,51 @@ function Openings({ n }: { n: number | null }) {
   );
 }
 
-// Column labels over a job list: name, openings, risk.
-function Cols({ className = "" }: { className?: string }) {
+type Col = "openings" | "risk";
+// Fixed tracks for the two figure columns; the name takes the rest and wraps,
+// so the list never grows past its box on a phone.
+const ROW = "grid grid-cols-[minmax(0,1fr)_5rem_3.25rem] items-center gap-3";
+
+// Column labels over a job list: openings and risk, each sortable.
+function Cols({ sort, onSort, className = "" }: { sort: Sort<Col>; onSort: (s: Sort<Col>) => void; className?: string }) {
   return (
-    <div
-      aria-hidden
-      className={`grid grid-cols-[minmax(0,1fr)_5.5rem_7.5rem] gap-3 text-[11px] font-semibold uppercase tracking-wider text-muted ${className}`}
-    >
-      <span />
-      <span className="text-right">Openings a year</span>
-      <span>AI risk</span>
+    <div className={`flex justify-end gap-3 ${className}`}>
+      <SortButton k="openings" label="Yearly openings" sort={sort} onSort={onSort} align="right" className="min-w-[5rem]" />
+      <SortButton k="risk" label="AI risk" sort={sort} onSort={onSort} className="w-[3.25rem]" />
     </div>
   );
 }
 
 function RiskTag({ risk }: { risk: number | null }) {
   if (risk == null) return <span className="text-xs text-muted">—</span>;
-  const w = riskWord(risk);
   return (
-    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted">
-      <Dot tone={w.tone} />
-      {w.word} · {risk}
+    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs tabular-nums text-muted">
+      <Dot tone={band(risk).tone} />
+      {risk}
     </span>
   );
 }
 
 function Related({ roles, onPick }: { roles: Unit[]; onPick: (u: Unit) => void }) {
   const [all, setAll] = useState(false);
-  const shown = all ? roles : roles.slice(0, 8);
+  const [sort, setSort] = useState<Sort<Col>>(null);
+  const rows = sortRows(roles, sort, (u, k) => u[k]);
+  const shown = all ? rows : rows.slice(0, 8);
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wider text-muted">Jobs this leads to</p>
       <p className="mb-2 text-xs text-muted">
         {roles.length} jobs, most job openings first. The AI figures above are the average of these.
       </p>
-      <Cols className="pb-1" />
+      <Cols sort={sort} onSort={setSort} className="pb-1" />
       <ul className="divide-y divide-border-soft/60">
         {shown.map((r) => (
           <li key={r.id}>
             <button
               onClick={() => onPick(r)}
-              className="grid w-full grid-cols-[minmax(0,1fr)_5.5rem_7.5rem] items-center gap-3 py-2 text-left text-sm hover:text-accent-strong"
+              className={`${ROW} w-full py-2 text-left text-sm hover:text-accent-strong`}
             >
-              <span className="min-w-0 truncate text-ink">{r.label}</span>
+              <span className="min-w-0 break-words text-ink">{r.label}</span>
               <Openings n={r.openings} />
               <RiskTag risk={r.risk} />
             </button>
@@ -578,25 +574,27 @@ function SectorList({
   selectedId: string | null;
   onPick: (u: Unit) => void;
 }) {
-  const rows = [...units].sort((a, b) => (b.openings ?? -1) - (a.openings ?? -1));
+  const [sort, setSort] = useState<Sort<Col>>(null);
+  const base = [...units].sort((a, b) => (b.openings ?? -1) - (a.openings ?? -1));
+  const rows = sortRows(base, sort, (u, k) => u[k]);
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="font-semibold text-ink">{title}</h3>
         <span className="text-xs text-muted">{rows.length}</span>
       </div>
-      <Cols className="px-4" />
+      <Cols sort={sort} onSort={setSort} className="px-4" />
       <ul className="max-h-[60vh] divide-y divide-border-soft/60 overflow-y-auto rounded-xl border border-border-soft">
         {rows.map((u) => (
           <li key={u.id}>
             <button
               onClick={() => onPick(u)}
               aria-current={u.id === selectedId || undefined}
-              className={`grid w-full grid-cols-[minmax(0,1fr)_5.5rem_7.5rem] items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-surface-alt ${
+              className={`${ROW} w-full px-4 py-2.5 text-left text-sm hover:bg-surface-alt ${
                 u.id === selectedId ? "bg-surface-alt" : ""
               }`}
             >
-              <span className="min-w-0 truncate text-ink">
+              <span className="min-w-0 break-words text-ink">
                 {u.label}
                 {u.level && <span className="text-muted"> · L{u.level}</span>}
               </span>

@@ -15,18 +15,10 @@ export default function CheckerPage() {
       <Section as="section">
         <Container>
           <div className="flex flex-col gap-10">
-            <div className="flex flex-col gap-4">
-              <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-                Check your <span className="text-accent-strong">career path</span> against{" "}
-                <span className="text-accent-strong">AI</span>
-              </h1>
-              <p className="max-w-2xl text-lg leading-relaxed text-muted">
-                Search a job, degree or apprenticeship. We score how much of the
-                work AI could learn to do, and how likely employers are to
-                replace people with it. Then we show the pay, openings and
-                competition behind it.
-              </p>
-            </div>
+            <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+              Check your <span className="text-accent-strong">career path</span> against{" "}
+              <span className="text-accent-strong">AI</span>
+            </h1>
             <Checker />
           </div>
         </Container>

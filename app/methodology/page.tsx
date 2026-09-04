@@ -95,14 +95,14 @@ export default function Methodology() {
             </p>
             <p>
               <strong className="text-ink">
-                Substitution: would AI replace the person, or help them?
+                AI substitution: would AI replace the person, or help them?
               </strong>
             </p>
             <p>
               Some work is hard to hand over even when a computer could do the
               steps. Work where you are responsible for someone&rsquo;s safety.
               Work where a mistake is serious. Work where you decide what happens
-              next. Substitution measures how little of that protection a job
+              next. AI substitution measures how little of that protection a job
               has.
             </p>
             <p>
@@ -143,7 +143,7 @@ export default function Methodology() {
               <Sup n={1} />
             </p>
 
-            <H3>Substitution</H3>
+            <H3>AI substitution</H3>
             <p>
               This one we calculate ourselves, from public data, because no one
               publishes it as a finished file.
@@ -238,7 +238,7 @@ export default function Methodology() {
 
             <H2>Openings and competition</H2>
             <p>
-              Learnability and substitution describe the work. These two describe
+              Learnability and AI substitution describe the work. These two describe
               the market for it.
             </p>
             <H3>Openings</H3>
@@ -356,7 +356,7 @@ export default function Methodology() {
               <strong className="text-ink">
                 Physical work counts twice, and we left it that way on purpose.
               </strong>{" "}
-              Learnability scores physical tasks zero. Substitution reads physical
+              Learnability scores physical tasks zero. AI substitution reads physical
               conditions as protective. So manual trades look safer on both
               measures partly for one shared reason. We could have adjusted for
               it, but doing so would break the checks above and void the published

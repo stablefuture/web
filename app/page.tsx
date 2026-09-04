@@ -294,12 +294,12 @@ export default function Home() {
                 </ol>
                 <p>
                   This creates our two key measures: AI Learnability and
-                  Substitution.
+                  AI substitution.
                 </p>
                 <ul className="flex flex-col gap-2 pl-5 [&>li]:list-disc">
-                  <li>Surgeons are low learnability, low substitution.</li>
+                  <li>Surgeons are low learnability, low AI substitution.</li>
                   <li>
-                    Accountants are high learnability, high substitution: we
+                    Accountants are high learnability, high AI substitution: we
                     won&rsquo;t need junior accountants much longer.
                   </li>
                 </ul>
