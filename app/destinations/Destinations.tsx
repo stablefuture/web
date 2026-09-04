@@ -300,8 +300,8 @@ function ShowAll({
   if (total <= top) return null;
   const toggle = () => {
     onToggle();
-    // After the fold has laid out, so the scroll lands on the shorter page.
-    if (all) requestAnimationFrame(() => box.current?.scrollIntoView({ block: "start", behavior: "smooth" }));
+    // After the fold has laid out, so the jump lands on the shorter page.
+    if (all) requestAnimationFrame(() => box.current?.scrollIntoView({ block: "start" }));
   };
   return (
     <button onClick={toggle} className="mt-2 self-start text-xs text-accent-strong hover:underline">
