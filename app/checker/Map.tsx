@@ -11,17 +11,20 @@ const px = (v: number) => PAD.l + (v / 100) * W;
 const py = (v: number) => PAD.t + (1 - v / 100) * H;
 
 // A picture, not a control: every job in grey as context, the jobs of the
-// chosen sector in the accent, and the chosen unit ringed and named. The
-// lists beside it are where a reader picks a job.
+// chosen sector in the accent, the chosen unit ringed and named, and the row
+// under the pointer in the lists ringed. The lists are where a reader picks.
 export function JobMap({
-  jobs, selected, lit,
+  jobs, selected, hover, lit,
 }: {
   jobs: Unit[];
   selected: Unit | null;
+  hover: Unit | null;
   lit: Set<string>;
 }) {
   const pts = jobs.filter((u) => u.exposure != null && u.substitution != null);
-  const focus = selected && selected.exposure != null && selected.substitution != null ? selected : null;
+  const has = (u: Unit | null) => (u && u.exposure != null && u.substitution != null ? u : null);
+  const focus = has(selected);
+  const ring = hover?.id === focus?.id ? null : has(hover);
   const dim = focus != null || lit.size > 0;
 
   return (
@@ -44,22 +47,22 @@ export function JobMap({
       {/* Risk labels sit outside the plot: lower risk at the bottom-left
           corner, higher risk above the top-right corner. */}
       <text
-        x={PAD.l} y={S - 6} fill="var(--muted)" fontSize={10} fontWeight={600} letterSpacing=".08em"
+        x={PAD.l} y={S - 6} fill="var(--muted)" fontSize={11} fontWeight={600} letterSpacing=".08em"
       >
         LOWER RISK
       </text>
-      <text x={px(100)} y={S - 6} textAnchor="end" fill="var(--muted)" fontSize={11}>
+      <text x={px(100)} y={S - 6} textAnchor="end" fill="var(--muted)" fontSize={12}>
         How much of the work AI could learn →
       </text>
       <text
-        transform="rotate(-90)" x={-py(50)} y={12} textAnchor="middle"
-        fill="var(--muted)" fontSize={11}
+        transform="rotate(-90)" x={-py(50)} y={13} textAnchor="middle"
+        fill="var(--muted)" fontSize={12}
       >
         How likely employers replace people →
       </text>
       <text
         x={px(100)} y={PAD.t - 9} textAnchor="end"
-        fill="var(--accent-strong)" fontSize={10} fontWeight={600} letterSpacing=".08em"
+        fill="var(--accent-strong)" fontSize={11} fontWeight={600} letterSpacing=".08em"
       >
         HIGHER RISK
       </text>
@@ -92,6 +95,12 @@ export function JobMap({
           <Label u={focus} />
         </g>
       )}
+      {ring && (
+        <circle
+          cx={px(ring.exposure!)} cy={py(ring.substitution!)} r={8}
+          fill="none" stroke="var(--ink)" strokeWidth={1.5}
+        />
+      )}
     </svg>
   );
 }
@@ -101,12 +110,12 @@ function Label({ u }: { u: Unit }) {
   const cy = py(u.substitution!);
   // Long unit-group titles would run off the box.
   const name = u.label.length > 40 ? `${u.label.slice(0, 38)}…` : u.label;
-  const half = Math.min(name.length * 3, W / 2);
+  const half = Math.min(name.length * 3.3, W / 2);
   const x = Math.max(PAD.l + half, Math.min(S - PAD.r - half, cx));
   const y = cy < PAD.t + 26 ? cy + 24 : cy - 15;
   return (
     <text
-      x={x} y={y} textAnchor="middle" fontSize={11} fontWeight={600}
+      x={x} y={y} textAnchor="middle" fontSize={12} fontWeight={600}
       fill="var(--ink)" stroke="var(--background)" strokeWidth={3} paintOrder="stroke"
     >
       {name}

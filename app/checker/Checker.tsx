@@ -112,6 +112,8 @@ export function Checker() {
   // The unit a job was opened from (a degree's or standard's list), so a
   // reader can get back to it.
   const [prevId, setPrevId] = useState<string | null>(null);
+  // The row under the pointer, ringed on the map.
+  const [hoverId, setHoverId] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -167,6 +169,7 @@ export function Checker() {
 
   const selected = (selectedId && byId.get(selectedId)) || null;
   const prev = (prevId && byId.get(prevId)) || null;
+  const hover = (hoverId && byId.get(hoverId)) || null;
 
   // The jobs a degree or apprenticeship leads to: where its AI figures come from.
   const related = useMemo(
@@ -206,25 +209,14 @@ export function Checker() {
   // means something; degree areas do not, so they go A to Z.
   if (browse === "degrees") options.sort((a, b) => a.label.localeCompare(b.label));
 
-  // On a phone everything stacks in source order, the map between the sector
-  // picker and its list. On a laptop the map sits in a sticky right column.
-  return (
-    <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_auto_1fr] lg:gap-x-14 lg:gap-y-8">
-      <div className="flex flex-col gap-8">
-        <Search units={data.units} onPick={(u) => select(u.id)} />
+  const map = <JobMap jobs={jobs} selected={selected} hover={hover} lit={sectorJobs} />;
 
-        {selected && (
-          <Result
-            ref={resultRef}
-            unit={selected}
-            related={related}
-            prev={prev}
-            onPick={(u) => select(u.id)}
-            onBack={back}
-            onClear={clear}
-          />
-        )}
-      </div>
+  // Laptop: search, browse and the sector list down the left; the card on the
+  // right. Phone: search, browse, then the card, then the list, so a reader
+  // picks a path, reads it, and browses the rest of its sector underneath.
+  return (
+    <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:grid-rows-[auto_auto_1fr] lg:items-start lg:gap-x-12 lg:gap-y-6">
+      <Search units={data.units} onPick={(u) => select(u.id)} />
 
       <div className="flex flex-col gap-3 text-sm text-muted">
         <div className="flex items-baseline justify-between gap-3">
@@ -267,8 +259,27 @@ export function Checker() {
         </select>
       </div>
 
-      <div className="mx-auto w-full max-w-xs lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:mx-0 lg:max-w-none lg:self-start">
-        <JobMap jobs={jobs} selected={selected} lit={sectorJobs} />
+      <div className="lg:col-start-2 lg:row-span-3 lg:row-start-1">
+        {selected ? (
+          <Result
+            ref={resultRef}
+            unit={selected}
+            related={related}
+            prev={prev}
+            map={map}
+            onPick={(u) => select(u.id)}
+            onHover={setHoverId}
+            onBack={back}
+            onClear={clear}
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-border-soft p-5 sm:p-6">
+            <div className="w-full max-w-xs">{map}</div>
+            <p className="text-center text-sm text-muted">
+              Pick a job, degree or apprenticeship to see its figures here.
+            </p>
+          </div>
+        )}
       </div>
 
       {sector && (
@@ -277,6 +288,7 @@ export function Checker() {
           units={sectorUnits}
           selectedId={selectedId}
           onPick={(u) => select(u.id)}
+          onHover={setHoverId}
         />
       )}
     </div>
@@ -368,13 +380,15 @@ function Search({ units, onPick }: { units: Unit[]; onPick: (u: Unit) => void })
 }
 
 function Result({
-  ref, unit, related, prev, onPick, onBack, onClear,
+  ref, unit, related, prev, map, onPick, onHover, onBack, onClear,
 }: {
   ref: React.Ref<HTMLDivElement>;
   unit: Unit;
   related: Unit[];
   prev: Unit | null;
+  map: React.ReactNode;
   onPick: (u: Unit) => void;
+  onHover: (id: string | null) => void;
   onBack: () => void;
   onClear: () => void;
 }) {
@@ -383,6 +397,10 @@ function Result({
 
   return (
     <div ref={ref} className="flex scroll-mt-24 flex-col gap-6 rounded-2xl border border-border-soft p-5 sm:p-6">
+      {/* The map sits beside the headline and figures from md up, under them
+          on a phone, so the path is always seen next to where it sits. */}
+      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_16rem]">
+      <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">{typeOf(unit)}</p>
@@ -424,23 +442,27 @@ function Result({
         )}
       </div>
 
+      <dl className="grid grid-cols-2 gap-3">
+        <Fact label={LABELS.salary}>
+          <span className="text-2xl font-extrabold">{unit.salary == null ? "—" : money(unit.salary)}</span>
+        </Fact>
+        <Fact label={LABELS.competition}>
+          <span className="text-2xl font-extrabold">{unit.competition ?? "—"}</span>
+          {unit.competition != null && <span className="text-sm text-muted"> per opening</span>}
+        </Fact>
+        <Fact label={LABELS.exposure}>
+          <Score v={unit.exposure} />
+        </Fact>
+        <Fact label={LABELS.substitution}>
+          <Score v={unit.substitution} />
+        </Fact>
+      </dl>
+      </div>
+      <div className="mx-auto w-full max-w-xs md:mx-0 md:max-w-none">{map}</div>
+      </div>
+
       <div>
-        <dl className="grid grid-cols-2 gap-3">
-          <Fact label={LABELS.salary}>
-            <span className="text-2xl font-extrabold">{unit.salary == null ? "—" : money(unit.salary)}</span>
-          </Fact>
-          <Fact label={LABELS.competition}>
-            <span className="text-2xl font-extrabold">{unit.competition ?? "—"}</span>
-            {unit.competition != null && <span className="text-sm text-muted"> per opening</span>}
-          </Fact>
-          <Fact label={LABELS.exposure}>
-            <Score v={unit.exposure} />
-          </Fact>
-          <Fact label={LABELS.substitution}>
-            <Score v={unit.substitution} />
-          </Fact>
-        </dl>
-        <details className="mt-3 text-sm text-muted">
+        <details className="text-sm text-muted">
           <summary className="cursor-pointer hover:text-ink">What these numbers mean</summary>
           <dl className="mt-2 flex flex-col gap-2">
             <div>
@@ -471,7 +493,7 @@ function Result({
         </details>
       </div>
 
-      {related.length > 0 && <Related roles={related} onPick={onPick} />}
+      {related.length > 0 && <Related roles={related} onPick={onPick} onHover={onHover} />}
     </div>
   );
 }
@@ -531,7 +553,21 @@ function RiskTag({ risk }: { risk: number | null }) {
   );
 }
 
-function Related({ roles, onPick }: { roles: Unit[]; onPick: (u: Unit) => void }) {
+// Pointer or keyboard focus on a row rings that job on the map.
+const hoverProps = (id: string, onHover: (id: string | null) => void) => ({
+  onMouseEnter: () => onHover(id),
+  onMouseLeave: () => onHover(null),
+  onFocus: () => onHover(id),
+  onBlur: () => onHover(null),
+});
+
+function Related({
+  roles, onPick, onHover,
+}: {
+  roles: Unit[];
+  onPick: (u: Unit) => void;
+  onHover: (id: string | null) => void;
+}) {
   const [all, setAll] = useState(false);
   const [sort, setSort] = useState<Sort<Col>>(null);
   const rows = sortRows(roles, sort, (u, k) => u[k]);
@@ -548,6 +584,7 @@ function Related({ roles, onPick }: { roles: Unit[]; onPick: (u: Unit) => void }
           <li key={r.id}>
             <button
               onClick={() => onPick(r)}
+              {...hoverProps(r.id, onHover)}
               className={`${ROW} w-full py-2 text-left text-sm hover:text-accent-strong`}
             >
               <span className="min-w-0 break-words text-ink">{r.label}</span>
@@ -567,12 +604,13 @@ function Related({ roles, onPick }: { roles: Unit[]; onPick: (u: Unit) => void }
 }
 
 function SectorList({
-  title, units, selectedId, onPick,
+  title, units, selectedId, onPick, onHover,
 }: {
   title: string;
   units: Unit[];
   selectedId: string | null;
   onPick: (u: Unit) => void;
+  onHover: (id: string | null) => void;
 }) {
   const [sort, setSort] = useState<Sort<Col>>(null);
   const base = [...units].sort((a, b) => (b.openings ?? -1) - (a.openings ?? -1));
@@ -590,6 +628,7 @@ function SectorList({
             <button
               onClick={() => onPick(u)}
               aria-current={u.id === selectedId || undefined}
+              {...hoverProps(u.id, onHover)}
               className={`${ROW} w-full px-4 py-2.5 text-left text-sm hover:bg-surface-alt ${
                 u.id === selectedId ? "bg-surface-alt" : ""
               }`}
