@@ -25,8 +25,6 @@ export type Unit = {
   salary: number | null;
   openings: number | null;
   growth?: number | null;
-  entrants?: number | null;
-  competition?: number | null;
 };
 
 type Sector = { id: string; label: string };
@@ -51,6 +49,20 @@ const money = (v: number) => `£${(Math.round(v / 100) * 100).toLocaleString("en
 const count = (v: number) => v.toLocaleString("en-GB");
 const typeOf = (u: Unit) => `${TYPE[u.path]}${u.level ? ` · Level ${u.level}` : ""}`;
 const byOpenings = (a: Unit, b: Unit) => (b.openings ?? -1) - (a.openings ?? -1);
+
+// Projected change in the sector's jobs, 2024 to 2030. Two per cent either way
+// over six years is flat: the projection is a trend carried forward, not a
+// forecast, so a number that small is not a direction.
+const FLAT = 2;
+type Trend = "up" | "flat" | "down" | "none";
+const trendOf = (g: number | null | undefined): Trend =>
+  g == null ? "none" : g > FLAT ? "up" : g < -FLAT ? "down" : "flat";
+const TREND_WORD: Record<Trend, string> = {
+  up: "Growing",
+  flat: "Flat",
+  down: "Shrinking",
+  none: "No figure",
+};
 
 const words = (s: string) =>
   s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map((w) => w.replace(/s$/, ""));
@@ -280,8 +292,6 @@ function Card({
   const tone = (v: number | null | undefined): Tone => (v == null ? "none" : band(v).tone);
   const hasAi = unit != null && unit.exposure != null && unit.substitution != null;
   const ink = unit ? "text-ink" : "text-muted";
-  // The empty placeholder keeps the job card's shape.
-  const isJob = unit == null || unit.path === "jobs";
   return (
     <div className="flex flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
       <div className="flex flex-col gap-1">
@@ -336,23 +346,9 @@ function Card({
             {unit ? (unit.salary == null ? "—" : money(unit.salary)) : "£0"}
           </span>
         </Fact>
-        {/* Competition belongs to the occupation: its entrants and its openings
-            describe the same job. A degree or apprenticeship leads to many jobs,
-            and summing their entrants would count other subjects' graduates as
-            its own, so those cards show the openings they lead to instead. */}
-        {isJob ? (
-          <Fact label={LABELS.competition}>
-            <span className="text-2xl font-extrabold">{unit ? (unit.competition ?? "—") : 0}</span>
-            <span className="text-sm text-muted"> per opening</span>
-          </Fact>
-        ) : (
-          <Fact label={LABELS.openings}>
-            <span className="text-2xl font-extrabold">
-              {unit!.openings == null ? "—" : count(unit!.openings)}
-            </span>
-            <span className="text-sm text-muted"> a year</span>
-          </Fact>
-        )}
+        <Fact label={LABELS.growth}>
+          <TrendFact t={unit ? trendOf(unit.growth) : "flat"} />
+        </Fact>
         <Fact label={LABELS.exposure}>
           <Score v={unit ? unit.exposure : 0} tone={unit ? tone(unit.exposure) : "none"} />
         </Fact>
@@ -369,14 +365,11 @@ function Card({
             <dd>{TOOLTIPS.salary}</dd>
           </div>
           <div>
-            <dt className="font-semibold text-ink">
-              {isJob ? LABELS.competition : LABELS.openings}
-            </dt>
+            <dt className="font-semibold text-ink">{LABELS.growth}</dt>
             <dd>
-              {isJob ? TOOLTIPS.competition : TOOLTIPS.openings}
-              {isJob && unit && unit.entrants != null && unit.openings != null && (
-                <> Here, {count(unit.entrants)} graduates a year for {count(unit.openings)} openings.</>
-              )}
+              {TOOLTIPS.growth} Projected change in the number of jobs across
+              this sector between 2024 and 2030, on trends measured before
+              generative AI. Within 2% either way we call it flat.
             </dd>
           </div>
           <div>
@@ -416,22 +409,62 @@ function Score({ v, tone }: { v: number | null; tone: Tone }) {
   );
 }
 
-function Openings({ n }: { n: number | null }) {
+// A share line that rises, falls or runs level. It carries no colour: the
+// shape is the whole message, and a green or red arrow would read as a verdict
+// on a projection that does not deserve one.
+const TREND_PATH: Record<Exclude<Trend, "none">, string> = {
+  up: "M3 17l5.5-5.5 3.5 3.5L21 7M15 7h6v6",
+  down: "M3 7l5.5 5.5 3.5-3.5L21 17M15 17h6v-6",
+  flat: "M3 12h13M16 8l4 4-4 4",
+};
+
+function TrendIcon({ t, className }: { t: Exclude<Trend, "none">; className: string }) {
   return (
-    <span className="whitespace-nowrap text-right text-xs tabular-nums text-muted">
-      {n == null ? "—" : count(Math.round(n / 100) * 100)}
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d={TREND_PATH[t]} />
+    </svg>
+  );
+}
+
+// On the card: the line beside the word it stands for.
+function TrendFact({ t }: { t: Trend }) {
+  if (t === "none") return <span className="text-2xl font-extrabold">—</span>;
+  return (
+    <span className="flex items-center gap-2">
+      <TrendIcon t={t} className="h-6 w-6 shrink-0" />
+      <span className="text-xl font-extrabold">{TREND_WORD[t]}</span>
     </span>
   );
 }
 
-type Col = "openings" | "risk";
+// In a list: the line alone, with the word for anyone not reading pixels.
+function TrendCell({ g }: { g: number | null | undefined }) {
+  const t = trendOf(g);
+  return (
+    <span className="flex items-center justify-end text-muted">
+      {t === "none" ? <span className="text-xs">—</span> : <TrendIcon t={t} className="h-4 w-4" />}
+      <span className="sr-only">{TREND_WORD[t]}</span>
+    </span>
+  );
+}
+
+type Col = "growth" | "risk";
 // Fixed tracks for the two figure columns; the name takes the rest and wraps,
 // so the list never grows past its box on a phone. The wide leads panel puts
 // more air between the two figures.
-const ROW = "grid grid-cols-[minmax(0,1fr)_5rem_3.25rem] items-center gap-3";
-const WIDE_ROW = "grid grid-cols-[minmax(0,1fr)_5rem_3.25rem] items-center gap-8";
+const ROW = "grid grid-cols-[minmax(0,1fr)_3.5rem_3.25rem] items-center gap-3";
+const WIDE_ROW = "grid grid-cols-[minmax(0,1fr)_3.5rem_3.25rem] items-center gap-8";
 
-// Column labels over a job list: openings and risk, each sortable.
+// Column labels over a job list: growth and risk, each sortable.
 function Cols({
   sort, onSort, wide = false, className = "",
 }: {
@@ -439,7 +472,7 @@ function Cols({
 }) {
   return (
     <div className={`flex justify-end ${wide ? "gap-8" : "gap-3"} ${className}`}>
-      <SortButton k="openings" label="Yearly openings" sort={sort} onSort={onSort} align="right" className="min-w-[5rem]" />
+      <SortButton k="growth" label="Growth" sort={sort} onSort={onSort} align="right" className="min-w-[3.5rem]" />
       <SortButton k="risk" label="AI risk" sort={sort} onSort={onSort} className="w-[3.25rem]" />
     </div>
   );
@@ -502,7 +535,7 @@ function Table({
                 {u.level && <span className="text-muted"> · L{u.level}</span>}
                 {via && <span className="text-muted"> · includes {via}</span>}
               </span>
-              <Openings n={u.openings} />
+              <TrendCell g={u.growth} />
               <RiskTag risk={u.risk} />
             </button>
           </li>
@@ -539,8 +572,8 @@ function Leads({
           {!unit
             ? "Pick a path to see the jobs it leads to, or the jobs like it."
             : job
-              ? `${rows.length} other jobs in ${sector}, most openings first.`
-              : `${rows.length} jobs, most openings first. The AI figures above are the average of these.`}
+              ? `${rows.length} other jobs in ${sector}, biggest first.`
+              : `${rows.length} jobs, biggest first. The AI figures above are the average of these.`}
         </p>
       </div>
       {rows.length > 0 && (
@@ -555,7 +588,7 @@ function Leads({
                   className={`${WIDE_ROW} w-full py-2 text-left text-sm hover:text-accent-strong`}
                 >
                   <span className="min-w-0 break-words text-ink">{r.label}</span>
-                  <Openings n={r.openings} />
+                  <TrendCell g={r.growth} />
                   <RiskTag risk={r.risk} />
                 </button>
               </li>

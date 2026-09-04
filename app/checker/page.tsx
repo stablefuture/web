@@ -4,7 +4,7 @@ import { Container } from "@/app/components/Container";
 export const metadata = {
   title: "Career checker | Check your career path against AI",
   description:
-    "Search any UK job, degree or apprenticeship. See how much of the work AI could learn to do, how likely employers are to replace people, and the pay, openings and competition behind it.",
+    "Search any UK job, degree or apprenticeship. See how much of the work AI could learn to do, how likely employers are to replace people, and the pay and sector growth behind it.",
   alternates: { canonical: "/checker" },
 };
 
