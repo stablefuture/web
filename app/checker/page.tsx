@@ -3,7 +3,7 @@ import { Container } from "@/app/components/Container";
 import { Section } from "@/app/components/Section";
 
 export const metadata = {
-  title: "Career checker | Check any career against AI",
+  title: "Career checker | Check your career path against AI",
   description:
     "Search any UK job, degree or apprenticeship. See how much of the work AI could learn to do, how likely employers are to replace people, and the pay, openings and competition behind it.",
   alternates: { canonical: "/checker" },
@@ -17,7 +17,8 @@ export default function CheckerPage() {
           <div className="flex flex-col gap-10">
             <div className="flex flex-col gap-4">
               <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-                Check any career against AI
+                Check your <span className="text-accent-strong">career path</span> against{" "}
+                <span className="text-accent-strong">AI</span>
               </h1>
               <p className="max-w-2xl text-lg leading-relaxed text-muted">
                 Search a job, degree or apprenticeship. We score how much of the

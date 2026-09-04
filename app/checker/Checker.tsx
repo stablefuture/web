@@ -58,7 +58,6 @@ const EXAMPLES: [string, Path, string][] = [
 
 const money = (v: number) => `£${v.toLocaleString("en-GB")}`;
 const count = (v: number) => v.toLocaleString("en-GB");
-const pct = (v: number) => `${v > 0 ? "+" : ""}${v}%`;
 const typeOf = (u: Unit) => `${TYPE[u.path]}${u.level ? ` · Level ${u.level}` : ""}`;
 
 const words = (s: string) =>
@@ -99,10 +98,17 @@ function search(units: Unit[], q: string): Hit[] {
     const via = (u.aka ?? []).find((a) => score(a) > 0);
     if (via) hits.push([{ unit: u, via }, 0.5]);
   }
-  return hits
-    .sort((a, b) => b[1] - a[1] || a[0].unit.label.length - b[0].unit.label.length)
-    .slice(0, 8)
-    .map(([h]) => h);
+  // Jobs first, then degrees, then apprenticeships; best match within each.
+  // Each path keeps a few slots so a wide job match ("account") cannot push
+  // the degree and the apprenticeship out of the eight shown.
+  hits.sort((a, b) => b[1] - a[1] || a[0].unit.label.length - b[0].unit.label.length);
+  const SLOTS: Record<Path, number> = { jobs: 4, degrees: 2, apprenticeships: 2 };
+  const kept = new Set<Hit>();
+  for (const p of PATHS)
+    for (const [h] of hits.filter(([h]) => h.unit.path === p).slice(0, SLOTS[p])) kept.add(h);
+  for (const [h] of hits) if (kept.size < 8) kept.add(h);
+  const rank = (h: Hit) => PATHS.indexOf(h.unit.path);
+  return [...kept].sort((a, b) => rank(a) - rank(b));
 }
 
 export function Checker() {
@@ -110,6 +116,9 @@ export function Checker() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sector, setSector] = useState("");
   const [browse, setBrowse] = useState<Path>("jobs");
+  // The unit a job was opened from (a degree's or standard's list), so a
+  // reader can get back to it.
+  const [prevId, setPrevId] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -119,15 +128,24 @@ export function Checker() {
     setSelectedId(new URLSearchParams(window.location.search).get("id"));
   }, []);
 
-  const select = (id: string) => {
+  const show = (id: string) => {
     setSelectedId(id);
     window.history.replaceState(null, "", `?id=${encodeURIComponent(id)}`);
     requestAnimationFrame(() =>
       resultRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }),
     );
   };
+  const select = (id: string) => {
+    if (id !== selectedId) setPrevId(selectedId);
+    show(id);
+  };
+  const back = () => {
+    if (prevId) show(prevId);
+    setPrevId(null);
+  };
   const clear = () => {
     setSelectedId(null);
+    setPrevId(null);
     window.history.replaceState(null, "", window.location.pathname);
   };
 
@@ -137,6 +155,7 @@ export function Checker() {
     [data],
   );
   const selected = (selectedId && byId.get(selectedId)) || null;
+  const prev = (prevId && byId.get(prevId)) || null;
 
   // The jobs a degree or apprenticeship leads to: where its AI figures come from.
   const related = useMemo(
@@ -205,7 +224,9 @@ export function Checker() {
             ref={resultRef}
             unit={selected}
             related={related}
+            prev={prev}
             onPick={(u) => select(u.id)}
+            onBack={back}
             onClear={clear}
           />
         )}
@@ -353,20 +374,17 @@ function Search({ units, onPick }: { units: Unit[]; onPick: (u: Unit) => void })
 }
 
 function Result({
-  ref, unit, related, onPick, onClear,
+  ref, unit, related, prev, onPick, onBack, onClear,
 }: {
   ref: React.Ref<HTMLDivElement>;
   unit: Unit;
   related: Unit[];
+  prev: Unit | null;
   onPick: (u: Unit) => void;
+  onBack: () => void;
   onClear: () => void;
 }) {
-  // Sector growth only means something for a job: a degree or a standard
-  // feeds several occupations at once.
-  const facts: [string][] = [
-    ["salary"], ["competition"], ["openings"], ["entrants"],
-    ...(unit.path === "jobs" ? ([["growth"]] as [string][]) : []),
-  ];
+  const facts: [string][] = [["salary"], ["competition"], ["openings"], ["entrants"]];
   const risk = unit.risk == null ? null : riskWord(unit.risk);
 
   return (
@@ -374,6 +392,15 @@ function Result({
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">{typeOf(unit)}</p>
+          {prev && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="-mt-1 ml-auto rounded-md px-2 py-1 text-xs text-accent-strong transition hover:underline"
+            >
+              ← Back to {prev.label}
+            </button>
+          )}
           <button
             type="button"
             onClick={onClear}
@@ -425,9 +452,6 @@ function Result({
             )}
           </div>
         </dl>
-        {unit.path === "jobs" && unit.growth != null && (
-          <p className="mt-2 text-xs text-muted">{LABELS.growth} {pct(unit.growth)}</p>
-        )}
         <details className="mt-3 text-sm text-muted">
           <summary className="cursor-pointer hover:text-ink">What these numbers mean</summary>
           <dl className="mt-2 flex flex-col gap-2">
@@ -462,7 +486,7 @@ function Meter({ label, value, help }: { label: string; value: number; help: str
         <span className="flex items-center gap-2 text-sm">
           <Dot tone={b.tone} />
           <span className="text-muted">{b.word}</span>
-          <span className="font-bold text-ink">{value}</span>
+          <span className="font-bold text-accent-strong">{value}</span>
         </span>
       </div>
       <div
@@ -473,7 +497,7 @@ function Meter({ label, value, help }: { label: string; value: number; help: str
         aria-valuenow={value}
         className="h-2 w-full overflow-hidden rounded-full bg-border-soft/40"
       >
-        <div className="h-full rounded-full bg-accent-strong" style={{ width: `${value}%` }} />
+        <div className="h-full rounded-full bg-accent/40" style={{ width: `${value}%` }} />
       </div>
       <p className="text-xs text-muted">{help}</p>
     </div>
@@ -483,8 +507,22 @@ function Meter({ label, value, help }: { label: string; value: number; help: str
 function Openings({ n }: { n: number | null }) {
   return (
     <span className="whitespace-nowrap text-right text-xs tabular-nums text-muted">
-      {n == null ? "—" : `${count(n)} a year`}
+      {n == null ? "—" : count(Math.round(n / 100) * 100)}
     </span>
+  );
+}
+
+// Column labels over a job list: name, openings, risk.
+function Cols({ className = "" }: { className?: string }) {
+  return (
+    <div
+      aria-hidden
+      className={`grid grid-cols-[minmax(0,1fr)_5.5rem_7.5rem] gap-3 text-[11px] font-semibold uppercase tracking-wider text-muted ${className}`}
+    >
+      <span />
+      <span className="text-right">Openings a year</span>
+      <span>AI risk</span>
+    </div>
   );
 }
 
@@ -508,6 +546,7 @@ function Related({ roles, onPick }: { roles: Unit[]; onPick: (u: Unit) => void }
       <p className="mb-2 text-xs text-muted">
         {roles.length} jobs, most job openings first. The AI figures above are the average of these.
       </p>
+      <Cols className="pb-1" />
       <ul className="divide-y divide-border-soft/60">
         {shown.map((r) => (
           <li key={r.id}>
@@ -546,6 +585,7 @@ function SectorList({
         <h3 className="font-semibold text-ink">{title}</h3>
         <span className="text-xs text-muted">{rows.length}</span>
       </div>
+      <Cols className="px-4" />
       <ul className="max-h-[60vh] divide-y divide-border-soft/60 overflow-y-auto rounded-xl border border-border-soft">
         {rows.map((u) => (
           <li key={u.id}>

@@ -1,12 +1,12 @@
 // Plain-English bands for the checker's 0-100 percentiles, shared by the
 // checker and the graduate destinations page so a word means the same thing on
-// both. Cut-offs set by Ben, 4 Sep 2026: under 50 is low, 50 to 74 medium, 75
+// both. Cut-offs set by Ben, 4 Sep 2026: under 40 is low, 40 to 69 medium, 70
 // and over high.
 export type Tone = "good" | "warn" | "bad";
 
 export function band(v: number): { word: string; tone: Tone } {
-  if (v < 50) return { word: "Low", tone: "good" };
-  if (v < 75) return { word: "Medium", tone: "warn" };
+  if (v < 40) return { word: "Low", tone: "good" };
+  if (v < 70) return { word: "Medium", tone: "warn" };
   return { word: "High", tone: "bad" };
 }
 

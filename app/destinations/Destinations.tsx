@@ -10,7 +10,7 @@ type Slice = { total: number; sections: Section[]; groups: Record<string, Indust
 type Role = {
   id: string; label: string; risk: number | null;
   exposure: number | null; substitution: number | null; salary: number | null;
-  openings: number | null; growth: number | null; entrants: number | null;
+  openings: number | null; entrants: number | null;
   competition: number | null;
 };
 type Group = {
@@ -315,7 +315,7 @@ function IndustryList({ slice }: { slice: Slice }) {
                   </span>
                   <span className="flex shrink-0 items-baseline gap-3">
                     <span className="text-xs text-muted">{gbp(s.earn)}</span>
-                    <span className="w-11 text-right font-bold text-ink">{Math.round(s.share)}%</span>
+                    <span className="w-11 text-right font-bold text-accent-strong">{Math.round(s.share)}%</span>
                   </span>
                 </span>
                 <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
@@ -323,7 +323,7 @@ function IndustryList({ slice }: { slice: Slice }) {
                     className={`block h-full rounded-r-[3px] ${
                       // Other is a residual, not one industry, so it never
                       // takes the accent even when it is the longest bar.
-                      s.other ? "bg-muted/40" : "bg-accent-strong"
+                      s.other ? "bg-muted/25" : "bg-accent/40"
                     }`}
                     style={{ width: `${(s.share / max) * 100}%` }}
                   />
@@ -390,12 +390,12 @@ function GroupList({
                         {r.word} · {g.risk}
                       </span>
                     )}
-                    <span className="w-11 text-right font-bold text-ink">{Math.round(share)}%</span>
+                    <span className="w-11 text-right font-bold text-accent-strong">{Math.round(share)}%</span>
                   </span>
                 </span>
                 <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
                   <span
-                    className="block h-full rounded-r-[3px] bg-accent-strong"
+                    className="block h-full rounded-r-[3px] bg-accent/40"
                     style={{ width: `${(share / max) * 100}%` }}
                   />
                 </span>
@@ -419,13 +419,12 @@ function GroupList({
   );
 }
 
-type NumKey = "exposure" | "substitution" | "salary" | "openings" | "growth" | "entrants" | "competition";
+type NumKey = "exposure" | "substitution" | "salary" | "openings" | "entrants" | "competition";
 const FACTS: [NumKey, string, (v: number) => string][] = [
   ["exposure", "AI learnability", (v) => `${v} / 100`],
   ["substitution", "Substitution", (v) => `${v} / 100`],
   ["salary", "Salary", (v) => gbp(v)],
   ["openings", "Openings a year", (v) => count(v)],
-  ["growth", "Sector growth", (v) => `${v > 0 ? "+" : ""}${Math.round(v)}%`],
   ["entrants", "Entrants a year", (v) => count(v)],
   ["competition", "Competition", (v) => `${v} per opening`],
 ];
@@ -470,7 +469,7 @@ function RoleList({ roles, mapped, limit }: { roles: Role[]; mapped?: Set<string
               </button>
               {isOpen && (
                 <div className="mb-3 ml-[18px] rounded-xl bg-surface-alt px-4 py-3">
-                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
                     {FACTS.map(([k, label, fmt]) => (
                       <div key={k}>
                         <dt className="text-xs text-muted">{label}</dt>

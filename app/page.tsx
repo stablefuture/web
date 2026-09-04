@@ -37,23 +37,27 @@ function Figure({ src, alt, source }: { src: string; alt: string; source: React.
   );
 }
 
+function CheckerCta() {
+  return (
+    <p className="flex justify-center">
+      <a
+        href="/checker"
+        className="inline-flex items-center gap-2 rounded-full bg-accent-strong px-7 py-4 text-base font-semibold text-on-accent shadow-lg shadow-accent/25 transition hover:-translate-y-0.5 hover:opacity-95 sm:text-lg"
+      >
+        Check your career path against AI
+        <span aria-hidden>→</span>
+      </a>
+    </p>
+  );
+}
+
 export default function Home() {
   return (
     <main>
-      <Section as="section">
+      <Section as="section" tight>
         <Container narrow>
           <div className="flex flex-col gap-12">
-            <section className="flex flex-col items-start gap-4 rounded-xl border border-border-soft p-6">
-              <p className="text-lg leading-relaxed text-ink">
-                Assess your career with our AI impact checker.
-              </p>
-              <a
-                href="/checker"
-                className="inline-block rounded-xl bg-accent-strong px-5 py-3 text-sm font-semibold text-on-accent transition hover:opacity-90"
-              >
-                Open the career checker →
-              </a>
-            </section>
+            <CheckerCta />
 
             <section className="flex flex-col gap-12">
               <div className="flex flex-col gap-4">
@@ -301,6 +305,8 @@ export default function Home() {
                 </ul>
               </div>
             </section>
+
+            <CheckerCta />
           </div>
         </Container>
       </Section>
