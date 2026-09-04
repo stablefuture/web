@@ -10,9 +10,10 @@ const H = S - PAD.t - PAD.b;
 const px = (v: number) => PAD.l + (v / 100) * W;
 const py = (v: number) => PAD.t + (1 - v / 100) * H;
 
-// A picture, not a control: every job in grey as context, the jobs of the
-// chosen sector in the accent, the chosen unit ringed and named, and the row
-// under the pointer in the lists ringed. The lists are where a reader picks.
+// A picture, not a control: every job in grey as context, the jobs the chosen
+// path leads to in the accent, the chosen path marked and named, and the row
+// under the pointer in the lists marked too. A job is a dot; a degree or an
+// apprenticeship is a cross, because its point is the average of its jobs.
 export function JobMap({
   jobs, selected, hover, lit,
 }: {
@@ -24,7 +25,7 @@ export function JobMap({
   const pts = jobs.filter((u) => u.exposure != null && u.substitution != null);
   const has = (u: Unit | null) => (u && u.exposure != null && u.substitution != null ? u : null);
   const focus = has(selected);
-  const ring = hover?.id === focus?.id ? null : has(hover);
+  const over = hover?.id === focus?.id ? null : has(hover);
   const dim = focus != null || lit.size > 0;
 
   return (
@@ -82,26 +83,34 @@ export function JobMap({
         );
       })}
 
-      {focus && (
-        <g>
-          <circle
-            cx={px(focus.exposure!)} cy={py(focus.substitution!)} r={10}
-            fill="none" stroke="var(--accent)" strokeWidth={1.5}
-          />
-          <circle
-            cx={px(focus.exposure!)} cy={py(focus.substitution!)} r={5.5}
-            fill="var(--accent-strong)" stroke="var(--background)" strokeWidth={2}
-          />
-          <Label u={focus} />
+      {focus && <Marker u={focus} strong />}
+      {over && <Marker u={over} />}
+    </svg>
+  );
+}
+
+// The chosen path is drawn in the accent; the hovered one in ink.
+function Marker({ u, strong = false }: { u: Unit; strong?: boolean }) {
+  const cx = px(u.exposure!);
+  const cy = py(u.substitution!);
+  const stroke = strong ? "var(--accent-strong)" : "var(--ink)";
+  return (
+    <g>
+      {u.path === "jobs" ? (
+        <>
+          <circle cx={cx} cy={cy} r={strong ? 10 : 8} fill="none" stroke={stroke} strokeWidth={1.5} />
+          {strong && (
+            <circle cx={cx} cy={cy} r={5.5} fill="var(--accent-strong)" stroke="var(--background)" strokeWidth={2} />
+          )}
+        </>
+      ) : (
+        <g stroke={stroke} strokeWidth={strong ? 3 : 2} strokeLinecap="round">
+          <line x1={cx - 8} y1={cy} x2={cx + 8} y2={cy} />
+          <line x1={cx} y1={cy - 8} x2={cx} y2={cy + 8} />
         </g>
       )}
-      {ring && (
-        <circle
-          cx={px(ring.exposure!)} cy={py(ring.substitution!)} r={8}
-          fill="none" stroke="var(--ink)" strokeWidth={1.5}
-        />
-      )}
-    </svg>
+      <Label u={u} />
+    </g>
   );
 }
 
@@ -112,13 +121,23 @@ function Label({ u }: { u: Unit }) {
   const name = u.label.length > 40 ? `${u.label.slice(0, 38)}…` : u.label;
   const half = Math.min(name.length * 3.3, W / 2);
   const x = Math.max(PAD.l + half, Math.min(S - PAD.r - half, cx));
-  const y = cy < PAD.t + 26 ? cy + 24 : cy - 15;
+  const n = u.roles?.length ?? 0;
+  const note = u.path !== "jobs" && n > 0 ? `average of ${n} jobs` : null;
+  // Below the point when the point is near the top, else above; a second line
+  // for the average note.
+  const below = cy < PAD.t + (note ? 40 : 26);
+  const y = below ? cy + 24 : cy - (note ? 28 : 16);
   return (
     <text
       x={x} y={y} textAnchor="middle" fontSize={12} fontWeight={600}
       fill="var(--ink)" stroke="var(--background)" strokeWidth={3} paintOrder="stroke"
     >
       {name}
+      {note && (
+        <tspan x={x} dy={13} fontSize={10} fontWeight={500} fill="var(--muted)">
+          {note}
+        </tspan>
+      )}
     </text>
   );
 }

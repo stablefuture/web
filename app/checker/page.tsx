@@ -12,9 +12,9 @@ export const metadata = {
 export default function CheckerPage() {
   return (
     <main>
-      <Section as="section">
+      <Section as="section" tight>
         <Container>
-          <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-6">
             <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
               Check your <span className="text-accent-strong">career path</span> against{" "}
               <span className="text-accent-strong">AI</span>

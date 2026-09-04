@@ -2,7 +2,8 @@
 // checker and the graduate destinations page so a word means the same thing on
 // both. Cut-offs set by Ben, 4 Sep 2026: under 40 is low, 40 to 69 medium, 70
 // and over high.
-export type Tone = "good" | "warn" | "bad";
+// "none" is the grey of a placeholder or a missing figure.
+export type Tone = "good" | "warn" | "bad" | "none";
 
 export function band(v: number): { word: string; tone: Tone } {
   if (v < 40) return { word: "Low", tone: "good" };
@@ -22,6 +23,7 @@ const DOT: Record<Tone, string> = {
   good: "bg-[#0ca30c]",
   warn: "bg-[#fab219]",
   bad: "bg-[#d03b3b]",
+  none: "bg-muted/40",
 };
 
 export function Dot({ tone }: { tone: Tone }) {
