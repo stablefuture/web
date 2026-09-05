@@ -333,7 +333,7 @@ function Card({
   const tone = (v: number | null | undefined): Tone => (v == null ? "none" : band(v).tone);
   const ink = unit ? "text-ink" : "text-muted";
   return (
-    <div className="flex flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
+    <div className="flex min-w-0 flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">
