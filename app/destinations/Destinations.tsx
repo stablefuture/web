@@ -68,6 +68,8 @@ export function Destinations() {
   const [yag, setYag] = useState("5");
   // Industry slices are 50 KB a subject, so they load per subject and stay cached.
   const [industries, setIndustries] = useState<Record<string, Industries>>({});
+  const [industryErrors, setIndustryErrors] = useState<Record<string, string>>({});
+  const [industryAttempt, setIndustryAttempt] = useState(0);
 
   useEffect(() => {
     // A failed load must say so: setting data to null looks exactly like a
@@ -93,12 +95,24 @@ export function Destinations() {
     : null;
   useEffect(() => {
     if (!subjectFile || industries[subjectFile]) return;
-    fetch(`/destinations/${subjectFile}.json`)
-      .then((r) => r.json())
-      .then((j: { industries: Industries }) =>
-        setIndustries((cur) => ({ ...cur, [subjectFile]: j.industries })))
-      .catch(() => {});
-  }, [subjectFile, industries]);
+    const ctl = new AbortController();
+    let active = true;
+    const timer = setTimeout(() => ctl.abort(), 15000);
+    fetch(`/destinations/${subjectFile}.json`, { signal: ctl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`Industry data ${r.status}`);
+        return r.json();
+      })
+      .then((j: { industries: Industries }) => {
+        if (!j.industries) throw new Error("Industry data missing");
+        if (active) setIndustries((cur) => ({ ...cur, [subjectFile]: j.industries }));
+      })
+      .catch((e) => {
+        if (active) setIndustryErrors((cur) => ({ ...cur, [subjectFile]: loadError(e) }));
+      })
+      .finally(() => clearTimeout(timer));
+    return () => { active = false; clearTimeout(timer); ctl.abort(); };
+  }, [subjectFile, industries, industryAttempt]);
 
   const choose = (id: string) => {
     setSubjectId(id);
@@ -145,15 +159,18 @@ export function Destinations() {
         <div className="flex min-w-0 flex-col gap-6">
           <label className="flex min-w-0 flex-col gap-2 text-sm text-muted">
             Degree subject
-            <select
-              value={subject.id}
-              onChange={(e) => choose(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-border-soft bg-surface-alt px-4 py-3 text-base font-semibold text-ink outline-none transition focus:border-accent-strong"
-            >
-              {data.subjects.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
+            <div className="relative min-w-0">
+              <select
+                value={subject.id}
+                onChange={(e) => choose(e.target.value)}
+                className="min-h-12 w-full min-w-0 appearance-none rounded-xl border border-border-soft bg-surface-alt py-3 pl-4 pr-9 text-base font-semibold text-ink outline-none transition focus:border-accent-strong"
+              >
+                {data.subjects.map((s) => (
+                  <option key={s.id} value={s.id}>{s.label}</option>
+                ))}
+              </select>
+              <span aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">▾</span>
+            </div>
           </label>
 
           <Panel title="Compare outcomes">
@@ -199,7 +216,23 @@ export function Destinations() {
           {/* Always rendered, so the column never reflows while a subject's
               industries load. */}
           <Panel title={`Industries ${who} work in`}>
-            {slice ? <IndustryList slice={slice} /> : <p className="text-sm text-muted">Loading…</p>}
+            {slice ? <IndustryList slice={slice} /> : industryErrors[subject.id] ? (
+              <div className="flex flex-col items-start gap-3 text-sm">
+                <p role="status" className="text-muted">The industry data did not load. {industryErrors[subject.id]}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIndustryErrors((cur) => {
+                      const next = { ...cur };
+                      delete next[subject.id];
+                      return next;
+                    });
+                    setIndustryAttempt((n) => n + 1);
+                  }}
+                  className="rounded-lg border border-border-soft px-4 py-2 font-semibold text-accent-strong hover:bg-surface-alt"
+                >Try again</button>
+              </div>
+            ) : <p className="text-sm text-muted">{industries[subject.id] ? "No industry data is available for this selection." : "Loading…"}</p>}
           </Panel>
         </div>
 

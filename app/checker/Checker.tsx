@@ -149,7 +149,14 @@ export function Checker() {
   const go = (id: string | null) => {
     setSelectedId(id);
     const nav: Nav = { id, tab, sector, q };
-    window.history.pushState(nav, "", id ? `?id=${encodeURIComponent(id)}` : window.location.pathname);
+    try {
+      // Save the finder before leaving this entry, including edits made
+      // since the page loaded, so Back restores the search that led here.
+      window.history.replaceState({ id: selectedId, tab, sector, q } satisfies Nav, "");
+      window.history.pushState(nav, "", id ? `?id=${encodeURIComponent(id)}` : window.location.pathname);
+    } catch {
+      // History can be unavailable; the selected result must still work.
+    }
   };
   // On a phone the result sits under the finder, off-screen. A pick brings it
   // into view; on a laptop it is already beside the list, so nothing moves.
@@ -257,17 +264,20 @@ export function Checker() {
           ))}
         </div>
         <div className="grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-          <select
-            aria-label="Sector"
-            value={sector}
-            onChange={(e) => setSector(e.target.value)}
-            className="min-w-0 rounded-xl border border-border-soft bg-surface-alt px-3 py-2.5 text-sm text-ink outline-none transition focus:border-accent-strong"
-          >
-            <option value="">All sectors</option>
-            {options.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
+          <div className="relative min-w-0">
+            <select
+              aria-label="Sector"
+              value={sector}
+              onChange={(e) => setSector(e.target.value)}
+              className="min-h-11 w-full min-w-0 appearance-none rounded-xl border border-border-soft bg-surface-alt py-2.5 pl-3 pr-8 text-base text-ink outline-none transition focus:border-accent-strong sm:text-sm"
+            >
+              <option value="">All sectors</option>
+              {options.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+            <span aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">▾</span>
+          </div>
           <span aria-hidden className="text-center text-[11px] font-semibold uppercase tracking-wider text-muted">or</span>
           <input
             type="search"
@@ -276,7 +286,7 @@ export function Checker() {
             placeholder="Search..."
             aria-label={`Search ${GROUP[tab].toLowerCase()}`}
             autoComplete="off"
-            className="min-w-0 rounded-xl border border-border-soft bg-surface-alt px-3 py-2.5 text-sm text-ink outline-none transition focus:border-accent-strong focus:ring-2 focus:ring-accent/40"
+            className="min-h-11 min-w-0 rounded-xl border border-border-soft bg-surface-alt px-3 py-2.5 text-base text-ink outline-none transition focus:border-accent-strong focus:ring-2 focus:ring-accent/40 sm:text-sm"
           />
         </div>
         <Table
@@ -290,7 +300,7 @@ export function Checker() {
       </section>
 
       <div className="flex flex-col gap-6">
-        <div ref={resultRef} className="grid scroll-mt-16 gap-6 md:grid-cols-2">
+        <div ref={resultRef} className="grid scroll-mt-16 gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           <Card unit={selected} prev={prev} onBack={back} onClear={clear} />
           <div className="flex items-center justify-center rounded-2xl border border-border-soft p-4">
             <div className="w-full max-w-xs md:max-w-none">
@@ -365,7 +375,7 @@ function Card({
         )}
       </div>
 
-      <dl className={`grid grid-cols-2 gap-3 ${ink}`}>
+      <dl className={`grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 ${ink}`}>
         <Fact label="AI risk">
           <Score v={unit ? unit.risk : 0} tone={unit ? tone(unit.risk) : "none"} />
         </Fact>
@@ -418,7 +428,7 @@ type Col = "salary" | "risk";
 // so the list never grows past its box on a phone. The wide leads panel puts
 // more air between the two figures.
 const ROW = "grid grid-cols-[minmax(0,1fr)_4.25rem_3.25rem] items-center gap-3";
-const WIDE_ROW = "grid grid-cols-[minmax(0,1fr)_4.25rem_3.25rem] items-center gap-8";
+const WIDE_ROW = "grid grid-cols-[minmax(0,1fr)_4.25rem_3.25rem] items-center gap-3 sm:gap-8";
 
 // Column labels over a job list: salary and risk, each sortable.
 function Cols({
@@ -427,7 +437,7 @@ function Cols({
   sort: Sort<Col>; onSort: (s: Sort<Col>) => void; wide?: boolean; className?: string;
 }) {
   return (
-    <div className={`flex justify-end ${wide ? "gap-8" : "gap-3"} ${className}`}>
+    <div className={`flex justify-end ${wide ? "gap-3 sm:gap-8" : "gap-3"} ${className}`}>
       <SortButton k="salary" label="Salary" sort={sort} onSort={onSort} className="min-w-[4.25rem]" />
       <SortButton k="risk" label="AI risk" sort={sort} onSort={onSort} className="w-[3.25rem]" />
     </div>

@@ -1,5 +1,5 @@
-// Fixed copy. These strings are specified verbatim in the v3 build handoff —
-// do not reword them.
+// Current checker copy. The earlier v3 build handoff is historical;
+// later product decisions take precedence.
 export const TOOLTIPS: Record<string, string> = {
   exposure:
     "New technology changes how people work. How much of this work could AI learn to do?",

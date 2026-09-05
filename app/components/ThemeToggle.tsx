@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
 
@@ -10,17 +10,10 @@ function readTheme(): Theme {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setTheme(readTheme());
-    setMounted(true);
-  }, []);
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, () => "light" as Theme);
 
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
     const root = document.documentElement;
     if (next === "dark") root.classList.add("dark");
     else root.classList.remove("dark");
@@ -32,7 +25,7 @@ export function ThemeToggle() {
   }
 
   const label =
-    mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+    theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
 
   return (
     <button
@@ -48,6 +41,12 @@ export function ThemeToggle() {
       <SunIcon className="hidden h-5 w-5 dark:block" />
     </button>
   );
+}
+
+function subscribeTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  return () => observer.disconnect();
 }
 
 function SunIcon({ className }: { className?: string }) {
