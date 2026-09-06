@@ -176,7 +176,7 @@ export function Destinations() {
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-x-10">
         <div className="flex min-w-0 flex-col gap-5">
           <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-            Where <span className="text-accent-strong">graduates</span> actually end up
+            Where <span className="text-accent-strong">graduates</span> end up
           </h1>
           <label className="flex w-full max-w-md min-w-0 self-center flex-col gap-2 text-sm text-muted">
             Degree subject
@@ -195,15 +195,15 @@ export function Destinations() {
           </label>
         </div>
 
-        <Panel title="Compare outcomes after..." className="w-full max-w-md justify-self-center">
-          <div className="mb-3 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
+        <Panel title="Compare outcomes after..." className="w-full max-w-sm justify-self-center gap-2 p-4">
+          <div className="mb-2 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
             {YEARS.map((yy) => (
               <button
                 key={yy}
                 type="button"
                 aria-pressed={yy === y}
                 onClick={() => setYag(yy)}
-                className={`flex-1 rounded-md px-2 py-1.5 text-sm transition ${
+                className={`flex-1 rounded-md px-2 py-1 text-sm transition ${
                   yy === y ? "bg-background font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"
                 }`}
               >
@@ -222,7 +222,7 @@ export function Destinations() {
                       type="button"
                       aria-pressed={on}
                       onClick={() => setQual(id)}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm transition ${
+                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left text-sm transition ${
                         on ? "bg-accent-strong text-on-accent" : "text-ink hover:bg-surface-alt"
                       }`}
                     >

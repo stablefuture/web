@@ -291,7 +291,7 @@ export function Checker() {
   // Laptop: the finder down the left; on the right the card beside the map,
   // and under them the jobs the path leads to. A phone stacks the same order.
   return (
-    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[30rem_minmax(0,1fr)] lg:items-start lg:gap-x-8">
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[36rem_minmax(0,1fr)] lg:items-start lg:gap-x-8">
       <section aria-label="Find a path" className="flex flex-col gap-3">
         <div role="group" aria-label="Path" className="flex gap-1 rounded-lg bg-surface-alt p-1">
           {PATHS.map((p) => (
@@ -344,8 +344,8 @@ export function Checker() {
         />
       </section>
 
-      <div className="flex flex-col gap-6">
-        <div ref={resultRef} className="grid scroll-mt-16 gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <div className="flex flex-col gap-4">
+        <div ref={resultRef} className="grid items-start scroll-mt-16 gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <Card unit={selected} prev={prev} onBack={back} onClear={clear} />
           <div className="flex items-center justify-center rounded-2xl border border-border-soft p-3">
             <div className="w-full max-w-xs md:max-w-none">
@@ -378,7 +378,7 @@ function Card({
   const tone = (v: number | null | undefined): Tone => (v == null ? "none" : band(v).tone);
   const ink = unit ? "text-ink" : "text-muted";
   return (
-    <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border-soft p-4 sm:p-5">
+    <div className="flex h-fit min-w-0 flex-col gap-3 rounded-2xl border border-border-soft p-3 sm:p-4">
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -450,7 +450,7 @@ function Card({
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl bg-surface-alt px-4 py-4">
+    <div className="rounded-xl bg-surface-alt px-4 py-3">
       <dt className="text-xs text-muted">{label}</dt>
       <dd>{children}</dd>
     </div>
@@ -538,7 +538,7 @@ function Table({
         </span>
         <Cols sort={sort} onSort={setSort} />
       </div>
-      <ul className="max-h-[26rem] divide-y divide-border-soft/60 overflow-y-auto rounded-xl border border-border-soft">
+      <ul className="max-h-[21rem] divide-y divide-border-soft/60 overflow-y-auto rounded-xl border border-border-soft">
         {sorted.map(({ unit: u, via }) => (
           <li key={u.id}>
             <button
@@ -582,7 +582,7 @@ function Leads({
   const sorted = sortRows(rows, sort, (row, k) => row.unit[k]);
   const job = unit?.path === "jobs";
   return (
-    <section className="flex flex-col gap-2 rounded-2xl border border-border-soft p-5 sm:p-6">
+    <section className="flex flex-col gap-2 rounded-2xl border border-border-soft p-4 sm:p-5">
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
           {job ? "Similar jobs" : "Jobs this leads to"}
@@ -598,7 +598,7 @@ function Leads({
       {rows.length > 0 && (
         <>
           <Cols sort={sort} onSort={setSort} wide className="pb-1" />
-          <ul className="max-h-[24rem] divide-y divide-border-soft/60 overflow-y-auto">
+          <ul className="max-h-[20rem] divide-y divide-border-soft/60 overflow-y-auto">
             {sorted.map((r) => (
               <li key={r.unit.id}>
                 <button
