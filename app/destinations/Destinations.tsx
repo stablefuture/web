@@ -12,12 +12,16 @@ type Slice = { total: number; sections: Section[]; groups: Record<string, Indust
 type Role = {
   id: string; label: string; risk: number | null;
   exposure: number | null; substitution: number | null; salary: number | null;
-  openings: number | null; entrants: number | null;
-  competition: number | null;
+  growth: number | null;
 };
 type Group = {
   id: string; name: string; full: string; n: number;
   exposure: number | null; substitution: number | null; risk: number | null; roles: Role[];
+};
+type RoleGroup = {
+  trains_for: string[];
+  related_to: string[];
+  risk: number | null;
 };
 type Subject = {
   id: string;
@@ -25,6 +29,7 @@ type Subject = {
   cah1_label: string | null;
   pay: Record<string, Record<string, number | null>>;
   occupations: number[] | null;
+  role_groups: Record<string, RoleGroup> | null;
 };
 type Data = {
   meta: { quals: [string, string][]; yags: string[]; fig12_year: string };
@@ -36,7 +41,7 @@ type Industries = Record<string, Record<string, Slice>>;
 // Plain-English gloss for the nine SOC 2020 major groups, after ONS.
 const GLOSS: Record<string, string> = {
   "1": "Running a team, department or business",
-  "2": "Graduate-level roles: doctors, engineers, teachers, lawyers, analysts",
+  "2": "Doctors, engineers, teachers, lawyers, analysts",
   "3": "Technical and support roles: technicians, paralegals, marketing and HR assistants",
   "4": "Office work: administrators, receptionists, clerks",
   "5": "Hands-on trades: electricians, chefs, mechanics",
@@ -146,18 +151,34 @@ export function Destinations() {
   const who = subject.id === "all" ? "graduates" : `${midSentence(subject.label)} graduates`;
 
   const occ = subject.occupations;
+  const rolesById = new Map(data.groups.flatMap((g) => g.roles).map((r) => [r.id, r]));
   const rows = occ
-    ? data.groups.map((g, i) => ({ g, share: occ[i] })).sort((a, b) => b.share - a.share)
+    ? data.groups.map((g, i) => {
+        const mapped = subject.role_groups?.[g.id];
+        return {
+          g,
+          share: occ[i],
+          risk: subject.role_groups ? mapped?.risk ?? null : g.risk,
+          trainsFor: subject.role_groups
+            ? (mapped?.trains_for.map((id) => rolesById.get(id)).filter(Boolean) ?? []) as Role[]
+            : undefined,
+          relatedTo: subject.role_groups
+            ? (mapped?.related_to.map((id) => rolesById.get(id)).filter(Boolean) ?? []) as Role[]
+            : undefined,
+        };
+      }).sort((a, b) => b.share - a.share)
     : [];
 
   return (
-    <div className="flex flex-col gap-10">
-      {/* Two columns. Left: pick a subject, then what it pays and who hires
-          them - each answer under the control that changes it. Right: the kinds
-          of job they do and the AI risk of each, all nine groups at once. */}
+    <div className="flex flex-col gap-8">
+      {/* The title and selector sit opposite the comparison controls. The two
+          destination panels then share the same grid columns and top edge. */}
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-x-10">
-        <div className="flex min-w-0 flex-col gap-6">
-          <label className="flex min-w-0 flex-col gap-2 text-sm text-muted">
+        <div className="flex min-w-0 flex-col gap-5">
+          <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+            Where <span className="text-accent-strong">graduates</span> actually end up
+          </h1>
+          <label className="flex w-full max-w-md min-w-0 self-center flex-col gap-2 text-sm text-muted">
             Degree subject
             <div className="relative min-w-0">
               <select
@@ -172,51 +193,58 @@ export function Destinations() {
               <span aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">▾</span>
             </div>
           </label>
+        </div>
 
-          <Panel title="Compare outcomes">
-            <div className="mb-3 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
-              {YEARS.map((yy) => (
-                <button
-                  key={yy}
-                  type="button"
-                  aria-pressed={yy === y}
-                  onClick={() => setYag(yy)}
-                  className={`flex-1 rounded-md px-2 py-1.5 text-sm transition ${
-                    yy === y ? "bg-background font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"
-                  }`}
-                >
-                  {yearsLabel(yy)}
-                </button>
-              ))}
-            </div>
-            <ul className="divide-y divide-border-soft/40">
-              {data.meta.quals
-                .filter(([id]) => subject.pay[id]?.[y] != null)
-                .map(([id, label]) => {
-                  const on = id === q;
-                  return (
-                    <li key={id}>
-                      <button
-                        type="button"
-                        aria-pressed={on}
-                        onClick={() => setQual(id)}
-                        className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm transition ${
-                          on ? "bg-accent-strong text-on-accent" : "text-ink hover:bg-surface-alt"
-                        }`}
-                      >
-                        <span className={on ? "font-semibold" : ""}>{label}</span>
-                        <span className="font-bold tabular-nums">{gbp(subject.pay[id][y])}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-            </ul>
-          </Panel>
+        <Panel title="Compare outcomes after..." className="w-full max-w-md justify-self-center">
+          <div className="mb-3 flex gap-1 rounded-lg bg-surface-alt p-1" role="group" aria-label="Years after graduating">
+            {YEARS.map((yy) => (
+              <button
+                key={yy}
+                type="button"
+                aria-pressed={yy === y}
+                onClick={() => setYag(yy)}
+                className={`flex-1 rounded-md px-2 py-1.5 text-sm transition ${
+                  yy === y ? "bg-background font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"
+                }`}
+              >
+                {yearsLabel(yy)}
+              </button>
+            ))}
+          </div>
+          <ul className="divide-y divide-border-soft/40">
+            {data.meta.quals
+              .filter(([id]) => subject.pay[id]?.[y] != null)
+              .map(([id, label]) => {
+                const on = id === q;
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setQual(id)}
+                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm transition ${
+                        on ? "bg-accent-strong text-on-accent" : "text-ink hover:bg-surface-alt"
+                      }`}
+                    >
+                      <span className={on ? "font-semibold" : ""}>{label}</span>
+                      <span className="font-bold tabular-nums">{gbp(subject.pay[id][y])}</span>
+                    </button>
+                  </li>
+                );
+              })}
+          </ul>
+        </Panel>
 
-          {/* Always rendered, so the column never reflows while a subject's
-              industries load. */}
-          <Panel title={`Industries ${who} work in`}>
-            {slice ? <IndustryList slice={slice} /> : industryErrors[subject.id] ? (
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          className="col-span-full h-px bg-border-soft/60"
+        />
+
+        {/* Always rendered, so the column never reflows while a subject's
+            industries load. */}
+        <Panel title={`Industries ${who} work in`}>
+          {slice ? <IndustryList slice={slice} /> : industryErrors[subject.id] ? (
               <div className="flex flex-col items-start gap-3 text-sm">
                 <p role="status" className="text-muted">The industry data did not load. {industryErrors[subject.id]}</p>
                 <button
@@ -232,12 +260,11 @@ export function Destinations() {
                   className="rounded-lg border border-border-soft px-4 py-2 font-semibold text-accent-strong hover:bg-surface-alt"
                 >Try again</button>
               </div>
-            ) : <p className="text-sm text-muted">{industries[subject.id] ? "No industry data is available for this selection." : "Loading…"}</p>}
-          </Panel>
-        </div>
+          ) : <p className="text-sm text-muted">{industries[subject.id] ? "No industry data is available for this selection." : "Loading…"}</p>}
+        </Panel>
 
         {occ && (
-          <Panel title={`Jobs ${who} do, and their AI risk`}>
+          <Panel title="Jobs graduates do and their AI risk">
             <GroupList rows={rows} />
           </Panel>
         )}
@@ -269,8 +296,9 @@ export function Destinations() {
           <p>
             <strong className="text-ink">AI risk</strong>: the{" "}
             <a href="/checker" className="underline underline-offset-4 hover:text-ink">career checker</a>
-            &rsquo;s score for each SOC 2020 job, weighted by openings within each
-            group. Expanding a group lists the jobs inside it with the same score.
+            &rsquo;s score for each SOC 2020 job. For a chosen degree, each group&rsquo;s
+            score uses only its Trains for jobs. Related to jobs remain available for
+            browsing but do not change the score.
           </p>
         </div>
       </details>
@@ -394,34 +422,51 @@ function IndustryList({ slice }: { slice: Slice }) {
   );
 }
 
-function GroupList({ rows }: { rows: { g: Group; share: number }[] }) {
+type GroupRow = {
+  g: Group;
+  share: number;
+  risk: number | null;
+  trainsFor?: Role[];
+  relatedTo?: Role[];
+};
+
+function GroupList({ rows }: { rows: GroupRow[] }) {
   const [open, setOpen] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort<"risk">>(null);
   // All nine SOC major groups, always. There are only nine, and hiding four of
   // them behind "show all" hid the low-risk trades a parent came to find.
-  const shown = sortRows(rows, sort, (r) => r.g.risk);
+  const shown = sortRows(rows, sort, (r) => r.risk);
   return (
     <div className="flex flex-col">
       <div className="flex justify-end border-b border-border-soft/60 pb-1">
         <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
       </div>
       <ul>
-        {shown.map(({ g, share }) => {
+        {shown.map(({ g, share, risk, trainsFor, relatedTo }) => {
           const isOpen = open === g.id;
+          const labelled = trainsFor !== undefined || relatedTo !== undefined;
+          const total = labelled ? (trainsFor?.length ?? 0) + (relatedTo?.length ?? 0) : g.roles.length;
+          const roleLinks: RoleLink[] = labelled
+            ? [
+                ...(trainsFor ?? []).map((role) => ({ role, relation: "trains_for" as const })),
+                ...(relatedTo ?? []).map((role) => ({ role, relation: "related_to" as const })),
+              ]
+            : g.roles.map((role) => ({ role, relation: null }));
           return (
             <li key={g.id} className="border-b border-border-soft/60 last:border-0">
               <button
                 onClick={() => setOpen(isOpen ? null : g.id)}
+                disabled={total === 0}
                 aria-expanded={isOpen}
-                className="flex w-full min-w-0 flex-col gap-1 py-2.5 text-left hover:bg-surface-alt/60"
+                className="flex w-full min-w-0 flex-col gap-1 py-2.5 text-left enabled:hover:bg-surface-alt/60"
               >
                 <span className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="flex min-w-0 items-baseline gap-1.5">
-                    <Chevron open={isOpen} />
+                    {total > 0 ? <Chevron open={isOpen} /> : <span className="w-3 shrink-0" />}
                     <Share share={share} />
                     <span className="min-w-0 break-words font-semibold text-ink">{g.name}</span>
                   </span>
-                  <Risk risk={g.risk} />
+                  <Risk risk={risk} />
                 </span>
                 <span className="ml-[18px] h-2.5 rounded-r-[3px] bg-border-soft/30">
                   <span
@@ -433,10 +478,8 @@ function GroupList({ rows }: { rows: { g: Group; share: number }[] }) {
               </button>
               {isOpen && (
                 <div className="mb-2 ml-[18px]">
-                  <p className="mb-1 text-xs text-muted">
-                    {g.n} jobs, most job openings first.
-                  </p>
-                  <RoleList roles={g.roles} limit={TOP} />
+                  <p className="mb-1 text-xs text-muted">{total} jobs</p>
+                  <RoleList links={roleLinks} limit={TOP} />
                 </div>
               )}
             </li>
@@ -447,73 +490,55 @@ function GroupList({ rows }: { rows: { g: Group; share: number }[] }) {
   );
 }
 
-type NumKey = "exposure" | "substitution" | "salary" | "openings" | "entrants" | "competition";
-const FACTS: [NumKey, string, (v: number) => string][] = [
-  ["exposure", "AI learnability", (v) => `${v} / 100`],
-  ["substitution", "AI substitution", (v) => `${v} / 100`],
-  ["salary", "Salary", (v) => gbp(v)],
-  ["openings", "Yearly openings", (v) => count(v)],
-  ["entrants", "Entrants a year", (v) => count(v)],
-  ["competition", "Competition", (v) => `${v} per opening`],
-];
+type RoleLink = { role: Role; relation: "trains_for" | "related_to" | null };
+const ROLE_ROW = "grid grid-cols-[minmax(0,1fr)_auto_3.5rem] items-center gap-x-2";
 
-const ROLE_ROW = "grid grid-cols-[minmax(0,1fr)_3.5rem] items-center gap-x-2";
-
-// A job row that opens in place to the checker's figures, so nobody has to
-// leave the page to see one job.
-function RoleList({ roles, limit }: { roles: Role[]; limit: number }) {
+function RoleList({ links, limit }: { links: RoleLink[]; limit: number }) {
   const [all, setAll] = useState(false);
-  const [open, setOpen] = useState<string | null>(null);
-  const [sort, setSort] = useState<Sort<"risk">>(null);
   const box = useRef<HTMLDivElement>(null);
-  const rows = sortRows(roles, sort, (r) => r.risk);
+  const rows = links
+    .map((link, index) => ({ ...link, index }))
+    .sort((a, b) => {
+      const relation = (r: RoleLink["relation"]) => r === "trains_for" ? 0 : r === "related_to" ? 1 : 2;
+      const byRelation = relation(a.relation) - relation(b.relation);
+      if (byRelation) return byRelation;
+      if (a.role.risk == null && b.role.risk != null) return 1;
+      if (a.role.risk != null && b.role.risk == null) return -1;
+      if (a.role.risk != null && b.role.risk != null && a.role.risk !== b.role.risk) return a.role.risk - b.role.risk;
+      if (a.role.salary == null && b.role.salary != null) return 1;
+      if (a.role.salary != null && b.role.salary == null) return -1;
+      if (a.role.salary != null && b.role.salary != null && a.role.salary !== b.role.salary) return b.role.salary - a.role.salary;
+      return a.role.label.localeCompare(b.role.label, "en-GB") || a.index - b.index;
+    });
   const shown = all ? rows : rows.slice(0, limit);
   return (
     <div ref={box} className="flex scroll-mt-24 flex-col">
       <div className={`${ROLE_ROW} border-b border-border-soft/40 pb-1`}>
         <span />
-        <SortButton k="risk" label="AI risk" sort={sort} onSort={setSort} align="right" />
+        <span className="text-right text-xs text-muted">Salary</span>
+        <span className="text-right text-xs text-muted">AI risk</span>
       </div>
       <ul className="divide-y divide-border-soft/40">
-        {shown.map((r) => {
-          const isOpen = open === r.id;
+        {shown.map(({ role: r, relation }) => {
           return (
             <li key={r.id}>
-              <button
-                type="button"
-                onClick={() => setOpen(isOpen ? null : r.id)}
-                aria-expanded={isOpen}
-                className={`${ROLE_ROW} w-full min-w-0 py-2 text-left text-sm hover:text-accent-strong`}
-              >
+              <div className={`${ROLE_ROW} min-w-0 py-2 text-left text-sm`}>
                 <span className="flex min-w-0 items-center gap-1.5">
-                  <Chevron open={isOpen} />
+                  {relation && (
+                    <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-accent-strong">
+                      {relation === "trains_for" ? "trains for" : "related to"}
+                    </span>
+                  )}
                   <span className="min-w-0 break-words text-ink">{r.label}</span>
                 </span>
+                <span className="shrink-0 text-right text-xs tabular-nums text-muted">{gbp(r.salary)}</span>
                 <Risk risk={r.risk} />
-              </button>
-              {isOpen && (
-                <div className="mb-3 ml-[18px] rounded-xl bg-surface-alt px-4 py-3">
-                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-                    {FACTS.map(([k, label, fmt]) => (
-                      <div key={k}>
-                        <dt className="text-xs text-muted">{label}</dt>
-                        <dd className="font-bold text-ink">{r[k] == null ? "—" : fmt(r[k])}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <a
-                    href={`/checker?id=${encodeURIComponent(r.id)}`}
-                    className="mt-3 inline-block text-xs text-accent-strong hover:underline"
-                  >
-                    Open in the checker →
-                  </a>
-                </div>
-              )}
+              </div>
             </li>
           );
         })}
       </ul>
-      <ShowAll all={all} total={roles.length} top={limit} box={box} onToggle={() => setAll(!all)} />
+      <ShowAll all={all} total={links.length} top={limit} box={box} onToggle={() => setAll(!all)} />
     </div>
   );
 }

@@ -18,6 +18,7 @@ export type Unit = {
   aka?: string[];
   sectors: string[];
   roles?: number[];
+  related_roles?: number[];
   level?: string;
   unresolved?: boolean;
   exposure: number | null;
@@ -49,11 +50,57 @@ const money = (v: number) => `£${(Math.round(v / 100) * 100).toLocaleString("en
 const count = (v: number) => v.toLocaleString("en-GB");
 const typeOf = (u: Unit) => `${TYPE[u.path]}${u.level ? ` · Level ${u.level}` : ""}`;
 const byOpenings = (a: Unit, b: Unit) => (b.openings ?? -1) - (a.openings ?? -1);
+const byLabelThenId = <T extends { label: string; id: string }>(a: T, b: T) =>
+  a.label.localeCompare(b.label) || a.id.localeCompare(b.id);
 
 const words = (s: string) =>
   s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map((w) => w.replace(/s$/, ""));
 
 type Row = { unit: Unit; via: string | null };
+type LeadKind = "trains_for" | "related_to" | null;
+export type LeadRow = { unit: Unit; relation: LeadKind };
+
+const leadKindRank: Record<Exclude<LeadKind, null>, number> = {
+  trains_for: 0,
+  related_to: 1,
+};
+
+function compareNullable(a: number | null, b: number | null, direction: "asc" | "desc"): number {
+  if (a == null) return b == null ? 0 : 1;
+  if (b == null) return -1;
+  return direction === "asc" ? a - b : b - a;
+}
+
+// Keep the full classification visible, but make a job that appears in both
+// groups a single Trains for row. This is the default order for paths which
+// lead to jobs; the table's figure buttons can still apply a different sort.
+export function sortLeadRows(rows: LeadRow[]): LeadRow[] {
+  return [...rows].sort((a, b) =>
+    (a.relation ? leadKindRank[a.relation] : 2)
+    - (b.relation ? leadKindRank[b.relation] : 2)
+    || compareNullable(a.unit.risk, b.unit.risk, "asc")
+    || compareNullable(a.unit.salary, b.unit.salary, "desc")
+    || a.unit.label.localeCompare(b.unit.label)
+    || a.unit.id.localeCompare(b.unit.id),
+  );
+}
+
+export function leadsFor(unit: Unit, jobs: Unit[]): LeadRow[] {
+  if (unit.path === "jobs") {
+    return jobs
+      .filter((job) => job.id !== unit.id && job.sectors[0] === unit.sectors[0])
+      .map((job) => ({ unit: job, relation: null }));
+  }
+  const trainsFor = new Set(unit.roles ?? []);
+  const relatedTo = new Set(unit.related_roles ?? []);
+  return [...new Set([...trainsFor, ...relatedTo])]
+    .map((index) => ({ index, unit: jobs[index] }))
+    .filter((row): row is { index: number; unit: Unit } => Boolean(row.unit))
+    .map(({ index, unit: job }) => ({
+      unit: job,
+      relation: trainsFor.has(index) ? "trains_for" as const : "related_to" as const,
+    }));
+}
 
 // Every typed word must start a word in the title, so "robotics engineer" does
 // not drag in every engineer. A job's O*NET titles count too, one rank lower,
@@ -183,13 +230,10 @@ export function Checker() {
 
   // What the chosen path leads to. A degree or apprenticeship: the jobs its AI
   // figures are the average of. A job: the other jobs in its sector.
-  const leads = useMemo<Unit[]>(() => {
+  const leads = useMemo<LeadRow[]>(() => {
     if (!selected) return [];
-    const list =
-      selected.path === "jobs"
-        ? jobs.filter((u) => u.id !== selected.id && u.sectors[0] === selected.sectors[0])
-        : (selected.roles ?? []).map((i) => jobs[i]).filter(Boolean);
-    return [...list].sort(byOpenings);
+    const list = leadsFor(selected, jobs);
+    return selected.path === "jobs" ? list.sort((a, b) => byOpenings(a.unit, b.unit)) : sortLeadRows(list);
   }, [selected, jobs]);
 
   // The finder's rows: this path, this sector, this search; A to Z.
@@ -197,18 +241,21 @@ export function Checker() {
     () =>
       (data?.units ?? [])
         .filter((u) => u.path === tab && (!sector || u.sectors.includes(sector)))
-        .sort((a, b) => a.label.localeCompare(b.label)),
+        .sort(byLabelThenId),
     [data, tab, sector],
   );
   // Every job the chosen sector reaches: its own jobs, or the jobs its degrees
   // or apprenticeships lead to. A pick narrows the lit dots to what it leads to.
   const lit = useMemo(() => {
-    if (selected) return new Set(leads.map((u) => u.id));
+    if (selected) return new Set(leads.map(({ unit }) => unit.id));
     const ids = new Set<string>();
     if (!sector) return ids;
     for (const u of pool) {
       if (u.path === "jobs") ids.add(u.id);
-      else for (const i of u.roles ?? []) if (jobs[i]) ids.add(jobs[i].id);
+      else {
+        const indexes = [...new Set([...(u.roles ?? []), ...(u.related_roles ?? [])])];
+        for (const i of indexes) if (jobs[i]) ids.add(jobs[i].id);
+      }
     }
     return ids;
   }, [selected, leads, sector, pool, jobs]);
@@ -235,9 +282,7 @@ export function Checker() {
   }
 
   const options = data.sectors[tab].map((s) => ({ id: s.id, label: SECTOR_LABEL[s.id] ?? s.label }));
-  // Job sectors keep ONS code order (managers down to elementary), which
-  // means something; degree areas do not, so they go A to Z.
-  if (tab === "degrees") options.sort((a, b) => a.label.localeCompare(b.label));
+  options.sort(byLabelThenId);
   const sectorOf = (u: Unit) => {
     const id = u.sectors[0];
     return SECTOR_LABEL[id] ?? PATHS.flatMap((p) => data.sectors[p]).find((s) => s.id === id)?.label ?? "";
@@ -246,7 +291,7 @@ export function Checker() {
   // Laptop: the finder down the left; on the right the card beside the map,
   // and under them the jobs the path leads to. A phone stacks the same order.
   return (
-    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[26rem_minmax(0,1fr)] lg:items-start lg:gap-x-10">
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[30rem_minmax(0,1fr)] lg:items-start lg:gap-x-8">
       <section aria-label="Find a path" className="flex flex-col gap-3">
         <div role="group" aria-label="Path" className="flex gap-1 rounded-lg bg-surface-alt p-1">
           {PATHS.map((p) => (
@@ -300,9 +345,9 @@ export function Checker() {
       </section>
 
       <div className="flex flex-col gap-6">
-        <div ref={resultRef} className="grid scroll-mt-16 gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div ref={resultRef} className="grid scroll-mt-16 gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <Card unit={selected} prev={prev} onBack={back} onClear={clear} />
-          <div className="flex items-center justify-center rounded-2xl border border-border-soft p-4">
+          <div className="flex items-center justify-center rounded-2xl border border-border-soft p-3">
             <div className="w-full max-w-xs md:max-w-none">
               <JobMap jobs={jobs} selected={selected} hover={hover} lit={lit} />
             </div>
@@ -333,7 +378,7 @@ function Card({
   const tone = (v: number | null | undefined): Tone => (v == null ? "none" : band(v).tone);
   const ink = unit ? "text-ink" : "text-muted";
   return (
-    <div className="flex min-w-0 flex-col gap-5 rounded-2xl border border-border-soft p-5 sm:p-6">
+    <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border-soft p-4 sm:p-5">
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -528,13 +573,13 @@ function Leads({
   unit, rows, sector, onPick, onHover,
 }: {
   unit: Unit | null;
-  rows: Unit[];
+  rows: LeadRow[];
   sector: string;
   onPick: (u: Unit) => void;
   onHover: (id: string | null) => void;
 }) {
   const [sort, setSort] = useState<Sort<Col>>(null);
-  const sorted = sortRows(rows, sort, (u, k) => u[k]);
+  const sorted = sortRows(rows, sort, (row, k) => row.unit[k]);
   const job = unit?.path === "jobs";
   return (
     <section className="flex flex-col gap-2 rounded-2xl border border-border-soft p-5 sm:p-6">
@@ -547,7 +592,7 @@ function Leads({
             ? "Pick a path to see the jobs it leads to, or the jobs like it."
             : job
               ? `${rows.length} other jobs in ${sector}, biggest first.`
-              : `${rows.length} jobs, biggest first. The AI figures above are the average of these.`}
+              : `${rows.length} jobs: Trains for first, then lower AI risk and higher salary. The AI figures above are the average of these.`}
         </p>
       </div>
       {rows.length > 0 && (
@@ -555,15 +600,22 @@ function Leads({
           <Cols sort={sort} onSort={setSort} wide className="pb-1" />
           <ul className="max-h-[24rem] divide-y divide-border-soft/60 overflow-y-auto">
             {sorted.map((r) => (
-              <li key={r.id}>
+              <li key={r.unit.id}>
                 <button
-                  onClick={() => onPick(r)}
-                  {...hoverProps(r.id, onHover)}
+                  onClick={() => onPick(r.unit)}
+                  {...hoverProps(r.unit.id, onHover)}
                   className={`${WIDE_ROW} w-full py-2 text-left text-sm hover:text-accent-strong`}
                 >
-                  <span className="min-w-0 break-words text-ink">{r.label}</span>
-                  <SalaryCell salary={r.salary} />
-                  <RiskTag risk={r.risk} />
+                  <span className="min-w-0 break-words text-ink">
+                    {r.unit.label}
+                    {r.relation && (
+                      <span className="ml-2 inline-block rounded bg-brand-100 px-1.5 py-0.5 align-middle text-[11px] font-semibold leading-none text-accent-strong">
+                        {r.relation === "trains_for" ? "Trains for" : "Related to"}
+                      </span>
+                    )}
+                  </span>
+                  <SalaryCell salary={r.unit.salary} />
+                  <RiskTag risk={r.unit.risk} />
                 </button>
               </li>
             ))}

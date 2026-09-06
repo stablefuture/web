@@ -11,14 +11,9 @@ export const metadata = {
 export default function DestinationsPage() {
   return (
     <main>
-      <section className="pb-12 pt-6 lg:pb-16 lg:pt-8">
+      <section className="pb-8 pt-4 lg:pb-12 lg:pt-6">
         <Container>
-          <div className="flex flex-col gap-6">
-            <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-              Where <span className="text-accent-strong">graduates</span> actually end up
-            </h1>
-            <Destinations />
-          </div>
+          <Destinations />
         </Container>
       </section>
     </main>
