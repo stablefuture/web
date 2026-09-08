@@ -19,12 +19,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.stablefuture.uk"),
   title: "Stable Future | Is That Career Future-Proof? UK Job Data",
   description:
-    "Check any UK job, degree or apprenticeship against real data on AI risk and pay. Built for parents of teenagers deciding what comes next.",
+    "Check any UK job, degree, or apprenticeship against real data on AI risk and pay. Career advice for students of all ages.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Stable Future | Is That Career Future-Proof? UK Job Data",
     description:
-      "Search any UK job, degree or apprenticeship. See its AI risk and pay from real data, not opinion.",
+      "Search any UK job, degree, or apprenticeship. See its AI risk and pay from real data, not opinion.",
     url: "/",
     siteName: "Stable Future",
     locale: "en_GB",
@@ -34,13 +34,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Stable Future | Is That Career Future-Proof?",
     description:
-      "Search any UK job, degree or apprenticeship. Real data on AI risk and pay.",
+      "Search any UK job, degree, or apprenticeship. Real data on AI risk and pay.",
   },
 };
-
-// Inline before-paint script: sets `.dark` on <html> based on stored choice
-// (or prefers-color-scheme) so the page never paints in the wrong theme.
-const themeInitScript = `(function(){try{var s=localStorage.getItem('sf-theme');var d=s?s==='dark':window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -51,11 +47,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>
           <Header />

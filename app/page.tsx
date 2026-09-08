@@ -1,315 +1,61 @@
-import { Container } from "@/app/components/Container";
-import { Section } from "@/app/components/Section";
+import styles from "./landing.module.css";
+import { FounderBio } from "./components/FounderBio";
 
 export const metadata = {
-  title: "Stable Future | Career Advice for the AI Era",
-  description:
-    "Why AI will reshape work, which jobs resist it, and how to stay economically empowered. The thinking behind Stable Future's career checker.",
+  title: "Stable Future | Your future is still yours",
+  description: "Career advice for students of all ages. Explore your options, understand how AI could change your chosen career, and plan your next step.",
   alternates: { canonical: "/" },
+  openGraph: { title: "Your future is still yours. | Stable Future", description: "Career advice for students of all ages, in a world changed by AI." },
+  twitter: { title: "Your future is still yours. | Stable Future", description: "Career advice for students of all ages, in a world changed by AI." },
 };
 
-// External links open in a new tab; internal ones stay in place.
-function Ext({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener"
-      className="underline underline-offset-4 hover:text-ink"
-    >
-      {children}
-    </a>
-  );
-}
-
-function Figure({ src, alt, source }: { src: string; alt: string; source: React.ReactNode }) {
-  return (
-    <figure className="flex flex-col gap-2">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={alt}
-        className="w-full rounded-xl border border-border-soft"
-        loading="lazy"
-      />
-      <figcaption className="text-xs text-muted">{source}</figcaption>
-    </figure>
-  );
-}
-
-function CheckerCta() {
-  return (
-    <p className="flex justify-center">
-      <a
-        href="/checker"
-        className="inline-flex items-center gap-2 rounded-full bg-accent-strong px-7 py-4 text-base font-semibold text-on-accent shadow-lg shadow-accent/25 transition hover:-translate-y-0.5 hover:opacity-95 sm:text-lg"
-      >
-        Check your career path against AI
-        <span aria-hidden>→</span>
-      </a>
-    </p>
-  );
+function Landscape() {
+  return <svg className={styles.landscape} viewBox="0 0 800 650" fill="none" aria-hidden="true">
+    <circle cx="526" cy="188" r="78" fill="#c76c43" className={styles.sun} />
+    <g stroke="currentColor" strokeWidth="0.8" opacity="0.6">
+      {Array.from({length: 46}, (_, i) => <path key={i} d={`M ${-130+i*14} 680 C ${20+i*10} ${270+i*4}, ${270+i*7} ${640-i*6}, ${360+i*12} ${310-i*1.7} S ${660+i*8} ${350+i*6}, 940 ${165+i*9}`} />)}
+    </g>
+    <path d="M260 670 C 258 533, 477 484, 463 391 C450 319, 411 326, 437 270" stroke="#f2f0e5" strokeWidth="21" />
+    <path d="M260 670 C 258 533, 477 484, 463 391 C450 319, 411 326, 437 270" stroke="currentColor" strokeWidth="1" strokeDasharray="3 6" />
+  </svg>;
 }
 
 export default function Home() {
-  return (
-    <main>
-      <Section as="section" tight>
-        <Container narrow>
-          <div className="flex flex-col gap-12">
-            <CheckerCta />
+  return <main className={styles.landing} data-landing>
+    <section className={styles.hero} aria-labelledby="hero-title">
+      <div className={styles.heroCopy}>
+        <p className={styles.eyebrow}><span /> Careers advice for a changing world</p>
+        <h1 id="hero-title">Your future<br />is still <em>yours.</em></h1>
+        <p className={styles.intro}>AI is changing work.<br />You still get to choose what comes next.</p>
+        <p className={styles.description}>We help students of all ages find their direction, understand their options, and take the next step with confidence.</p>
+        <div className={styles.actions}>
+          <a className={styles.button} href="/checker">Explore your career options <span aria-hidden="true">↗</span></a>
+          <a className={styles.textLink} href="/call">Talk to Ben <span aria-hidden="true">↗</span></a>
+        </div>
+        <p className={styles.small}>Start with our free career checker. No sign-up needed.</p>
+      </div>
+      <Landscape />
+      <div className={styles.heroBottom}><span>Jobs · Degrees · Apprenticeships</span><a href="#your-next-step">A little more direction <span aria-hidden="true">↓</span></a></div>
+    </section>
 
-            <section className="flex flex-col gap-12">
-              <div className="flex flex-col gap-4">
-                <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-                  Work in the AI Era
-                </h1>
-                <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
-                  <p>
-                    Tech companies are in a trillion-dollar arms race to build
-                    artificial general intelligence (AGI): an autonomous system
-                    capable of automating almost all work. Whoever gets there will
-                    gain trillions more.
-                  </p>
-                  <p>
-                    There are strong reasons to believe this is achievable. There
-                    has been rapid and exponential progress in AI&rsquo;s ability
-                    to:
-                  </p>
-                  <ul className="flex flex-col gap-2 pl-5 [&>li]:list-disc">
-                    <li>
-                      Complete work across{" "}
-                      <Ext href="https://artificialanalysis.ai/?intelligence=agentic-index&media-leaderboards=text-to-image&capability-index=agentic#capability-indices">
-                        various sectors
-                      </Ext>
-                      .
-                    </li>
-                    <li>
-                      Automate complex{" "}
-                      <Ext href="https://metr.org/time-horizons/">
-                        software engineering tasks
-                      </Ext>
-                      .
-                    </li>
-                    <li>
-                      Solve{" "}
-                      <Ext href="https://x.com/QiaochuYuan/status/2079087083663278170">
-                        frontier maths problems
-                      </Ext>
-                      .
-                    </li>
-                    <li>
-                      Automate{" "}
-                      <Ext href="https://dashboard.safe.ai/#automation">
-                        remote labour
-                      </Ext>
-                      , with significant progress occurring in <em>months</em>,
-                      not years.
-                    </li>
-                    <li>
-                      Use{" "}
-                      <Ext href="https://osworld-v2.xlang.ai/">computers</Ext> for
-                      real-world tasks.
-                    </li>
-                    <li>
-                      Beat humans at{" "}
-                      <Ext href="https://www.metaculus.com/">
-                        forecasting global events
-                      </Ext>
-                      .
-                    </li>
-                    <li>
-                      <Ext href="https://arxiv.org/abs/2606.16475">
-                        Out-persuade
-                      </Ext>{" "}
-                      expert humans.
-                    </li>
-                  </ul>
-                  <p>And many more.</p>
-                </div>
-              </div>
+    <section className={styles.statement} id="your-next-step">
+      <p className={styles.eyebrow}>01 / A good place to start</p>
+      <div><h2>“What should I do<br />with my future?”</h2><p>It was a big question before AI. Now there’s even more to weigh up. What suits you? Is university worth it? What will the work actually look like?</p><p>You don’t need to decide your whole life today. Let’s make your next choice a more informed one.</p></div>
+    </section>
 
-              <div className="flex flex-col gap-4">
-                <h2 className="text-2xl font-extrabold tracking-tight text-ink">
-                  The Intelligence Curse
-                </h2>
-                <Figure
-                  src="/about-intelligence-curse.png"
-                  alt="The five stages of the intelligence curse, from automation to human disempowerment."
-                  source={
-                    <>
-                      Source: Luke Drago &amp; Rudolf Laine,{" "}
-                      <Ext href="https://intelligence-curse.ai/">
-                        The Intelligence Curse
-                      </Ext>
-                    </>
-                  }
-                />
-                <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
-                  <p>
-                    In{" "}
-                    <Ext href="https://intelligence-curse.ai/">
-                      The Intelligence Curse
-                    </Ext>
-                    , Luke Drago and Rudolf Laine depict how this automation could
-                    play out:
-                  </p>
-                  <ol className="flex flex-col gap-2 pl-6 [&>li]:list-decimal">
-                    <li>
-                      Powerful AI will push automation through existing
-                      organisations, starting with entry-level hiring freezes and
-                      moving upwards.
-                    </li>
-                    <li>
-                      AI will outcompete even elite talent, ending social mobility
-                      and the progress it drives.
-                    </li>
-                    <li>
-                      Non-human factors of production (like capital, resources, and
-                      control over AI) will become overwhelmingly more important
-                      than humans.
-                    </li>
-                    <li>
-                      This disincentivises powerful actors around the world (like
-                      governments or leaders of organisations) to care about humans
-                      as they are no longer required for productivity.
-                    </li>
-                    <li>
-                      This could result in the disempowerment of the vast majority
-                      of humanity.
-                    </li>
-                  </ol>
-                  <p>
-                    <Ext href="https://www.reveliolabs.com/ai-labor-market-tracker">
-                      Stage 1 is already underway
-                    </Ext>
-                    , but the later stages are not an inevitability. They would
-                    unfold over the coming decades. To put it mildly, we&rsquo;d
-                    quite like to prevent this from happening.
-                  </p>
-                </div>
-              </div>
-            </section>
+    <section className={styles.options} aria-label="How we help">
+      <a href="/checker" className={styles.option}><span className={styles.number}>01</span><div><h3>See how AI could<br />change your career.</h3><p>Explore jobs, degrees, and apprenticeships. Compare pay and our estimates of how AI could affect the work.</p><span className={styles.optionLink}>Try the free career checker <span aria-hidden="true">↗</span></span></div></a>
+      <a href="/destinations" className={styles.option}><span className={styles.number}>02</span><div><h3>Know where a<br />degree can take you.</h3><p>Look beyond the course title. See what graduates go on to do, using UK graduate outcomes data.</p><span className={styles.optionLink}>Explore graduate destinations <span aria-hidden="true">↗</span></span></div></a>
+      <a href="/call" className={styles.option}><span className={styles.number}>03</span><div><h3>Talk it through.<br />Find your next step.</h3><p>Get personal careers advice that considers your interests, your stage of study, and the world you’re entering. Parents welcome too.</p><span className={styles.optionLink}>Book a conversation <span aria-hidden="true">↗</span></span></div></a>
+    </section>
 
-            <section className="flex flex-col gap-4">
-              <h2 className="text-2xl font-extrabold tracking-tight text-ink">
-                A Solution to Disempowerment
-              </h2>
-              <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
-                <p>
-                  Whilst AI&rsquo;s capabilities are progressing exponentially in
-                  some domains, progress remains slow in others. We call this{" "}
-                  <Ext href="https://x.com/karpathy/status/1816531576228053133?lang=en">
-                    jagged intelligence
-                  </Ext>
-                  . Whilst they might be superintelligent coders, AI still
-                  can&rsquo;t reliably{" "}
-                  <Ext href="https://clockbench.ai/">tell the time</Ext>. And even
-                  when AI catches up to humans at reading clocks or other niche
-                  tasks, it&rsquo;s often only because once a failure becomes a
-                  viral meme, it becomes a target to train for.
-                </p>
-              </div>
-              <Figure
-                src="/about-jagged-intelligence.png"
-                alt="A jagged profile of AI capability across different tasks."
-                source={
-                  <>
-                    Source: Ethan Mollick,{" "}
-                    <Ext href="https://www.oneusefulthing.org/p/the-shape-of-ai-jaggedness-bottlenecks">
-                      The Shape of AI: Jaggedness, Bottlenecks and Salients
-                    </Ext>
-                  </>
-                }
-              />
-              <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
-                <p>
-                  Which brings us to our final trillion-dollar question: which
-                  tasks will AI struggle with not just now, but in the future? As
-                  always, the answer lies in the data.
-                </p>
-                <p>
-                  For AI to become human-level in any given domain, it needs to
-                  learn from good data. This is known as Reinforcement Learning
-                  (RL). All this means is:
-                </p>
-                <ol className="flex flex-col gap-2 pl-6 [&>li]:list-decimal">
-                  <li>Show the AI model a problem, like a maths problem.</li>
-                  <li>
-                    Ask it to solve the problem and compare its answer with the
-                    real one.
-                  </li>
-                  <li>
-                    If the answer is correct, reward the model so it&rsquo;s more
-                    likely to produce that answer next time (reinforce the
-                    learning).
-                  </li>
-                  <li>Repeat.</li>
-                </ol>
-                <p>
-                  For example, AI will struggle with care work because it&rsquo;s
-                  a messy domain; it&rsquo;s hard to measure what good care work
-                  is, hard to convert that into the raw data required for
-                  rewarding the model, and very expensive to collect the data even
-                  if you wanted to (you need Human Feedback, RLHF). Compare this
-                  to software development, a highly structured and digital domain;
-                  code itself is data, there&rsquo;s loads of it, AI can generate
-                  more of it at near-zero cost, and performance is easy to measure
-                  (it either runs or it doesn&rsquo;t, and the fewer lines of code
-                  the better, so the Rewards are already Verifiable, RLVR, with no
-                  human needed).
-                </p>
-                <p>
-                  This variance in available training data creates differing
-                  capabilities. In reality, the &ldquo;jagged frontier&rdquo;
-                  looks something like this:
-                </p>
-              </div>
-              <Figure
-                src="/about-jagged-frontier.png"
-                alt="The jagged frontier of AI task performance across occupations."
-                source={
-                  <>
-                    Source:{" "}
-                    <Ext href="https://www.anthropic.com/research/labor-market-impacts">
-                      Anthropic
-                    </Ext>
-                  </>
-                }
-              />
-              <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
-                <p>
-                  As AI expands into the contours of verifiable domains, we can
-                  remain economically empowered in two ways.
-                </p>
-                <ol className="flex flex-col gap-2 pl-6 [&>li]:list-decimal">
-                  <li>
-                    Go where AI can&rsquo;t (i.e. jobs that resist the
-                    reinforcement learning required to train AI).
-                  </li>
-                  <li>
-                    Go where humans using AI beat AI on its own (i.e. jobs
-                    that resist substitution by AI).
-                  </li>
-                </ol>
-                <p>
-                  This creates our two key measures: AI Learnability and
-                  AI substitution.
-                </p>
-                <ul className="flex flex-col gap-2 pl-5 [&>li]:list-disc">
-                  <li>Surgeons are low learnability, low AI substitution.</li>
-                  <li>
-                    Accountants are high learnability, high AI substitution: we
-                    won&rsquo;t need junior accountants much longer.
-                  </li>
-                </ul>
-              </div>
-            </section>
+    <section className={styles.approach}>
+      <div><p className={styles.eyebrow}>02 / Our approach</p><h2>Serious about the research.<br /><em>Personal about the advice.</em></h2></div>
+      <div className={styles.approachCopy}><p>No one can promise an AI-proof career. We help you understand the evidence, weigh up the uncertainty, and make choices that fit you.</p><p>Our free tools bring UK labour market data into your career decisions. Personal advice helps you work out what that evidence means for you.</p><a className={styles.textLink} href="/about">Read the thinking behind our advice <span aria-hidden="true">↗</span></a></div>
+    </section>
 
-            <CheckerCta />
-          </div>
-        </Container>
-      </Section>
-    </main>
-  );
+    <section className={styles.founder}><FounderBio /></section>
+
+    <section className={styles.closing}><p className={styles.eyebrow}>Your next step starts with a choice</p><h2>Make it an<br /><em>informed one.</em></h2><a className={styles.button} href="/checker">Explore your career options <span aria-hidden="true">↗</span></a><p className={styles.small}>Free to explore. Built to help you move forwards.</p></section>
+  </main>;
 }

@@ -20,9 +20,9 @@ export function riskWord(v: number): { word: string; tone: Tone } {
 
 // Status colours only ever sit beside a word, never carry the meaning alone.
 const DOT: Record<Tone, string> = {
-  good: "bg-[#0ca30c]",
-  warn: "bg-[#fab219]",
-  bad: "bg-[#d03b3b]",
+  good: "bg-[#3d8b4a]",
+  warn: "bg-[#b26f00]",
+  bad: "bg-[#c14c34]",
   none: "bg-muted/40",
 };
 

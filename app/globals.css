@@ -3,18 +3,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  /* Bright purple brand palette */
-  --color-brand-50: #faf5ff;
-  --color-brand-100: #f3e8ff;
-  --color-brand-200: #e9d5ff;
-  --color-brand-300: #d8b4fe;
-  --color-brand-400: #c084fc;
-  --color-brand-500: #a855f7;
-  --color-brand-600: #9333ea;
-  --color-brand-700: #7e22ce;
-  --color-brand-800: #6b21a8;
-  --color-brand-900: #581c87;
-  --color-brand-950: #3b0764;
+  /* Cream, sage, and forest green. */
+  --color-brand-50: #f2f0e5;
+  --color-brand-100: #dfe1d2;
+  --color-brand-200: #c6c9b9;
+  --color-brand-300: #b0b79c;
+  --color-brand-400: #919b7c;
+  --color-brand-500: #797e54;
+  --color-brand-600: #566151;
+  --color-brand-700: #405941;
+  --color-brand-800: #344d39;
+  --color-brand-900: #283f32;
+  --color-brand-950: #1d3026;
 
   /* Semantic tokens — read from CSS vars so they swap with theme */
   --color-background: var(--background);
@@ -33,40 +33,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* LIGHT (default) */
 :root {
-  --background: #ffffff;
-  --foreground: #0f0520;
-  --ink: #0f0520;
-  --muted: #6b5c8a;
-  --surface-alt: #faf5ff;
-  --border-soft: #d8b4fe;
-  /* Accent: the bright purple identity (#a855f7 = brand-500) shows through
-     for highlight boxes and glow. Solid filled buttons need deeper purple
-     to hit WCAG AA against white text. */
-  --accent: #a855f7;
-  --accent-strong: #7e22ce; /* button fill on light */
-  --accent-glow: transparent; /* no VSL glow in light */
-  --on-accent: #ffffff;
+  color-scheme: light;
+  --background: #f2f0e5;
+  --foreground: #283f32;
+  --ink: #283f32;
+  --muted: #566151;
+  --surface-alt: #dfe1d2;
+  --border-soft: #c6c9b9;
+  --accent: #797e54;
+  --accent-strong: #283f32;
+  --accent-glow: transparent;
+  --on-accent: #f2f0e5;
 }
-
-/* DARK — opt-in via .dark on <html> */
-.dark {
-  --background: #050008;
-  --foreground: #f5edff;
-  --ink: #f5edff;
-  --muted: #b2a4cf;
-  --surface-alt: #100620;
-  --border-soft: #46286f;
-  --accent: #a855f7;
-  --accent-strong: #9333ea; /* button fill on dark; AA on white text */
-  --accent-glow: #c084fc; /* VSL halo only in dark */
-  --on-accent: #ffffff;
-}
-
-/* prefers-color-scheme: the inline script in layout sets .dark before paint
-   based on localStorage or prefers-color-scheme, so the toggle is the single
-   source of truth. No CSS media query needed. */
 
 html,
 body {
@@ -99,3 +78,27 @@ h1, h2, h3, h4 {
 @media (prefers-reduced-motion: reduce) {
   .sf-fade-in { animation: none; }
 }
+
+
+/* Shared navigation on every route. */
+.site-header { position:relative; z-index:50; display:flex; align-items:center; gap:32px; padding:27px 6%; border-bottom:1px solid var(--border-soft); background:var(--background); color:var(--ink); }
+.site-brand { display:flex; align-items:center; gap:14px; margin-right:auto; font-size:25px; font-weight:600; letter-spacing:-1.3px; white-space:nowrap; }
+.site-brand span { font-size:32px; font-weight:400; }
+.site-nav { display:flex; align-items:center; gap:32px; font-size:12px; }
+.site-header a { transition:opacity .2s; }.site-header a:hover { opacity:.7; }
+.site-header a[aria-current="page"] { text-decoration:underline; text-underline-offset:6px; }
+.site-contact { border:1px solid #283f3270; padding:11px 19px; border-radius:3px; display:flex; gap:24px; font-size:12px; white-space:nowrap; }
+.site-menu-button { display:none; }
+a:focus-visible,button:focus-visible { outline:2px solid #a05b37; outline-offset:5px; }
+main:not([data-landing]) h1 { font-family:Georgia,'Times New Roman',serif; font-weight:400; letter-spacing:-.04em; }
+@media(max-width:850px) {
+  .site-header { padding:18px 6%; gap:16px; flex-wrap:wrap; }
+  .site-brand { font-size:22px; gap:6px; }.site-brand span { font-size:25px; }
+  .site-nav { display:none; }
+  .site-contact { padding:10px 12px; gap:12px; }
+  .site-menu-button { display:flex; align-items:center; gap:12px; padding:10px 0; min-height:40px; font-size:12px; cursor:pointer; }
+  .site-mobile-nav { display:flex; flex-direction:column; width:100%; border-top:1px solid var(--border-soft); padding-top:8px; }
+  .site-mobile-nav a { display:flex; justify-content:space-between; padding:15px 0; font-size:14px; }
+}
+@media(max-width:380px) { .site-header { gap:12px; padding-inline:5%; }.site-brand { font-size:19px; }.site-contact { gap:7px; }.site-menu-button { gap:6px; } }
+@media(prefers-reduced-motion:reduce) { .site-header a { transition:none; } }
