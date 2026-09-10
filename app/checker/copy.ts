@@ -11,10 +11,6 @@ export const TOOLTIPS: Record<string, string> = {
     "Average full-time salary for related junior/mid/senior roles across the UK, excluding managers and directors",
   openings: "Estimated number of roles available in 5 years' time",
   growth: "How much is this sector growing or shrinking?",
-  entrants:
-    "Number of apprentices or graduates entering related roles across the UK",
-  competition:
-    "How many apprentices and graduates per job opening will there be for related roles?",
 };
 
 export const LABELS: Record<string, string> = {
@@ -24,8 +20,6 @@ export const LABELS: Record<string, string> = {
   salary: "Salary",
   openings: "Projected openings",
   growth: "Sector growth",
-  entrants: "Entrants",
-  competition: "Competition",
 };
 
 export const PATHS = [
