@@ -15,7 +15,7 @@ export const SECTOR_LABEL: Record<string, string> = {
   "soc2:32": "Health and social care associates",
   "soc2:33": "Police, fire and armed forces",
   "soc2:34": "Arts, media and sport",
-  "soc2:35": "Business, sales and finance associates",
+  "soc2:35": "Business and public service associates",
   "soc2:41": "Administration and clerical",
   "soc2:42": "Secretarial and PAs",
   "soc2:51": "Farming, gardening and animal care",
