@@ -9,7 +9,7 @@ export const TOOLTIPS: Record<string, string> = {
     "For AI to replace people's work, the work needs to be (a) learnable by AI and (b) able to substitute people for AI. How true is that for this role? How hard will I need to work to not get replaced?",
   salary:
     "Average full-time salary for related junior/mid/senior roles across the UK, excluding managers and directors",
-  openings: "Estimated number of roles available in 5 years' time",
+  openings: "Estimated annual openings in 2031 across the linked UK job groups, including replacement hiring. Not vacancies for this exact title, apprenticeship places or degree places.",
   growth: "How much is this sector growing or shrinking?",
 };
 

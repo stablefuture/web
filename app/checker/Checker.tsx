@@ -19,6 +19,12 @@ export type Unit = {
   sectors: string[];
   roles?: number[];
   related_roles?: number[];
+  routeLinks?: { id: string; relation: string; note: string }[];
+  routeNote?: string;
+  soc4?: string;
+  ukGroup?: string;
+  scoredRoutes?: number;
+  totalRoutes?: number;
   level?: string;
   unresolved?: boolean;
   exposure: number | null;
@@ -29,7 +35,7 @@ export type Unit = {
 };
 
 type Sector = { id: string; label: string };
-type V3 = { sectors: Record<Path, Sector[]>; units: Unit[] };
+type V3 = { sectors: Record<Path, Sector[]>; units: Unit[]; routeJobs?: Unit[]; legacyUnits?: Unit[] };
 // One history entry: the pick and the finder that led to it.
 type Nav = { id: string | null; tab: Path; sector: string; q: string };
 
@@ -57,12 +63,14 @@ const words = (s: string) =>
   s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map((w) => w.replace(/s$/, ""));
 
 type Row = { unit: Unit; via: string | null };
-type LeadKind = "trains_for" | "related_to" | null;
+type LeadKind = "trains_for" | "related_to" | "conditional" | "reviewed" | null;
 export type LeadRow = { unit: Unit; relation: LeadKind };
 
 const leadKindRank: Record<Exclude<LeadKind, null>, number> = {
   trains_for: 0,
   related_to: 1,
+  conditional: 1,
+  reviewed: 0,
 };
 
 function compareNullable(a: number | null, b: number | null, direction: "asc" | "desc"): number {
@@ -85,7 +93,14 @@ export function sortLeadRows(rows: LeadRow[]): LeadRow[] {
   );
 }
 
-export function leadsFor(unit: Unit, jobs: Unit[]): LeadRow[] {
+export function leadsFor(unit: Unit, jobs: Unit[], routeJobs: Unit[] = []): LeadRow[] {
+  if (unit.routeLinks) {
+    const byId = new Map(routeJobs.map(job => [job.id, job]));
+    return unit.routeLinks.flatMap(link => {
+      const job = byId.get(link.id);
+      return job ? [{ unit: { ...job, routeNote: link.note }, relation: link.relation === "direct" ? "trains_for" as const : link.relation === "reviewed" ? "reviewed" as const : "conditional" as const }] : [];
+    });
+  }
   if (unit.path === "jobs") {
     return jobs
       .filter((job) => job.id !== unit.id && job.sectors[0] === unit.sectors[0])
@@ -159,7 +174,7 @@ export function Checker() {
       .then((d: V3) => {
         setData(d);
         setSelectedId(id);
-        const u = id ? d.units.find((x) => x.id === id) : null;
+        const u = id ? [...d.units, ...(d.routeJobs ?? []), ...(d.legacyUnits ?? [])].find((x) => x.id === id) : null;
         const nav: Nav = { id: u ? u.id : null, tab: u ? u.path : "jobs", sector: "", q: "" };
         setTab(nav.tab);
         // History is a convenience, never a reason to lose a loaded board.
@@ -189,7 +204,7 @@ export function Checker() {
 
   const jobs = useMemo(() => data?.units.filter((u) => u.path === "jobs") ?? [], [data]);
   const byId = useMemo(
-    () => new Map<string, Unit>((data?.units ?? []).map((u) => [u.id, u])),
+    () => new Map<string, Unit>([...(data?.units ?? []), ...(data?.routeJobs ?? []), ...(data?.legacyUnits ?? [])].map((u) => [u.id, u])),
     [data],
   );
 
@@ -232,9 +247,9 @@ export function Checker() {
   // figures are the average of. A job: the other jobs in its sector.
   const leads = useMemo<LeadRow[]>(() => {
     if (!selected) return [];
-    const list = leadsFor(selected, jobs);
+    const list = leadsFor(selected, jobs, data?.routeJobs);
     return selected.path === "jobs" ? list.sort((a, b) => byOpenings(a.unit, b.unit)) : sortLeadRows(list);
-  }, [selected, jobs]);
+  }, [selected, jobs, data]);
 
   // The finder's rows: this path, this sector, this search; A to Z.
   const pool = useMemo(
@@ -247,18 +262,19 @@ export function Checker() {
   // Every job the chosen sector reaches: its own jobs, or the jobs its degrees
   // or apprenticeships lead to. A pick narrows the lit dots to what it leads to.
   const lit = useMemo(() => {
-    if (selected) return new Set(leads.map(({ unit }) => unit.id));
+    if (selected) return new Set(leads.map(({ unit }) => unit.soc4 ? `soc4:${unit.soc4}` : unit.id));
     const ids = new Set<string>();
     if (!sector) return ids;
     for (const u of pool) {
       if (u.path === "jobs") ids.add(u.id);
       else {
+        for (const row of leadsFor(u, jobs, data?.routeJobs)) ids.add(row.unit.soc4 ? `soc4:${row.unit.soc4}` : row.unit.id);
         const indexes = [...new Set([...(u.roles ?? []), ...(u.related_roles ?? [])])];
         for (const i of indexes) if (jobs[i]) ids.add(jobs[i].id);
       }
     }
     return ids;
-  }, [selected, leads, sector, pool, jobs]);
+  }, [selected, leads, sector, pool, jobs, data]);
   const rows = useMemo(() => filter(pool, q), [pool, q]);
 
   if (!data) {
@@ -592,8 +608,10 @@ function Leads({
             ? "Pick a path to see the jobs it leads to, or the jobs like it."
             : job
               ? `${rows.length} other jobs in ${sector}, biggest first.`
-              : `${rows.length} jobs: Trains for first, then lower AI risk and higher salary. The AI figures above are the average of these.`}
+              : `${rows.length} linked jobs, direct routes first. AI figures average the scored jobs; salary and openings cover broader UK job groups.`}
         </p>
+        {unit?.ukGroup && <p className="text-xs text-muted">Salary and openings cover the broader UK group: {unit.ukGroup}.</p>}
+        {unit?.scoredRoutes != null && unit.scoredRoutes < (unit.totalRoutes ?? 0) && <p className="text-xs text-muted">AI scores available for {unit.scoredRoutes} of {unit.totalRoutes} linked jobs.</p>}
       </div>
       {rows.length > 0 && (
         <>
@@ -610,13 +628,14 @@ function Leads({
                     {r.unit.label}
                     {r.relation && (
                       <span className="ml-2 inline-block rounded bg-brand-100 px-1.5 py-0.5 align-middle text-[11px] font-semibold leading-none text-accent-strong">
-                        {r.relation === "trains_for" ? "Trains for" : "Related to"}
+                        {r.relation === "trains_for" ? "Direct route" : r.relation === "conditional" ? "Further requirements" : r.relation === "reviewed" ? "Linked route" : "Related to"}
                       </span>
                     )}
                   </span>
                   <SalaryCell salary={r.unit.salary} />
                   <RiskTag risk={r.unit.risk} />
                 </button>
+                {r.unit.routeNote && <details className="mb-2 text-xs text-muted"><summary className="cursor-pointer">Route details</summary><p className="mt-1">{r.unit.routeNote}</p></details>}
               </li>
             ))}
           </ul>

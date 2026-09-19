@@ -34,6 +34,7 @@ type Subject = {
 type Data = {
   meta: { quals: [string, string][]; yags: string[]; fig12_year: string };
   groups: Group[];
+  routeJobs?: Role[];
   subjects: Subject[];
 };
 type Industries = Record<string, Record<string, Slice>>;
@@ -151,7 +152,7 @@ export function Destinations() {
   const who = subject.id === "all" ? "graduates" : `${midSentence(subject.label)} graduates`;
 
   const occ = subject.occupations;
-  const rolesById = new Map(data.groups.flatMap((g) => g.roles).map((r) => [r.id, r]));
+  const rolesById = new Map([...data.groups.flatMap((g) => g.roles), ...(data.routeJobs ?? [])].map((r) => [r.id, r]));
   const rows = occ
     ? data.groups.map((g, i) => {
         const mapped = subject.role_groups?.[g.id];
@@ -296,9 +297,11 @@ export function Destinations() {
           <p>
             <strong className="text-ink">AI risk</strong>: the{" "}
             <a href="/checker" className="underline underline-offset-4 hover:text-ink">career checker</a>
-            &rsquo;s score for each SOC 2020 job. For a chosen degree, each group&rsquo;s
-            score uses only its Trains for jobs. Related to jobs remain available for
-            browsing but do not change the score.
+            &rsquo;s scores for exact linked occupations. Subject-group scores average
+            the scored direct routes; routes with further requirements remain visible
+            but do not change that score. These reviewed degree-subject links are
+            possible paths, not measured graduate destinations. Not every course
+            qualifies you for every listed job. Job salaries cover broader UK groups.
           </p>
         </div>
       </details>
@@ -526,7 +529,7 @@ function RoleList({ links, limit }: { links: RoleLink[]; limit: number }) {
                 <span className="flex min-w-0 items-center gap-1.5">
                   {relation && (
                     <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-accent-strong">
-                      {relation === "trains_for" ? "trains for" : "related to"}
+                      {relation === "trains_for" ? "direct route" : "further requirements"}
                     </span>
                   )}
                   <span className="min-w-0 break-words text-ink">{r.label}</span>

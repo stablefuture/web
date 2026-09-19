@@ -131,7 +131,7 @@ function Label({ u }: { u: Unit }) {
   const cx = px(u.exposure!);
   const cy = py(u.substitution!);
   const lines = wrap(u.label);
-  const n = u.roles?.length ?? 0;
+  const n = u.scoredRoutes ?? u.roles?.length ?? 0;
   const note = u.path !== "jobs" && n > 0 ? `average of ${n} jobs` : null;
   const LINE = 13;
   const height = lines.length * LINE + (note ? LINE : 0);
