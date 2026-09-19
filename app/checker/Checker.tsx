@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { LABELS, TOOLTIPS } from "./copy";
 import { JobMap } from "./Map";
+import { overviewId } from "./routing";
 import { SECTOR_LABEL } from "./sectors";
 import { band, Dot, type Tone } from "@/app/lib/bands";
 import { loadError } from "@/app/lib/loadError";
@@ -380,7 +381,7 @@ export function Checker() {
           unit={selected}
           rows={leads}
           sector={selected ? sectorOf(selected) : ""}
-          onPick={(u) => select(u.id)}
+          onPick={(u) => select(overviewId(u))}
           onHover={setHoverId}
         />
       </div>
