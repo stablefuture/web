@@ -8,6 +8,7 @@ import { SECTOR_LABEL } from "./sectors";
 import { band, Dot, type Tone } from "@/app/lib/bands";
 import { loadError } from "@/app/lib/loadError";
 import { type Sort, SortButton, sortRows } from "@/app/lib/sort";
+import { degreeTitle } from "@/app/lib/titleCase.mjs";
 
 export type Path = "jobs" | "degrees" | "apprenticeships";
 
@@ -61,6 +62,11 @@ const byLabelThenId = <T extends { label: string; id: string }>(a: T, b: T) =>
 
 const words = (s: string) =>
   s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map((w) => w.replace(/s$/, ""));
+
+export function formatDegreeLabels(data: V3): V3 {
+  const format = (unit: Unit) => unit.path === "degrees" ? { ...unit, label: degreeTitle(unit.label) } : unit;
+  return { ...data, units: data.units.map(format), legacyUnits: data.legacyUnits?.map(format) };
+}
 
 type Row = { unit: Unit; via: string | null };
 type LeadKind = "trains_for" | "related_to" | "conditional" | "reviewed" | null;
@@ -171,7 +177,8 @@ export function Checker() {
         if (!r.ok) throw new Error(`v3.json ${r.status}`);
         return r.json();
       })
-      .then((d: V3) => {
+      .then((raw: V3) => {
+        const d = formatDegreeLabels(raw);
         setData(d);
         setSelectedId(id);
         const u = id ? [...d.units, ...(d.routeJobs ?? []), ...(d.legacyUnits ?? [])].find((x) => x.id === id) : null;
