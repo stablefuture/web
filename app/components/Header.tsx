@@ -8,6 +8,7 @@ const NAV = [
   ["Career checker", "/checker"],
   ["Graduate destinations", "/destinations"],
   ["About", "/about"],
+  ["Talk", "/talk"],
 ];
 
 export function Header() {

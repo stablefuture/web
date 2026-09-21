@@ -11,6 +11,7 @@ const PAGES = [
   ["Career checker", "/checker"],
   ["Graduate destinations", "/destinations"],
   ["About", "/about"],
+  ["Talk", "/talk"],
 ];
 
 export function Footer() {
