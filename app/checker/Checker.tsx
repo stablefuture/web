@@ -616,7 +616,7 @@ function Leads({
             ? "Pick a path to see the jobs it leads to, or the jobs like it."
             : job
               ? `${rows.length} other jobs in ${sector}, biggest first.`
-              : `${rows.length} linked jobs, direct routes first. AI figures average the scored jobs; salary and openings cover broader UK job groups.`}
+              : `${rows.length} linked jobs, trains for first. AI figures use the trains-for jobs; broader links show other possible destinations.`}
         </p>
         {unit?.ukGroup && <p className="text-xs text-muted">Salary and openings cover the broader UK group: {unit.ukGroup}.</p>}
         {unit?.scoredRoutes != null && unit.scoredRoutes < (unit.totalRoutes ?? 0) && <p className="text-xs text-muted">AI scores available for {unit.scoredRoutes} of {unit.totalRoutes} linked jobs.</p>}
@@ -636,7 +636,7 @@ function Leads({
                     {r.unit.label}
                     {r.relation && (
                       <span className="ml-2 inline-block rounded bg-brand-100 px-1.5 py-0.5 align-middle text-[11px] font-semibold leading-none text-accent-strong">
-                        {r.relation === "trains_for" ? "Direct route" : r.relation === "conditional" ? "Further requirements" : r.relation === "reviewed" ? "Linked route" : "Related to"}
+                        {r.relation === "trains_for" ? "Trains for" : r.relation === "conditional" ? "Further requirements" : r.relation === "reviewed" ? "Linked route" : "Leads to"}
                       </span>
                     )}
                   </span>

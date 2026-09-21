@@ -297,11 +297,11 @@ export function Destinations() {
           <p>
             <strong className="text-ink">AI risk</strong>: the{" "}
             <a href="/checker" className="underline underline-offset-4 hover:text-ink">career checker</a>
-            &rsquo;s scores for exact linked occupations. Subject-group scores average
-            the scored direct routes; routes with further requirements remain visible
-            but do not change that score. These reviewed degree-subject links are
-            possible paths, not measured graduate destinations. Not every course
-            qualifies you for every listed job. Job salaries cover broader UK groups.
+            &rsquo;s scores for UK occupation groups. For a chosen subject, scores use
+            its Trains for jobs, weighted by projected openings. Leads to jobs show
+            broader possible destinations and do not change the score. The listed
+            job links describe possible routes; the percentages above come from
+            observed graduate outcomes for broad subject groups.
           </p>
         </div>
       </details>
@@ -529,7 +529,7 @@ function RoleList({ links, limit }: { links: RoleLink[]; limit: number }) {
                 <span className="flex min-w-0 items-center gap-1.5">
                   {relation && (
                     <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-accent-strong">
-                      {relation === "trains_for" ? "direct route" : "further requirements"}
+                      {relation === "trains_for" ? "Trains for" : "Leads to"}
                     </span>
                   )}
                   <span className="min-w-0 break-words text-ink">{r.label}</span>
