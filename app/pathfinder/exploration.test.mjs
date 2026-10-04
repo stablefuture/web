@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const source=readFileSync(new URL('./exploration.ts',import.meta.url),'utf8').replace("'./logic'",JSON.stringify(new URL('./logic.ts',import.meta.url).href));
+const {exploreCards,defaults}=await import('data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64'));
+const a={id:'a',path:'jobs',label:'A',sectors:['x'],salary:20000,openings:100,exposure:20,substitution:20,soc4:'1'};
+const b={...a,id:'b',label:'B',sectors:['y'],salary:60000,exposure:80,substitution:80,soc4:'2'};
+const c={...a,id:'c',label:'C',salary:null,exposure:null,substitution:null,soc4:'3'};
+const units=[a,b,c],data={areas:[{id:'chosen'}],profiles:{a:{specific:[60]},b:{specific:[20]}}},links=new Map(),matches=new Map([['a',90],['b',60]]),rows=new Map([['a',{score:80,preferenceConflicts:[]}],['b',{score:70,preferenceConflicts:['conflict']}]]);
+const run=o=>exploreCards(units,units,links,data,matches,rows,{...defaults,...o}).map(x=>x.id);
+test('default order preserved and filters compose',()=>{assert.deepEqual(run({}),['a','b','c']);assert.deepEqual(run({sector:'x',area:'chosen',match:80}),['a']);});
+test('pay and AI priorities reorder; unknown AI is not safe',()=>{assert.equal(run({fit:0,pay:5})[0],'b');assert.deepEqual(run({fit:0,ai:5}),['a','b','c']);});
+test('conflict filter requires profile evidence',()=>assert.deepEqual(run({conflicts:true}),['a']));
+test('training interest filter uses linked careers',()=>{const route={...a,id:'route',path:'degrees'};assert.equal(exploreCards([route],units,new Map([['route',[a]]]),data,matches,rows,{...defaults,area:'chosen'}).length,1);});

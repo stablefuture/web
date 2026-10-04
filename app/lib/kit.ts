@@ -1,11 +1,8 @@
 const KIT_BASE = "https://api.kit.com/v4";
 
-// Upserts the subscriber, then attaches them to the given form.
-// state "active" = single opt-in, no confirmation email. Call bookers are
-// covered by the PECR soft opt-in (reg 22(3)), and a "confirm your
-// subscription" email after booking a call only sheds leads. This overrides the
-// form's own double opt-in setting; the hosted newsletter form is unaffected.
-// Returns true on success. Never throws.
+// Upserts the subscriber, then records the signup against the selected form.
+// Existing callers request active subscriptions. Kit controls form automations.
+// Returns false on failure without logging addresses or provider response bodies.
 export async function subscribeViaKit(
   email: string,
   formId: string | undefined,
@@ -29,6 +26,7 @@ export async function subscribeViaKit(
     const created = await fetch(`${KIT_BASE}/subscribers`, {
       method: "POST",
       headers,
+      signal: AbortSignal.timeout(10000),
       body: JSON.stringify({
         email_address: email,
         state: "active",
@@ -38,29 +36,27 @@ export async function subscribeViaKit(
     if (!created.ok) {
       console.error(
         "Kit create subscriber failed:",
-        created.status,
-        await created.text()
+        created.status
       );
       return false;
     }
 
-    // 2. Attach to the form — triggers the double opt-in confirmation email and
-    //    records which source this lead came from.
+    // 2. Attach to the form; its configured automations may send follow-up emails.
     const attached = await fetch(`${KIT_BASE}/forms/${form}/subscribers`, {
       method: "POST",
       headers,
+      signal: AbortSignal.timeout(10000),
       body: JSON.stringify({ email_address: email }),
     });
     if (!attached.ok) {
       console.error(
         "Kit add-to-form failed:",
-        attached.status,
-        await attached.text()
+        attached.status
       );
       return false;
     }
-  } catch (err) {
-    console.error("Kit subscribe error:", err);
+  } catch {
+    console.error("Kit subscription request failed.");
     return false;
   }
 

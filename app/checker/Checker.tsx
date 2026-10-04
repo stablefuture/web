@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { searchMatches } from "@/app/lib/pathSearch";
 import { LABELS, TOOLTIPS } from "./copy";
 import { JobMap } from "./Map";
 import { overviewId } from "./routing";
@@ -60,9 +61,6 @@ const typeOf = (u: Unit) => `${TYPE[u.path]}${u.level ? ` · Level ${u.level}` :
 const byOpenings = (a: Unit, b: Unit) => (b.openings ?? -1) - (a.openings ?? -1);
 const byLabelThenId = <T extends { label: string; id: string }>(a: T, b: T) =>
   a.label.localeCompare(b.label) || a.id.localeCompare(b.id);
-
-const words = (s: string) =>
-  s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map((w) => w.replace(/s$/, ""));
 
 export function formatDegreeLabels(data: V3): V3 {
   const format = (unit: Unit) => unit.path === "degrees" ? { ...unit, label: degreeTitle(unit.label) } : unit;
@@ -129,26 +127,8 @@ export function leadsFor(unit: Unit, jobs: Unit[], routeJobs: Unit[] = []): Lead
 // so "web developer" reaches the unit group it sits in and the row says which
 // title matched. Ties keep the order they came in.
 function filter(units: Unit[], q: string): Row[] {
-  const toks = words(q);
-  if (!toks.length) return units.map((unit) => ({ unit, via: null }));
-  const full = toks.join(" ");
-  const score = (label: string) => {
-    const lw = words(label);
-    const l = lw.join(" ");
-    return l === full ? 3
-      : l.startsWith(full) ? 2
-      : toks.every((t) => lw.some((w) => w.startsWith(t))) ? 1
-      : 0;
-  };
-  const hits: [Row, number, number][] = [];
-  units.forEach((unit, i) => {
-    const own = score(unit.label);
-    if (own) { hits.push([{ unit, via: null }, own, i]); return; }
-    const via = (unit.aka ?? []).find((a) => score(a) > 0);
-    if (via) hits.push([{ unit, via }, 0.5, i]);
-  });
-  hits.sort((a, b) => b[1] - a[1] || a[2] - b[2]);
-  return hits.map(([r]) => r);
+  return searchMatches(units, q, (unit) => unit.label, (unit) => unit.aka ?? [])
+    .map(({ item: unit, via }) => ({ unit, via }));
 }
 
 export function Checker() {

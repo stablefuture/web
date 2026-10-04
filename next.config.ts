@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
         destination: "https://cal.eu/ben-grime/strategy-call",
         permanent: false,
       },
+      {
+        source: "/assessment",
+        destination: "/pathfinder",
+        permanent: false,
+      },
     ];
   },
 };
