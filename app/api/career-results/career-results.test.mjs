@@ -17,7 +17,7 @@ function setup(overrides = {}) {
 test('one request sends one email containing all three canonical reports', async () => {
  const { handler, calls } = setup(); const response = await handler(request({ email: ' person@example.com ', ids: reports.map((r) => r.id), aiExposure: { score: 0 }, reports: [{ title: 'FORGED' }] }));
  assert.equal(response.status, 200); assert.deepEqual(await response.json(), { ok: true }); assert.equal(calls.length, 1);
- const mail = JSON.parse(calls[0][1].body); assert.deepEqual(mail.to, ['person@example.com']); assert.match(mail.text, /78\/100/); assert.doesNotMatch(mail.text, /FORGED|DO NOT INCLUDE|DO NOT PRESENT/); assert.match(mail.text, /Flight operations/); assert.match(mail.text, /BROADER CAREER GROUP/); assert.match(mail.text, /Classification only/); assert.match(mail.text, /A task breakdown for this specific role is not available yet/);
+ const mail = JSON.parse(calls[0][1].body); assert.deepEqual(mail.to, ['person@example.com']); assert.match(mail.text, /78\/100/); assert.equal(mail.reply_to, 'ben@stablefuture.uk'); assert.doesNotMatch(mail.text, /FORGED|DO NOT INCLUDE|DO NOT PRESENT/); assert.match(mail.text, /Flight operations/); assert.match(mail.text, /broader job group/); assert.match(mail.text, /Classification only/); assert.match(mail.text, /don’t have a task breakdown for this role yet/);
 });
 test('duplicates are deduplicated in the single email', async () => {
  const { handler, calls } = setup(); assert.equal((await handler(request({ email: 'a@b.uk', ids: ['job:c', 'job:c'] }))).status, 200);
@@ -45,26 +45,41 @@ test('rate cap expires without storing recipients in response', async () => {
  let now = 0; const { handler, calls } = setup({ now: () => now, rateLimit: 1, rateWindowMs: 100 }); const body = { email: 'a@b.uk', ids: ['job:c'] };
  assert.equal((await handler(request(body))).status, 200); assert.equal((await handler(request(body))).status, 429); now = 101; assert.equal((await handler(request(body))).status, 200); assert.equal(calls.length, 2);
 });
-test('renderer escapes content, keeps conditions/subject, supplied colours, honest basis, ABZ, and task labels', () => {
+test('renderer escapes content, keeps conditions/subject, five bands, honest basis, ABZ, CTA, and task labels', () => {
  const mail = renderCareerEmail(reports, { bookingUrl: 'https://example.com/book?a=1&b=2' });
- assert.match(mail.html, /&lt;English &amp; media&gt;/); assert.doesNotMatch(mail.html, /<script>/); assert.match(mail.html, /a=1&amp;b=2/); assert.match(mail.text, /Based on 1 linked career/); assert.match(mail.text, /Example from: English/); assert.match(mail.text, /Take training/); assert.match(mail.html, /#fae4dd/); assert.match(mail.html, /#e6eee3/); assert.match(mail.html, /#fff0d1/); assert.match(mail.text, /AI can help with this task/); assert.match(mail.text, /\[Yes\]/); assert.match(mail.text, /\[No\]/); assert.match(mail.text, /Plan A:/); assert.match(mail.text, /Your next step:/); assert.match(mail.html, /table role="presentation"/); assert.match(mail.text, /Not yet available/);
+ assert.match(mail.html, /&lt;English &amp; media&gt;/); assert.doesNotMatch(mail.html, /<script>/); assert.match(mail.html, /a=1&amp;b=2/);
+ assert.match(mail.text, /Based on the one career we link/); assert.match(mail.text, /Example from: English/); assert.match(mail.text, /Take training/);
+ assert.match(mail.text, /Jobs are made of tasks/); assert.match(mail.text, /HERE’S HOW EXPOSED YOUR CHOSEN CAREER PATHS ARE/);
+ assert.match(mail.text, /AI exposure: High \(78 \/ 100\)/); assert.match(mail.text, /Writer <script>: Low \(32\/100\)/); assert.match(mail.text, /Flight operations \(Apprenticeship\)\nAI exposure: Medium \(50 \/ 100\)/);
+ assert.match(mail.text, /Can AI help\?/); assert.match(mail.text, /won’t email you again/); assert.doesNotMatch(mail.html, /<img/i); assert.match(mail.text, /\[Yes\]/); assert.match(mail.text, /\[No\]/); assert.match(mail.text, /AI can help with 1 of these 2 tasks/);
+ assert.match(mail.text, /Plan A:/); assert.match(mail.text, /5 families a month/); assert.match(mail.text, /Get advice: https:\/\/example.com/);
+ assert.match(mail.html, /table role="presentation"/); assert.match(mail.text, /Unscored job: Not scored/); assert.match(mail.html, /#d92a42|#ff8a3d|#ffc93c|#9bcf53|#3fa34d/);
+ assert.ok(Buffer.byteLength(mail.html) < 100000, 'stays below Gmail clipping');
+});
+test('quintile bands cover the full score range', async () => {
+ const { bandFor } = await import('../../lib/exposure-bands.mjs');
+ assert.deepEqual([0, 19.9, 20, 39, 40, 59, 60, 79, 80, 100, null].map((v) => bandFor(v).label), ['Very low', 'Very low', 'Low', 'Low', 'Medium', 'Medium', 'High', 'High', 'Very high', 'Very high', 'Not scored']);
 });
 test('selection is server-owned and returns unique original objects', () => {
  assert.deepEqual(selectReports(['job:c', 'degree:a', 'job:c'], reports), [reports[2], reports[0]]);
 });
 
-test('Kit runs once after successful email acceptance, never on invalid inputs or failed sends', async () => {
+test('Kit runs only with opt-in, after successful email acceptance, never on invalid inputs or failed sends', async () => {
  const signed = [];
- const { handler } = setup({ subscribe: async (email) => { signed.push(email); return true; } });
- assert.equal((await handler(request({ email: 'a@b.uk', ids: ['job:c'] }))).status, 200);
+ const { handler, calls } = setup({ subscribe: async (email) => { signed.push(email); return true; } });
+ assert.equal((await handler(request({ email: 'no@b.uk', ids: ['job:c'] }))).status, 200);
+ assert.equal((await handler(request({ email: 'maybe@b.uk', ids: ['job:c'], marketing: 'yes' }))).status, 200);
+ assert.deepEqual(signed, []);
+ assert.equal((await handler(request({ email: 'a@b.uk', ids: ['job:c'], marketing: true }))).status, 200);
  assert.deepEqual(signed, ['a@b.uk']);
- await handler(request({ email: 'bad', ids: ['job:c'] }));
+ assert.match(JSON.parse(calls[2][1].body).text, /as you asked/);
+ await handler(request({ email: 'bad', ids: ['job:c'], marketing: true }));
  assert.equal(signed.length, 1);
  const failed = setup({ subscribe: async () => { throw new Error('must not call'); }, fetchImpl: async () => Response.json({}, { status: 500 }) });
- assert.equal((await failed.handler(request({ email: 'a@b.uk', ids: ['job:c'] }))).status, 502);
+ assert.equal((await failed.handler(request({ email: 'a@b.uk', ids: ['job:c'], marketing: true }))).status, 502);
 });
 test('Kit failure retains report success and returns a clear warning', async () => {
  const { handler } = setup({ subscribe: async () => false });
- const result = await (await handler(request({ email: 'a@b.uk', ids: ['job:c'] }))).json();
+ const result = await (await handler(request({ email: 'a@b.uk', ids: ['job:c'], marketing: true }))).json();
  assert.equal(result.ok, true); assert.match(result.warning, /could not add you/);
 });

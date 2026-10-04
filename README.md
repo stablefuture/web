@@ -6,11 +6,10 @@ Next.js app for stablefuture.uk. Current offer: [`../docs/product/offer.md`](../
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Landing page |
+| `/` | Landing page (design “Dawn”, `app/landing/`). Copy lives in `app/landing/content.ts` |
 | `/pathfinder` | Pathfinder: career questions, results, shortlist and A/B/Z plan. Spec: [`../docs/product/pathfinder-ux-spec.md`](../docs/product/pathfinder-ux-spec.md) |
 | `/ai-career-check` | Free report emailed to a visitor. See `app/ai-career-check/README.md` |
-| `/checker`, `/destinations` | Earlier free tools. Check whether they still earn their place |
-| `/about`, `/talk` | About page; talk follow-up form |
+| `/privacy` | Privacy notice. Update it when data collection changes |
 | `/hecos` | Unlisted degree-subject browser (research) |
 | `/mapping-review`, `/pathfinder/testing`, `/ai-career-check/testing` | Development only. Return 404 in production |
 | `/email`, `/call` | Temporary redirects to Kit and the booking page. `/assessment` redirects to `/pathfinder` |

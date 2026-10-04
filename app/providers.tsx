@@ -17,7 +17,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       api_host: host || "https://eu.i.posthog.com",
       capture_pageview: true,
       capture_pageleave: true,
-      persistence: "localStorage",
+      // No cookies or local storage, so no consent banner is needed (PECR).
+      persistence: "memory",
       autocapture: { url_ignorelist: ["/assessment", "/pathfinder"] },
       session_recording: { blockSelector: "[data-private]", maskAllInputs: true },
       before_send: (event) => ["/assessment", "/pathfinder"].some(path => window.location.pathname.startsWith(path)) ? null : event,

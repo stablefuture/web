@@ -8,10 +8,9 @@ const SOURCES = [
 ];
 
 const PAGES = [
-  ["Career checker", "/checker"],
-  ["Graduate destinations", "/destinations"],
-  ["About", "/about"],
-  ["Talk", "/talk"],
+  ["Home", "/"],
+  ["Check a career path", "/ai-career-check"],
+  ["Get advice", "/#advice"],
 ];
 
 export function Footer() {

@@ -1,6 +1,6 @@
 # AI career check (local feature)
 
-`/ai-career-check` lets a visitor choose one to three degrees, apprenticeships, or detailed jobs. It sends one report containing the selected paths. Real submissions join Kit’s magnet form (9682557), after Resend accepts the report. KIT_CAREER_FORM_ID can override this. A failed Kit signup returns a visible warning without asking the user to resend their report.
+`/ai-career-check` lets a visitor choose one to three degrees, apprenticeships, or detailed jobs. It sends one report containing the selected paths. Real submissions join Kit’s magnet form (9682557) only when the visitor ticks the follow-up box (`marketing: true`), after Resend accepts the report. Without it, the email says we won’t email again. KIT_CAREER_FORM_ID can override this. A failed Kit signup returns a visible warning without asking the user to resend their report.
 
 The client loads only `/lead-magnet/search.json`. `/api/career-results` looks up every ID in `data/lead-magnet/reports.json` on the server. Client-supplied scores, titles, and report contents have no effect.
 

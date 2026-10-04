@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
+import { SiteChrome } from "./components/SiteChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stablefuture.uk"),
-  title: "Stable Future | Is That Career Future-Proof? UK Job Data",
+  title: "Stable Future | AI career advice for families",
   description:
     "Check any UK job, degree, or apprenticeship against real data on AI risk and pay. Career advice for students of all ages.",
   alternates: { canonical: "/" },
@@ -50,9 +51,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>
-          <Header />
-          {children}
-          <Footer />
+          <SiteChrome header={<Header />} footer={<Footer />}>
+            {children}
+          </SiteChrome>
         </Providers>
       </body>
     </html>
