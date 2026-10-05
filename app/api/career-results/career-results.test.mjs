@@ -48,11 +48,11 @@ test('rate cap expires without storing recipients in response', async () => {
 test('renderer escapes content, keeps conditions/subject, five bands, honest basis, ABZ, CTA, and task labels', () => {
  const mail = renderCareerEmail(reports, { bookingUrl: 'https://example.com/book?a=1&b=2' });
  assert.match(mail.html, /&lt;English &amp; media&gt;/); assert.doesNotMatch(mail.html, /<script>/); assert.match(mail.html, /a=1&amp;b=2/);
- assert.match(mail.text, /Based on the one career we link/); assert.match(mail.text, /Example from: English/); assert.match(mail.text, /Take training/);
+ assert.match(mail.text, /Based on the career below\./); assert.doesNotMatch(mail.text, /Example from:|Take training/); assert.match(mail.text, /Some routes need specific subjects or further training\./);
  assert.match(mail.text, /Jobs are made of tasks/); assert.match(mail.text, /HERE’S HOW EXPOSED YOUR CHOSEN CAREER PATHS ARE/);
  assert.match(mail.text, /AI exposure: High \(78 \/ 100\)/); assert.match(mail.text, /Writer <script>: Low \(32\/100\)/); assert.match(mail.text, /Flight operations \(Apprenticeship\)\nAI exposure: Medium \(50 \/ 100\)/);
- assert.match(mail.text, /Can AI help\?/); assert.match(mail.text, /won’t email you again/); assert.doesNotMatch(mail.html, /<img/i); assert.match(mail.text, /\[Yes\]/); assert.match(mail.text, /\[No\]/); assert.match(mail.text, /AI can help with 1 of these 2 tasks/);
- assert.match(mail.text, /Plan A:/); assert.match(mail.text, /10 families a month/); assert.match(mail.text, /Get advice: https:\/\/example.com/);
+ assert.match(mail.text, /Can AI help\?/); assert.doesNotMatch(mail.text, /How we score|won’t email you again/); assert.doesNotMatch(mail.html, /<img/i); assert.match(mail.text, /\[Yes\]/); assert.match(mail.text, /\[No\]/); assert.match(mail.text, /AI can help with 1 of these 2 tasks/);
+ assert.match(mail.text, /Plan A:/); assert.match(mail.text, /10 families a month/); assert.match(mail.text, /Book a call: https:\/\/example.com/);
  assert.match(mail.html, /table role="presentation"/); assert.match(mail.text, /Unscored job: Not scored/); assert.match(mail.html, /#d92a42|#ff8a3d|#ffc93c|#9bcf53|#3fa34d/);
  assert.ok(Buffer.byteLength(mail.html) < 100000, 'stays below Gmail clipping');
 });
@@ -72,7 +72,7 @@ test('Kit runs only with opt-in, after successful email acceptance, never on inv
  assert.deepEqual(signed, []);
  assert.equal((await handler(request({ email: 'a@b.uk', ids: ['job:c'], marketing: true }))).status, 200);
  assert.deepEqual(signed, ['a@b.uk']);
- assert.match(JSON.parse(calls[2][1].body).text, /We’ll also send a few short emails/);
+ assert.match(JSON.parse(calls[2][1].body).text, /Reply to this email to reach Ben/);
  await handler(request({ email: 'bad', ids: ['job:c'], marketing: true }));
  assert.equal(signed.length, 1);
  const failed = setup({ subscribe: async () => { throw new Error('must not call'); }, fetchImpl: async () => Response.json({}, { status: 500 }) });

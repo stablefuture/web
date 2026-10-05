@@ -17,8 +17,8 @@ const SOURCES = {
   pwc: 'https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-jobs-barometer.html',
 };
 
-const SCORING = 'We take every task the ONS lists for each UK job, judge whether AI can help with it (using the method from Eloundou et al., 2023), weight tasks by importance, and rank 1,182 UK jobs from 0 to 100. A course or apprenticeship score averages the careers we link to it. Scores describe exposure, not the chance of losing a job, and they do not predict your child’s own career.';
-const TASK_NOTE = '“Can AI help?” means AI could save much of the time a task takes, on its own or with other software. It does not mean AI can do the whole task.';
+const TASKS_SHOWN = 3;
+const ROUTE_NOTE = 'Some routes need specific subjects or further training.';
 const escape = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const score = (exposure) => Number.isFinite(exposure?.score) ? Math.round(exposure.score) : null;
 const scoreText = (exposure) => score(exposure) === null ? 'Not yet available' : `${score(exposure)}/100`;
@@ -26,12 +26,14 @@ const kindLabel = (kind) => kind === 'degree' ? 'Degree' : kind === 'apprentices
 const listTitles = (titles) => titles.length < 2 ? titles.join('') : `${titles.slice(0, -1).join(', ')} and ${titles.at(-1)}`;
 const details = (item) => [...new Set([item?.condition, item?.scopeNote].filter(Boolean))];
 
+// General advice for every band: use AI for the exposed tasks, and get good at the
+// high-skill human ones.
 const MEANING = {
-  'very-high': 'AI can already do much of the work in this area. Expect fewer entry-level jobs and more competition for them. Your child can still do well here, with skills AI can’t easily copy and a strong Plan B.',
-  high: 'A lot of this work is exposed to AI. Junior roles are likely to get more competitive, so the skills your child builds early matter more than usual.',
-  medium: 'Some of this work is exposed to AI and some stays human. The human parts are where your child should aim to stand out.',
-  low: 'Most of this work still needs a person. A sound choice, and a good Plan B beside more exposed paths.',
-  'very-low': 'Very little of this work is exposed to AI today. A strong Plan Z: a path to fall back on if others get bumpy.',
+  'very-high': 'AI can already do much of this work, so expect fewer junior jobs and more competition for them. Your child should learn to use AI for the exposed tasks and get really good at the high-skill human ones. Have a strong Plan B.',
+  high: 'A lot of this work is exposed to AI, so junior roles will get more competitive. Your child should learn to use AI for the exposed tasks and focus on the high-skill human ones.',
+  medium: 'Some of this work is exposed to AI and some stays human. Your child should learn to use AI for the exposed tasks and focus on the high-skill human ones, where they can stand out.',
+  low: 'Most of this work still needs a person. Your child should still use AI where it helps, and focus on the high-skill human tasks. A good Plan B beside more exposed paths.',
+  'very-low': 'Very little of this work is exposed to AI today, which makes it a strong Plan Z. AI skills still help, but the high-skill human work matters most here.',
   none: 'We haven’t been able to score this path yet.',
 };
 
@@ -40,7 +42,7 @@ export function basisText(exposure) {
   const s = score(exposure);
   if (s === null) return 'An exposure score is not yet available for this path.';
   if (exposure?.basis === 'job') return `More exposed to AI than ${s}% of the UK jobs we score.`;
-  if (exposure?.basis === 'linked_jobs') return n === 1 ? 'Based on the one career we link to this path. It does not cover everyone who takes it.' : `The average of the ${n} careers we link to this path. It does not cover everyone who takes it.`;
+  if (exposure?.basis === 'linked_jobs') return n === 1 ? 'Based on the career below.' : 'Based on the careers below.';
   if (exposure?.basis === 'career_group') return `The average of ${n} job titles in this group.`;
   if (exposure?.basis === 'broader_groups') return `An estimate from the broader job group this path sits in (${n} scored jobs). We have not scored this exact role.`;
   if (exposure?.basis === 'mixed_links_and_groups') return `An estimate across ${n} scored jobs, combining direct links and broader job groups.`;
@@ -98,15 +100,12 @@ function renderPath(report, index, text) {
     const heading = report.jobsHeading === 'Jobs in this group' ? 'Jobs in this group' : report.kind === 'job' ? 'Related jobs' : 'Where it leads';
     text.push('', heading.toUpperCase());
     html += h3(escape(heading));
-    // A note that applies to every job is shown once, above the list.
-    const shared = jobs.length > 1 ? details(jobs[0]).filter((n) => jobs.every((j) => details(j).includes(n))) : [];
-    if (shared.length) { text.push(...shared); html += shared.map((n) => small(escape(n))).join('') + '<div style="height:8px;line-height:8px;font-size:1px">&nbsp;</div>'; }
+    // One short disclaimer replaces per-job subject routes and entry conditions.
+    if (jobs.some((j) => j.memberSubjects?.length || details(j).length)) { text.push(ROUTE_NOTE); html += small(ROUTE_NOTE) + '<div style="height:8px;line-height:8px;font-size:1px">&nbsp;</div>'; }
     html += `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse">`;
     for (const job of jobs) {
-      const subjects = job.memberSubjects?.length ? `Subject routes: ${job.memberSubjects.map((s) => s.title).join(', ')}` : '';
-      const notes = [subjects, ...details(job).filter((n) => !shared.includes(n))].filter(Boolean);
-      text.push(`- ${job.title}: ${bandFor(job.aiExposure?.score).label} (${scoreText(job.aiExposure)})`, ...notes.map((n) => `  ${n}`));
-      html += `<tr><td style="padding:11px 10px 11px 0;border-top:1px solid #e3e5da;vertical-align:top;font-family:${SANS};font-size:14px;line-height:1.45;color:${INK}"><strong style="font-weight:600">${escape(job.title)}</strong>${notes.map((n) => small(escape(n))).join('')}</td><td align="right" style="padding:11px 0;border-top:1px solid #e3e5da;vertical-align:top;width:1%">${pill(job.aiExposure, { size: 12 })}</td></tr>`;
+      text.push(`- ${job.title}: ${bandFor(job.aiExposure?.score).label} (${scoreText(job.aiExposure)})`);
+      html += `<tr><td style="padding:11px 10px 11px 0;border-top:1px solid #e3e5da;vertical-align:top;font-family:${SANS};font-size:14px;line-height:1.45;color:${INK}"><strong style="font-weight:600">${escape(job.title)}</strong></td><td align="right" style="padding:11px 0;border-top:1px solid #e3e5da;vertical-align:top;width:1%">${pill(job.aiExposure, { size: 12 })}</td></tr>`;
     }
     html += '</table>';
   }
@@ -119,17 +118,13 @@ function renderPath(report, index, text) {
 
   const example = report.exampleCareer;
   if (example && Array.isArray(example.tasks) && example.tasks.length) {
-    const tasks = example.tasks;
+    const tasks = example.tasks.slice(0, TASKS_SHOWN);
     const yes = tasks.filter((t) => t.aiExposure === 'yes').length;
-    const conditions = details(report.exampleSelection);
-    const member = report.exampleSelection?.memberSubject || example.memberSubject;
-    if (member?.title) conditions.unshift(`Example from: ${member.title}`);
     const intro = `AI can help with ${yes} of these ${tasks.length} tasks.`;
     const which = `The ${tasks.length} most important tasks in this job${example.totalMappedTasks ? `, out of ${example.totalMappedTasks}` : ''}.`;
-    text.push('', `INSIDE THE JOB: ${example.title}`, intro, which, ...conditions, 'Can AI help?');
+    text.push('', `INSIDE THE JOB: ${example.title}`, intro, which, 'Can AI help?');
     html += h3(`Inside the job: ${escape(example.title)}`);
     html += p(`<strong>${escape(intro)}</strong><br>${escape(which)}`, 'font-size:14px;margin-bottom:6px');
-    html += conditions.map((s) => small(escape(s))).join('');
     html += `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;margin-top:10px"><tr><td style="padding:6px 0;font-family:${SANS};font-size:12px;font-weight:700;color:${MUTED}">Task</td><td align="right" style="padding:6px 0;font-family:${SANS};font-size:12px;font-weight:700;color:${MUTED};white-space:nowrap">Can AI help?</td></tr>`;
     for (const task of tasks) {
       const label = task.aiExposure === 'yes' ? 'Yes' : task.aiExposure === 'no' ? 'No' : 'Not yet assessed';
@@ -152,14 +147,14 @@ function renderPath(report, index, text) {
   return `${html}</td></tr></table></td></tr>`;
 }
 
-export function renderCareerEmail(reports, { bookingUrl = '', marketing = false } = {}) {
+export function renderCareerEmail(reports, { bookingUrl = '' } = {}) {
   const titles = reports.map((r) => r.title);
   const subject = `Your AI career check: ${listTitles(titles)}`.replace(/[\r\n]/g, ' ').slice(0, 150);
   const preheader = 'How exposed your chosen paths are to AI, the tasks behind them, and what to do next.';
   const text = ['YOUR AI CAREER CHECK', ...reports.map((r) => `- ${r.title} (${kindLabel(r.kind)})`), '', 'THE SHORT VERSION',
     '1. Jobs are made of tasks.',
-    '2. AI exposure means how many of a job’s tasks AI can do. We rank every UK job from 0 to 100: a score of 90 means more exposed than 90% of jobs.',
-    `3. Studies link higher AI exposure to fewer entry-level jobs: AI is doing the tasks juniors used to do. (Stanford Digital Economy Lab: ${SOURCES.stanford})`,
+    '2. AI exposure measures how much of a job’s tasks AI can do relative to other jobs. We rank every UK job from 0 to 100: a score of 90 means more exposed than 90% of jobs.',
+    `3. Studies link higher AI exposure to fewer entry-level jobs. (Stanford Digital Economy Lab: ${SOURCES.stanford})`,
     `4. AI is improving faster each year, and companies are starting to use it at scale. (Epoch AI: ${SOURCES.epoch})`,
     '', 'HERE’S HOW EXPOSED YOUR CHOSEN CAREER PATHS ARE:'];
 
@@ -167,35 +162,36 @@ export function renderCareerEmail(reports, { bookingUrl = '', marketing = false 
   reports.forEach((r) => text.push(`- ${r.title}: ${bandFor(r.aiExposure?.score).label}${score(r.aiExposure) !== null ? ` (${score(r.aiExposure)}/100)` : ''}`));
   const cards = reports.map((r, i) => renderPath(r, i, text)).join('');
 
-  text.push('', 'EVERY CHILD NEEDS A PLAN A, B AND Z',
-    'Plan A: their preference. The career they want most. Build the skills employers pay more for. Jobs that need AI skills pay 62% more on average (PwC, 2026).',
+  text.push('', 'EVERY CHILD NEEDS A PLAN FOR AI', 'We help families build plans for every scenario:',
+    'Plan A: their preference. The career they want most.',
     'Plan B: a good alternative. Close to their interests, and less exposed to AI.',
-    'Plan Z: a lifeboat. Work that is barely exposed to AI, so they are secure even in a very disruptive job market.');
+    'Plan Z: a lifeboat. Work that’s barely exposed to AI, so they’re secure even in a very disruptive job market.',
+    `Then, we give you a roadmap to build the skills employers pay more for. Employers pay 62% more for AI skills (PwC, 2026: ${SOURCES.pwc}).`);
 
   let cta = '';
   if (/^https:\/\//.test(bookingUrl)) {
-    text.push('', 'TURN THIS REPORT INTO AN ACTION PLAN',
-      'Book a free call with Ben. We’ll look at your child’s interests and strengths, choose the paths that suit them best, and build a Plan A, B and Z the whole family is happy with.',
+    text.push('', 'GET ADVICE',
+      'We build your family an action plan to make sure your children are financially secure. You don’t pay a penny until the whole family is happy.',
       'We only work with 10 families a month, so every plan gets proper time. Book now to secure a place.',
-      `Get advice: ${bookingUrl}`);
+      `Book a call: ${bookingUrl}`);
     cta = `<tr><td style="padding:8px 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${INK}" style="width:100%;background:${INK};border-radius:22px"><tr><td style="padding:30px 26px 32px">
 <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="46" height="46" bgcolor="${SUN}" style="width:46px;height:46px;background:${SUN};border-radius:23px;font-size:1px;line-height:1px">&nbsp;</td></tr></table>
 <p style="margin:20px 0 8px;font-family:${SANS};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:#ffc9a3">Your next step</p>
-<h2 style="margin:0 0 14px;font-family:${SERIF};font-size:30px;line-height:1.15;font-weight:400;color:#fffaf0">Turn this report into an action plan.</h2>
-<p style="margin:0 0 16px;font-family:${SANS};font-size:15px;line-height:1.65;color:#e6e9dd">Book a free call with Ben. We’ll look at your child’s interests and strengths, choose the paths that suit them best, and build a Plan A, B and Z the whole family is happy with.</p>
+<h2 style="margin:0 0 14px;font-family:${SERIF};font-size:30px;line-height:1.15;font-weight:400;color:#fffaf0">Get advice.</h2>
+<p style="margin:0 0 16px;font-family:${SANS};font-size:15px;line-height:1.65;color:#e6e9dd">We build your family an action plan to make sure your children are financially secure. You don’t pay a penny until the whole family is happy.</p>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%"><tr><td style="border-left:4px solid ${SUN};padding:2px 0 2px 14px;font-family:${SANS};font-size:15px;line-height:1.55;color:#fffaf0"><strong>We only work with 10 families a month,</strong> so every plan gets proper time. Book now to secure a place.</td></tr></table>
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:24px"><tr><td bgcolor="${SUN}" style="background:${SUN};border-radius:999px"><a href="${escape(bookingUrl)}" style="display:inline-block;padding:16px 28px;font-family:${SANS};font-size:17px;font-weight:700;color:${INK};text-decoration:none;border-radius:999px">Get advice: book a call &rarr;</a></td></tr></table>
-<p style="margin:24px 0 0;font-family:${SANS};font-size:13px;line-height:1.5;color:#e6e9dd"><strong style="color:#fffaf0">Ben Grime</strong>, founder of Stable Future<br>Former AI Consultant · MSc Data Science</p>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:24px"><tr><td bgcolor="${SUN}" style="background:${SUN};border-radius:999px"><a href="${escape(bookingUrl)}" style="display:inline-block;padding:16px 28px;font-family:${SANS};font-size:17px;font-weight:700;color:${INK};text-decoration:none;border-radius:999px">Book a call &rarr;</a></td></tr></table>
+<p style="margin:24px 0 0;font-family:${SANS};font-size:13px;line-height:1.5;color:#e6e9dd"><strong style="color:#fffaf0">Ben Grime</strong>, founder of Stable Future<br>Former AI Consultant</p>
 </td></tr></table></td></tr>`;
   }
 
-  const followUp = marketing ? 'We’ll also send a few short emails about planning your child’s career; each one has an unsubscribe link.' : 'We won’t email you again unless you ask.';
-  text.push('', 'HOW WE SCORE', `${SCORING} ${TASK_NOTE}`,
-    `Wage premium: PwC Global AI Jobs Barometer, June 2026: ${SOURCES.pwc}`,
-    '', `You asked for this report at stablefuture.uk. ${followUp} Reply to this email to reach Ben.`, `Privacy: ${SITE}/privacy`, 'Stable Future · stablefuture.uk');
+  text.push('', 'You asked for this report at stablefuture.uk. Reply to this email to reach Ben.', `Privacy: ${SITE}/privacy`, 'Stable Future · stablefuture.uk');
 
-  const plan = `<tr><td style="padding:6px 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${CARD}" style="width:100%;background:${CARD};border-radius:18px"><tr><td style="padding:26px 24px 20px">${h2('Every child needs a Plan A, B and Z.')}
-${[['A', 'Their preference.', `The career they want most, plus the skills employers pay more for. Jobs that need AI skills pay <strong>62% more</strong> on average (${link(SOURCES.pwc, 'PwC, 2026')}).`, { bg: SUN, ink: INK }], ['B', 'A good alternative.', 'Close to their interests, and less exposed to AI.', { bg: '#b0b79c', ink: INK }], ['Z', 'A lifeboat.', 'Work that’s barely exposed to AI. So they’re secure even in a very disruptive job market.', { bg: INK, ink: '#fffaf0' }]].map(([letter, lead, rest, band]) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;margin-bottom:12px"><tr><td width="44" style="width:44px;vertical-align:top"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="34" height="34" align="center" bgcolor="${band.bg}" style="width:34px;height:34px;background:${band.bg};border-radius:17px;font-family:${SERIF};font-size:18px;color:${band.ink};text-align:center">${letter}</td></tr></table></td><td style="vertical-align:top;font-family:${SANS};font-size:15px;line-height:1.55;color:${INK};padding-top:5px"><strong>${lead}</strong> ${rest}</td></tr></table>`).join('')}</td></tr></table></td></tr>`;
+  // Neutral brand greens, darkest for Plan A, so no plan reads as an exposure warning.
+  const plans = [['A', 'their preference.', 'The career they want most.', { bg: INK, ink: '#fffaf0' }], ['B', 'a good alternative.', 'Close to their interests, and less exposed to AI.', { bg: '#6f7d5c', ink: '#fffaf0' }], ['Z', 'a lifeboat.', 'Work that’s barely exposed to AI. So they’re secure even in a very disruptive job market.', { bg: '#d6dbc4', ink: INK }]];
+  const plan = `<tr><td style="padding:6px 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${CARD}" style="width:100%;background:${CARD};border-radius:18px"><tr><td style="padding:26px 24px 20px">${h2('Every child needs a plan for AI.')}${p('We help families build plans for every scenario:')}
+${plans.map(([letter, lead, rest, band]) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;margin-bottom:12px"><tr><td width="44" style="width:44px;vertical-align:top"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="34" height="34" align="center" bgcolor="${band.bg}" style="width:34px;height:34px;background:${band.bg};border-radius:17px;font-family:${SERIF};font-size:18px;color:${band.ink};text-align:center">${letter}</td></tr></table></td><td style="vertical-align:top;font-family:${SANS};font-size:15px;line-height:1.55;color:${INK};padding-top:5px"><strong>Plan ${letter}: ${lead}</strong> ${rest}</td></tr></table>`).join('')}
+${p(`Then, we give you a roadmap to build the skills employers pay more for. Employers pay <strong>62% more</strong> for AI skills (${link(SOURCES.pwc, 'PwC, 2026')}).`, 'margin:6px 0 0')}</td></tr></table></td></tr>`;
 
   const legend = BANDS.map((b) => `<td width="20%" bgcolor="${b.bg}" style="background:${b.bg};padding:8px 2px;text-align:center;font-family:${SANS};font-size:11px;line-height:1.2;font-weight:700;color:${b.ink};border-left:3px solid ${CARD}">${b.label}</td>`).join('');
   const step = (n, lead, rest) => `<tr><td width="34" style="width:34px;vertical-align:top;padding:0 0 12px"><span style="display:inline-block;width:24px;height:24px;line-height:24px;border-radius:12px;background:${INK};color:#fffaf0;text-align:center;font-family:${SANS};font-size:12px;font-weight:700">${n}</span></td><td style="vertical-align:top;padding:2px 0 12px;font-family:${SANS};font-size:15px;line-height:1.55;color:${INK}"><strong>${lead}</strong>${rest ? ` ${rest}` : ''}</td></tr>`;
@@ -212,9 +208,9 @@ ${[['A', 'Their preference.', `The career they want most, plus the skills employ
 <p style="margin:0 0 14px;font-family:${SANS};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:${MUTED}">The short version</p>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%">
 ${step(1, 'Jobs are made of tasks.', '')}
-${step(2, 'AI exposure means how many of a job’s tasks AI can do.', 'We rank every UK job from 0 to 100. A score of 90 means more exposed than 90% of jobs.')}
-${step(3, 'Studies link higher AI exposure to fewer entry-level jobs.', `AI is doing the tasks juniors used to do. (${link(SOURCES.stanford, 'Stanford Digital Economy Lab')})`)}
-${step(4, 'AI is improving faster each year,', `and companies are starting to use it at scale. (${link(SOURCES.epoch, 'Epoch AI')})`)}
+${step(2, 'AI exposure measures how much of a job’s tasks AI can do relative to other jobs. We rank every UK job from 0 to 100. A score of 90 means more exposed than 90% of jobs.', '')}
+${step(3, 'Studies link higher AI exposure to fewer entry-level jobs.', `(${link(SOURCES.stanford, 'Stanford Digital Economy Lab')})`)}
+${step(4, 'AI is improving faster each year, and companies are starting to use it at scale.', `(${link(SOURCES.epoch, 'Epoch AI')})`)}
 </table></td></tr></table></td></tr>
 <tr><td style="padding:0 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${CARD}" style="width:100%;background:${CARD};border-radius:18px"><tr><td style="padding:24px 24px 22px">
 ${h2('Here’s how exposed your chosen career paths are:', 'font-size:24px')}
@@ -224,8 +220,7 @@ ${small('Each band holds about a fifth of UK jobs.')}
 </td></tr></table></td></tr>
 ${cards}${plan}${cta}
 <tr><td style="padding:8px 6px 0;font-family:${SANS};font-size:12px;line-height:1.65;color:${MUTED}">
-<p style="margin:0 0 10px"><strong>How we score.</strong> ${SCORING} ${TASK_NOTE}</p>
-<p style="margin:0 0 10px">You asked for this report at ${link(SITE, 'stablefuture.uk')}. ${followUp} Reply to this email to reach Ben. ${link(`${SITE}/privacy`, 'Privacy notice')}.</p>
+<p style="margin:0 0 10px">You asked for this report at ${link(SITE, 'stablefuture.uk')}. Reply to this email to reach Ben. ${link(`${SITE}/privacy`, 'Privacy notice')}.</p>
 <p style="margin:0">Stable Future</p>
 </td></tr>
 </table>
@@ -262,7 +257,7 @@ export function createCareerResultsHandler({ loadReports, fetchImpl = fetch, api
     try { selected = selectReports(body.ids, reports); } catch (error) { return json({ error: error.message }, 400); }
     if (!apiKey) return json({ error: 'Email is temporarily unavailable. You can still preview your report below.' }, 503);
     const marketing = body.marketing === true;
-    const rendered = renderCareerEmail(selected, { bookingUrl, marketing });
+    const rendered = renderCareerEmail(selected, { bookingUrl });
     try {
       const response = await fetchImpl('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], ...(replyTo ? { reply_to: replyTo } : {}), ...rendered, tags: [{ name: 'type', value: 'career_check' }] }), signal: AbortSignal.timeout(15000) });
       const result = await response.json().catch(() => null);

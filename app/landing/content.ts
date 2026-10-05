@@ -34,7 +34,7 @@ export const AI = {
     { value: 'Days → 25 min', label: 'Experts took days or weeks on each project. Given only the brief and the files, a leading AI agent worked through it on its own in about 25 minutes.', source: 'ale' as const },
     { value: '£1,000s → £1', label: 'Days or weeks of a professional’s time can cost thousands of pounds. Each AI run cost about £1.', source: 'ale' as const },
   ],
-  note: 'Averages per project for GPT-5.6 Luna, a top-10 agent. It doesn’t get every project right yet, but it’s improving fast. Animations illustrate the benchmark tasks.',
+  note: 'Animations illustrate the benchmark tasks.',
 };
 
 export const JOBS = {
