@@ -72,7 +72,7 @@ test('Kit runs only with opt-in, after successful email acceptance, never on inv
  assert.deepEqual(signed, []);
  assert.equal((await handler(request({ email: 'a@b.uk', ids: ['job:c'], marketing: true }))).status, 200);
  assert.deepEqual(signed, ['a@b.uk']);
- assert.match(JSON.parse(calls[2][1].body).text, /as you asked/);
+ assert.match(JSON.parse(calls[2][1].body).text, /We’ll also send a few short emails/);
  await handler(request({ email: 'bad', ids: ['job:c'], marketing: true }));
  assert.equal(signed.length, 1);
  const failed = setup({ subscribe: async () => { throw new Error('must not call'); }, fetchImpl: async () => Response.json({}, { status: 500 }) });

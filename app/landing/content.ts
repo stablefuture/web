@@ -27,13 +27,14 @@ export const AI = {
   title: 'AI doesn’t just answer questions any more. It does the work.',
   intro: 'These are three real tasks from Agents’ Last Exam, a test built by UC Berkeley with more than 300 industry experts. Each one is a project that took a professional days or weeks.',
   statsTitle: 'AI vs a human expert, on the same projects',
-  // Per-task averages for the top-ranked agent: total runtime and estimated cost on
-  // the leaderboard (182h 45m, $1,340) over ~150 public tasks. Human cost is our estimate.
+  // Per-task averages for Codex with GPT-5.6 Luna (ranked 8th): the leaderboard's Overall
+  // total runtime and estimated cost (66h 7m, $235) over the 160 public tasks (67 + 55 + 38).
+  // Human cost is our estimate.
   stats: [
-    { value: 'Days → 1 hour', label: 'Experts took days or weeks on each project. Given only the brief and the files, the best AI agent worked through it on its own in about an hour.', source: 'ale' as const },
-    { value: '£1,000s → £7', label: 'Days or weeks of a professional’s time can cost thousands of pounds. Each AI run cost about £7.', source: 'ale' as const },
+    { value: 'Days → 25 min', label: 'Experts took days or weeks on each project. Given only the brief and the files, a leading AI agent worked through it on its own in about 25 minutes.', source: 'ale' as const },
+    { value: '£1,000s → £1', label: 'Days or weeks of a professional’s time can cost thousands of pounds. Each AI run cost about £1.', source: 'ale' as const },
   ],
-  note: 'Averages per project for the top-ranked agent. It doesn’t get every project right yet, but it’s improving fast. Animations illustrate the benchmark tasks.',
+  note: 'Averages per project for GPT-5.6 Luna, a top-10 agent. It doesn’t get every project right yet, but it’s improving fast. Animations illustrate the benchmark tasks.',
 };
 
 export const JOBS = {

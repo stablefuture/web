@@ -68,7 +68,8 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
   const [selected, setSelected] = useState<Path[]>([]);
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
-  const [marketing, setMarketing] = useState(false);
+  // Soft opt-in (PECR): follow-up emails unless the parent ticks the opt-out box.
+  const [optOut, setOptOut] = useState(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [error, setError] = useState('');
   const [hint, setHint] = useState(0);
@@ -135,7 +136,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
     setError(''); setStatus('sending');
     track('career_check_requested', { count: selected.length });
     try {
-      const response = await fetch('/api/career-results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selected.map((p) => p.id), email, website, marketing }) });
+      const response = await fetch('/api/career-results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selected.map((p) => p.id), email, website, marketing: !optOut }) });
       const data = await response.json();
       if (!response.ok || data.ok !== true) throw new Error(data.error || 'We could not send your report. Please try again.');
       setError(data.warning || ''); setStatus('sent');
@@ -238,10 +239,10 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
                 <label htmlFor="career-email">Where should we send it?</label>
                 <input ref={emailRef} id="career-email" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} required disabled={locked} />
                 <div className={styles.honeypot} aria-hidden="true"><label>Website<input name="website" value={website} onChange={(e) => setWebsite(e.target.value)} autoComplete="off" tabIndex={-1} /></label></div>
-                <label className={styles.optIn}><input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} disabled={locked} /><span>Also send me a few short emails on helping my child plan their career. Unsubscribe any time.</span></label>
+                <label className={styles.optIn}><input type="checkbox" checked={optOut} onChange={(e) => setOptOut(e.target.checked)} disabled={locked} /><span>We’ll also send a few short emails on helping your child plan their career. Tick here if you’d rather not. You can unsubscribe any time.</span></label>
                 <button className={styles.cta} type="submit" disabled={!selected.length || locked}>{locked ? 'Sending your report…' : selected.length ? 'Email my free report' : 'Choose a path first'} <span aria-hidden="true">→</span></button>
                 {error && <p className={styles.error} role="alert">{error}</p>}
-                <p className={styles.fine}>We use your email to send the report. <a href="/privacy">Privacy notice</a></p>
+                <p className={styles.fine}>We use your email to send the report and any follow-ups. <a href="/privacy">Privacy notice</a></p>
               </form>}
           </>}
         </div>

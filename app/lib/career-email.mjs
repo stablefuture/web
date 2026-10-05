@@ -189,7 +189,7 @@ export function renderCareerEmail(reports, { bookingUrl = '', marketing = false 
 </td></tr></table></td></tr>`;
   }
 
-  const followUp = marketing ? 'We’ll also send a few short emails about planning your child’s career, as you asked; each one has an unsubscribe link.' : 'We won’t email you again unless you ask.';
+  const followUp = marketing ? 'We’ll also send a few short emails about planning your child’s career; each one has an unsubscribe link.' : 'We won’t email you again unless you ask.';
   text.push('', 'HOW WE SCORE', `${SCORING} ${TASK_NOTE}`,
     `Wage premium: PwC Global AI Jobs Barometer, June 2026: ${SOURCES.pwc}`,
     '', `You asked for this report at stablefuture.uk. ${followUp} Reply to this email to reach Ben.`, `Privacy: ${SITE}/privacy`, 'Stable Future · stablefuture.uk');
