@@ -11,9 +11,9 @@ import s from './demos.module.css';
 type Demo = { id: string; tab: string; title: string; task: string; before: string; shows: string; run: number };
 const HOLD = 3200;
 const DEMOS: Demo[] = [
-  { id: 'tax', tab: 'Tax return', title: 'Fill in a tax return', task: 'Turn a pile of paperwork into a finished tax return, in a real web browser.', before: 'Accountants and tax advisers', shows: 'AI reads documents, fills in forms, and checks its own sums.', run: 10400 },
   { id: 'xray', tab: 'Chest X-ray', title: 'Read a chest X-ray', task: 'Study the scan, mark the problem, and write the report a doctor signs.', before: 'Radiologists, after years of training', shows: 'AI can see, measure, and explain what it finds.', run: 10800 },
   { id: 'film', tab: 'Film edit', title: 'Edit a highlights film', task: 'Turn raw festival footage into a finished film that follows the director’s brief, in professional editing software.', before: 'Video editors', shows: 'AI now does creative work, in the same software people use.', run: 10600 },
+  { id: 'tax', tab: 'Tax return', title: 'Fill in a tax return', task: 'Turn a pile of paperwork into a finished tax return, in a real web browser.', before: 'Accountants and tax advisers', shows: 'AI reads documents, fills in forms, and checks its own sums.', run: 10400 },
 ];
 
 function Status({ text, done }: { text: string; done: boolean }) {
@@ -249,6 +249,7 @@ export function AiDemos({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
         <button type="button" className={s.replay} onClick={() => { setAuto(false); setRun((r) => r + 1); }}>↻ Watch again</button>
       </div>
     </div>
+    <p className={s.statsTitle}>{AI.statsTitle}</p>
     <div className={s.stats}>
       {AI.stats.map((x) => <div key={x.label}><b>{x.value}</b><span>{x.label} <a href={SOURCES[x.source].href} target="_blank" rel="noopener">{SOURCES[x.source].label}</a></span></div>)}
     </div>

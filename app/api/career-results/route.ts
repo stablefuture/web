@@ -19,8 +19,10 @@ async function loadReports() {
 const post = createCareerResultsHandler({ loadReports, apiKey: process.env.RESEND_API_KEY, from: process.env.CAREER_EMAIL_FROM || 'Ben at Stable Future <talk@stablefuture.uk>', bookingUrl: CALL_URL, subscribe: (email) => subscribeViaKit(email, process.env.KIT_CAREER_FORM_ID || '9682557') });
 export async function POST(request: Request) { return post(request); }
 
-// Public preview uses exactly the same renderer and server-owned data as email.
+// Development-only preview with the same renderer and data as the email. It is off in
+// production so a report can only be had by email.
 export async function GET(request: Request) {
+  if (process.env.NODE_ENV === 'production') return new Response('Not found', { status: 404 });
   const url = new URL(request.url);
   let reports;
   try { reports = await loadReports(); } catch {

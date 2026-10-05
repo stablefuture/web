@@ -126,6 +126,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
     if (event.key === 'ArrowUp') { event.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
     if (event.key === 'Enter') { event.preventDefault(); const hit = results[active]?.item; if (hit) choose(hit); }
   }
+  // Test mode only: the preview route is switched off in production, so reports arrive by email.
   const preview = `/api/career-results?${selected.map((p) => `id=${encodeURIComponent(p.id)}`).join('&')}`;
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -208,11 +209,10 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
             <div className={styles.sentSun} aria-hidden="true"><i /><i /><i /></div>
             <h2>Check your inbox.</h2>
             <p>Your report is on its way to <strong>{email}</strong>. If it isn’t there in a minute, look in spam or promotions.</p>
-            <a className={styles.readNow} href={preview} target="_blank" rel="noreferrer">Read it now ↗</a>
             {error && <p className={styles.warning}>{error}</p>}
             <div className={styles.nextStep}>
               <p className={styles.nextEyebrow}>Want a plan, not just a report?</p>
-              <p>Ben will help you build a Plan A, B and Z the whole family is happy with. <strong>We only work with 5 families a month.</strong></p>
+              <p>Ben will help you build a Plan A, B and Z the whole family is happy with. <strong>We only work with 10 families a month.</strong></p>
               <a className={styles.cta} href="/call">Get advice: book a call <span aria-hidden="true">→</span></a>
             </div>
             <button type="button" className={styles.again} onClick={() => { setStatus('idle'); setSelected([]); setError(''); }}>Check different paths</button>
@@ -242,7 +242,6 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
                 <button className={styles.cta} type="submit" disabled={!selected.length || locked}>{locked ? 'Sending your report…' : selected.length ? 'Email my free report' : 'Choose a path first'} <span aria-hidden="true">→</span></button>
                 {error && <p className={styles.error} role="alert">{error}</p>}
                 <p className={styles.fine}>We use your email to send the report. <a href="/privacy">Privacy notice</a></p>
-                {selected.length > 0 && <a className={styles.previewLink} href={preview} target="_blank" rel="noreferrer">Preview the report first ↗</a>}
               </form>}
           </>}
         </div>

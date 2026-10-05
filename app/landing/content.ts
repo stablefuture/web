@@ -3,7 +3,6 @@
 
 export const SOURCES = {
   ale: { label: 'Agents’ Last Exam leaderboard, October 2026', href: 'https://agents-last-exam.org/leaderboard' },
-  aleCost: { label: 'Agents’ Last Exam paper, 2026', href: 'https://arxiv.org/abs/2606.05405' },
   stanford: { label: 'Stanford Digital Economy Lab', href: 'https://digitaleconomy.stanford.edu/project/indicators/canaries-dashboard/' },
   epoch: { label: 'Epoch AI', href: 'https://epoch.ai/' },
   mercor: { label: 'Mercor, October 2026', href: 'https://www.mercor.com/blog/human-baselines-for-benchmarks-ai-now-outperforms-junior-accountants/' },
@@ -27,11 +26,14 @@ export const AI = {
   eyebrow: 'What AI can do now',
   title: 'AI doesn’t just answer questions any more. It does the work.',
   intro: 'These are three real tasks from Agents’ Last Exam, a test built by UC Berkeley with more than 300 industry experts. Each one is a project that took a professional days or weeks.',
+  statsTitle: 'AI vs a human expert, on the same projects',
+  // Per-task averages for the top-ranked agent: total runtime and estimated cost on
+  // the leaderboard (182h 45m, $1,340) over ~150 public tasks. Human cost is our estimate.
   stats: [
-    { value: 'Weeks → hours', label: 'Each project took an expert days or weeks. An AI agent takes tens of minutes to hours, for a few pounds.', source: 'aleCost' as const },
-    { value: '63%', label: 'of all the marks, earned by the best AI agent', source: 'ale' as const },
+    { value: 'Days → 1 hour', label: 'Experts took days or weeks on each project. Given only the brief and the files, the best AI agent worked through it on its own in about an hour.', source: 'ale' as const },
+    { value: '£1,000s → £7', label: 'Days or weeks of a professional’s time can cost thousands of pounds. Each AI run cost about £7.', source: 'ale' as const },
   ],
-  note: 'Animations illustrate the benchmark tasks.',
+  note: 'Averages per project for the top-ranked agent. It doesn’t get every project right yet, but it’s improving fast. Animations illustrate the benchmark tasks.',
 };
 
 export const JOBS = {
@@ -43,7 +45,7 @@ export const JOBS = {
     { lead: 'Studies link higher AI exposure to fewer entry-level jobs.', rest: 'AI is doing the tasks juniors used to do.', source: 'stanford' as const },
     { lead: 'AI is improving faster each year,', rest: 'and companies are starting to use it at scale.', source: 'epoch' as const },
   ],
-  stat: { value: '19%', label: 'Employment of 22 to 25-year-olds in the most AI-exposed jobs is about 19% below where it would otherwise be. The gap fades for older workers.', source: 'stanford' as const },
+  stat: { value: '19%', label: 'Employment of 22 to 25-year-olds in the most AI-exposed jobs is about 19% below where it would otherwise be.', source: 'stanford' as const },
   pyramid: [
     { label: 'Before AI', text: 'Juniors learn the job by doing the simple tasks.' },
     { label: 'Now', text: 'AI does many of those tasks, so firms hire fewer juniors.' },
@@ -54,13 +56,13 @@ export const JOBS = {
 
 export const FAMILIES = {
   eyebrow: 'What families should do',
-  title: 'Your child will spend 80,000 hours in their careers. Help them choose well.',
-  titleParts: ['Your child will spend ', '80,000 hours', ' in their careers. Help them choose well.'],
+  title: 'Your child will spend 80,000 hours in their career. Help them choose well.',
+  titleParts: ['Your child will spend ', '80,000 hours', ' in their career. Help them choose well.'],
   intro: 'Choosing a career was already one of life’s biggest decisions. AI makes it bigger. Four moves make the difference.',
   moves: [
     { n: '01', title: 'Avoid dead ends', text: 'Don’t start in a career where AI already does most of the junior work, unless your child is truly exceptional at it. Take accountancy: on month-end accounting tasks, AI now beats junior accountants, getting every attempt right in under 10 minutes.', source: 'mercor' as const },
     { n: '02', title: 'Pick a direction', text: 'Match their interests, strengths, and preferences to careers with growing demand. Then find the best way in: university, an apprenticeship, or straight into work.' },
-    { n: '03', title: 'Build the skills employers pay for', text: 'Find which parts of the job AI does and which stay human, then build the skills that earn more.', stat: { value: '62%', label: 'higher pay, on average, for jobs that need AI skills', source: 'pwc' as const } },
+    { n: '03', title: 'Learn to work with AI', text: 'In every career, AI will take some tasks and leave others. People who do the human parts well, and use AI for the rest, earn more.', stat: { value: '62%', label: 'higher pay, on average, for jobs that need AI skills', source: 'pwc' as const } },
     { n: '04', title: 'Make a Plan A, B and Z', text: 'Plan A is the career they want most. Plan B is a good alternative that’s less exposed to AI. Plan Z is a lifeboat: work that’s barely exposed at all. So they’re secure even in a very disruptive job market.' },
   ],
   plans: [
@@ -99,7 +101,7 @@ export const ADVICE = {
   eyebrow: 'Get advice',
   title: 'Let’s make your child’s plan.',
   intro: 'Tell us a little about your child. Ben will reply personally to arrange a call.',
-  scarcity: 'We only work with 5 families a month,',
+  scarcity: 'We only work with 10 families a month,',
   scarcityRest: 'so every plan gets proper time. Get in touch now to secure a place.',
   placeholder: 'For example: my daughter is in Year 12. She loves biology and is torn between medicine and a biomedical science degree.',
   privacy: 'We only use these details to reply to you. See our privacy notice.',
