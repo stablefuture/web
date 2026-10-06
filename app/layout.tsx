@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stablefuture.uk"),
-  title: "Stable Future | Is your child’s career ready for AI?",
-  description: "Career advice for families navigating AI, for students of any age.",
+  title: "Is your child’s career ready for AI? | Stable Future",
+  description: "Understand how AI affects your career and build a strategy to develop the skills employers pay most for.",
   openGraph: { siteName: "Stable Future", locale: "en_GB", type: "website" },
   twitter: { card: "summary_large_image" },
   // Google Search Console ownership (bengrime1@gmail.com). Keep, or verification lapses.
@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="en-GB"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">

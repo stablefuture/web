@@ -5,19 +5,30 @@ import Dawn from './landing/Dawn';
 const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-display', axes: ['SOFT', 'opsz'], style: ['normal', 'italic'], display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Stable Future | Is your child’s career ready for AI?',
-  description: 'Career advice for families navigating AI. Check how exposed your child’s chosen degree, apprenticeship, or job is, then build Plan A, B, and Z with Ben.',
+  title: 'Is your child’s career ready for AI? | Stable Future',
+  description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.',
   alternates: { canonical: '/' },
-  openGraph: { title: 'Is your child’s career ready for AI? | Stable Future', description: 'Career advice for families navigating AI, for students of any age.', url: '/' },
-  twitter: { card: 'summary_large_image', title: 'Is your child’s career ready for AI? | Stable Future', description: 'Career advice for families navigating AI, for students of any age.' },
+  openGraph: { title: 'Is your child’s career ready for AI? | Stable Future', description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.', url: '/' },
+  twitter: { card: 'summary_large_image', title: 'Is your child’s career ready for AI? | Stable Future', description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.' },
 };
 
-// Tells search engines the site's name and logo.
+// Tells search engines the site's name, logo, what it does, and who runs it.
+const SITE = 'https://www.stablefuture.uk/';
 const JSON_LD = JSON.stringify({
   '@context': 'https://schema.org',
   '@graph': [
-    { '@type': 'WebSite', name: 'Stable Future', url: 'https://www.stablefuture.uk/' },
-    { '@type': 'Organization', name: 'Stable Future', url: 'https://www.stablefuture.uk/', logo: 'https://www.stablefuture.uk/icon.png', email: 'ben@stablefuture.uk' },
+    { '@type': 'WebSite', '@id': `${SITE}#website`, name: 'Stable Future', url: SITE, inLanguage: 'en-GB', publisher: { '@id': `${SITE}#org` } },
+    {
+      '@type': 'Organization', '@id': `${SITE}#org`, name: 'Stable Future', url: SITE, logo: `${SITE}icon.png`, email: 'ben@stablefuture.uk',
+      description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.',
+      areaServed: { '@type': 'Country', name: 'United Kingdom' },
+      knowsAbout: ['Careers advice', 'Artificial intelligence and jobs', 'Degrees', 'Apprenticeships'],
+      founder: { '@id': `${SITE}#ben` },
+    },
+    {
+      '@type': 'Person', '@id': `${SITE}#ben`, name: 'Ben Grime', jobTitle: 'Founder', image: `${SITE}ben-grime.jpg`,
+      worksFor: { '@id': `${SITE}#org` }, alumniOf: { '@type': 'CollegeOrUniversity', name: 'Lancaster University' },
+    },
   ],
 });
 
