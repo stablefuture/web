@@ -1,16 +1,16 @@
 // Server-only: lead alerts to Ben’s private Telegram chat. Never log their contents.
 export function formatLeadAlert(lead) {
-  if (lead.type === 'advice') return `[Codex] New advice enquiry — call now\nName: ${lead.name}\nPhone: ${lead.phone}\nEmail: ${lead.email}\n\nSituation:\n${lead.situation}`;
+  if (lead.type === 'advice') return `ENQUIRY\n\nName: ${lead.name}\nPhone: ${lead.phone}\nEmail: ${lead.email}\n\nSituation:\n${lead.situation}`;
   return lead.marketing
-    ? `[Codex] New career-check lead\nEmail: ${lead.email}\nPaths: ${(lead.paths || []).join(', ')}\nReport sent. Follow-up emails allowed. Reply personally while it is fresh.`
-    : '[Codex] Career-check report sent. This person opted out of follow-ups; do not contact them.';
+    ? `CHECKER\n\nEmail: ${lead.email}\nPaths: ${(lead.paths || []).join(', ')}`
+    : 'CHECKER\n\nFollow-up: Opted out';
 }
 
 export function careerReplyDraft(lead) {
   const paths = (lead.paths || []).join(', ');
   return {
     to: lead.email,
-    subject: 'Your AI career check — a quick question',
+    subject: 'Quick question about your AI career check',
     body: `Hi! It's Ben here.\n\nI hope you found our career checker useful. You looked at ${paths}.\n\nWhat’s the main career decision you or your family are trying to make at the moment?\n\nCheers,\nBen`,
   };
 }
@@ -28,6 +28,7 @@ export async function sendLeadAlert(lead, {
   const entities = lead.type === 'advice'
     ? [{ type: 'phone_number', offset: text.indexOf('\nPhone: ') + 8, length: lead.phone.length }]
     : [];
+  entities.unshift({ type: 'bold', offset: 0, length: 7 });
   const phone = lead.type === 'advice' ? lead.phone.replace(/[\s()-]/g, '') : '';
   const reply_markup = /^\+?\d{7,15}$/.test(phone)
     ? { inline_keyboard: [[{ text: 'Call lead', url: `https://www.stablefuture.uk/call-lead.html#${encodeURIComponent(phone)}` }]] }
