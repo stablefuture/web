@@ -1,4 +1,4 @@
-.pyramid, .abz, .form { --fg: #1d3026; --muted: #566151; --line: #1d302624; --soft: #ffffffa6; --person: #2f6a4c; --sun: #ff8a3d; color: var(--fg); }
+.pyramid, .abz, .form, .booking { --fg: #1d3026; --muted: #566151; --line: #1d302624; --soft: #ffffffa6; --person: #2f6a4c; --sun: #ff8a3d; color: var(--fg); }
 [data-tone='dark'].pyramid, [data-tone='dark'].abz, [data-tone='dark'].form { --fg: #fffaf0; --muted: #c9cfc0; --line: #fffaf030; --soft: #ffffff10; --person: #cfe3cf; }
 
 /* Pyramid */
@@ -50,7 +50,6 @@
 
 /* Advice form */
 .form { display: flex; flex-direction: column; gap: 14px; }
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .form label { display: flex; flex-direction: column; gap: 6px; }
 .form label > span { font-size: 14px; font-weight: 650; }
 .form input, .form textarea { width: 100%; min-height: 54px; padding: 14px 16px; border: 2px solid var(--line); border-radius: 14px; background: var(--soft); color: var(--fg); font: inherit; font-size: 16px; transition: border-color .2s, box-shadow .2s, background .2s; }
@@ -64,10 +63,6 @@
 .fine a { color: var(--fg); font-weight: 650; text-decoration: underline; }
 .error { margin: 0; padding: 10px 12px; border-radius: 12px; background: #fde4e7; color: #8b1426; font-size: 14px; }
 .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.thanks { padding: 30px 8px; text-align: center; }
-.thanks span { display: block; width: 84px; height: 84px; margin: 0 auto 18px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #ffd59a, #ff9447 55%, #f0622a); box-shadow: 0 0 0 14px #ff8a3d22, 0 0 0 28px #ff8a3d11; animation: rise .8s cubic-bezier(.3, 1.4, .5, 1) both; }
-.thanks h3 { margin: 0 0 8px; font-size: 28px; letter-spacing: -.02em; }
-.thanks p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--muted); }
 
 @media (max-width: 800px) {
   .pyramid { grid-template-columns: 1fr; gap: 22px; }
@@ -82,10 +77,9 @@
   .person svg { width: 21px; height: 21px; }
   .rowLabels { display: none; }
   .scale span { font-size: 12px; padding: 11px 2px; border-radius: 10px; }
-  .pair { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pyramid *, .abz *, .scale *, .thanks * { animation: none !important; transition: none !important; }
+  .pyramid *, .abz *, .scale * { animation: none !important; transition: none !important; }
   .abz svg path { stroke-dashoffset: 0; }
   .abz li { opacity: 1; transform: none; }
 }

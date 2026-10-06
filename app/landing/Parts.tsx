@@ -95,7 +95,7 @@ export function AdviceForm({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
   if (status === 'sent') return <div className={s.booking} data-booking-step="calendar" data-tone={tone}>
     <h3 ref={bookingHeading} tabIndex={-1}>Choose your call time</h3>
     <p>Future-Proof Career Strategy · 45 minutes · Google Meet</p>
-    <p>We recommend that the whole family joins, including your child and their parents or carers.</p>
+    <p>A video call to discuss your child&apos;s career options and next steps. We recommend both the child and parents attend.</p>
     <Cal calLink="ben-grime/strategy-call" namespace="family-strategy" config={{ name: values.name.trim(), email: values.email.trim(), notes: values.situation.trim(), layout: 'month_view', theme: 'light' }} style={{ width: '100%', minHeight: 650 }} />
     <p className={s.fine}>Can’t find a suitable time? <a href="mailto:ben@stablefuture.uk">Email Ben</a>. Calendar not loading? <a href={CALL_URL} target="_blank" rel="noopener noreferrer">Open the booking page</a>.</p>
   </div>;
