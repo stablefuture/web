@@ -107,6 +107,7 @@ export function AdviceForm({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
     <div className={s.honeypot} aria-hidden="true"><label>Website<input value={values.website} onChange={set('website')} tabIndex={-1} autoComplete="off" /></label></div>
     <button type="submit" disabled={busy}>{busy ? 'Sending…' : ADVICE.button}<span aria-hidden="true">→</span></button>
     {error && <p className={s.error} role="alert">{error}</p>}
+    <p className={s.fine}>Next, choose a time for your 45-minute Google Meet call.</p>
     <p className={s.fine}>We use these details to arrange and prepare for your call. <a href="/privacy">Privacy notice</a>.</p>
   </form>;
 }
