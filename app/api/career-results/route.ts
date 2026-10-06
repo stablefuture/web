@@ -1,3 +1,5 @@
+import { after } from 'next/server';
+import { sendLeadAlert } from '../../lib/lead-alerts.mjs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { subscribeViaKit } from '../../lib/kit';
@@ -16,7 +18,7 @@ async function loadReports() {
   return data.reports;
 }
 
-const post = createCareerResultsHandler({ loadReports, apiKey: process.env.RESEND_API_KEY, from: process.env.CAREER_EMAIL_FROM || 'Ben at Stable Future <talk@stablefuture.uk>', bookingUrl: CALL_URL, subscribe: (email) => subscribeViaKit(email, process.env.KIT_CAREER_FORM_ID || '9682557') });
+const post = createCareerResultsHandler({ loadReports, notify: (lead) => after(async () => { await sendLeadAlert(lead); }), apiKey: process.env.RESEND_API_KEY, from: process.env.CAREER_EMAIL_FROM || 'Ben at Stable Future <talk@stablefuture.uk>', bookingUrl: CALL_URL, subscribe: (email) => subscribeViaKit(email, process.env.KIT_CAREER_FORM_ID || '9682557') });
 export async function POST(request: Request) { return post(request); }
 
 // Development-only preview with the same renderer and data as the email. It is off in

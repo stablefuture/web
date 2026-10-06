@@ -83,3 +83,13 @@ test('Kit failure retains report success and returns a clear warning', async () 
  const result = await (await handler(request({ email: 'a@b.uk', ids: ['job:c'], marketing: true }))).json();
  assert.equal(result.ok, true); assert.match(result.warning, /could not add you/);
 });
+
+test('alerts preserve follow-up choice, survive Kit failure, and never run on failed sends', async () => {
+ const leads = []; const notify = lead => leads.push(lead);
+ const { handler } = setup({ notify, subscribe: async () => false });
+ await handler(request({ email: 'a@b.uk', ids: ['job:c'], marketing: true }));
+ await handler(request({ email: 'b@b.uk', ids: ['job:c'], marketing: false }));
+ assert.deepEqual(leads.map(l => l.marketing), [true, false]);
+ await setup({ notify, fetchImpl: async () => Response.json({}, { status: 500 }) }).handler(request({ email: 'c@b.uk', ids: ['job:c'] }));
+ assert.equal(leads.length, 2);
+});

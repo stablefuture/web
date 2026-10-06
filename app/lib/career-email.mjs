@@ -230,9 +230,9 @@ ${cards}${plan}${cta}
 }
 
 /**
- * @param {{loadReports: () => Promise<any[]>, fetchImpl?: typeof fetch, apiKey?: string, from?: string, replyTo?: string, bookingUrl?: string, now?: () => number, rateLimit?: number, rateWindowMs?: number, subscribe?: (email: string) => Promise<boolean>}} options
+ * @param {{loadReports: () => Promise<any[]>, fetchImpl?: typeof fetch, apiKey?: string, from?: string, replyTo?: string, bookingUrl?: string, now?: () => number, rateLimit?: number, rateWindowMs?: number, notify?: (lead: any) => void, subscribe?: (email: string) => Promise<boolean>}} options
  */
-export function createCareerResultsHandler({ loadReports, fetchImpl = fetch, apiKey, from = 'Ben at Stable Future <talk@stablefuture.uk>', replyTo = 'ben@stablefuture.uk', bookingUrl = '', now = Date.now, rateLimit = 5, rateWindowMs = 15 * 60 * 1000, subscribe } = {}) {
+export function createCareerResultsHandler({ loadReports, fetchImpl = fetch, apiKey, from = 'Ben at Stable Future <talk@stablefuture.uk>', replyTo = 'ben@stablefuture.uk', bookingUrl = '', now = Date.now, rateLimit = 5, rateWindowMs = 15 * 60 * 1000, subscribe, notify } = {}) {
   const attempts = new Map();
   const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
   return async function handle(request) {
@@ -262,6 +262,7 @@ export function createCareerResultsHandler({ loadReports, fetchImpl = fetch, api
       const response = await fetchImpl('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], ...(replyTo ? { reply_to: replyTo } : {}), ...rendered, tags: [{ name: 'type', value: 'career_check' }] }), signal: AbortSignal.timeout(15000) });
       const result = await response.json().catch(() => null);
       if (!response.ok || typeof result?.id !== 'string' || !result.id) return json({ error: 'We could not send your report. Please try again later.' }, 502);
+      try { notify?.({ type: 'career-check', email, marketing, paths: selected.map(report => report.title) }); } catch { console.error('Could not schedule career-check alert.'); }
       if (subscribe && marketing) {
         const subscribed = await subscribe(email).catch(() => false);
         if (!subscribed) return json({ ok: true, warning: 'Your report is on its way, but we could not add you to follow-up emails.' });

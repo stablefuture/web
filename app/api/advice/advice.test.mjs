@@ -45,3 +45,15 @@ test('rate limit applies per client', async () => {
   assert.equal((await handler(request(good))).status, 200);
   assert.equal((await handler(request(good))).status, 429);
 });
+
+test('alerts only accepted enquiries and alert scheduling failure does not break submission', async () => {
+ const leads = [];
+ const { handler } = setup({ notify: lead => leads.push(lead) });
+ await handler(request(good));
+ assert.equal(leads.length, 1); assert.equal(leads[0].phone, good.phone); assert.equal(leads[0].situation, good.situation);
+ await handler(request({ ...good, website: 'bot' })); assert.equal(leads.length, 1);
+ await setup({ notify: lead => leads.push(lead), fetchImpl: async () => Response.json({}, { status: 500 }) }).handler(request(good));
+ assert.equal(leads.length, 1);
+ const old = console.error; console.error = () => {};
+ try { assert.equal((await setup({ notify: () => { throw new Error('unavailable'); } }).handler(request(good))).status, 200); } finally { console.error = old; }
+});

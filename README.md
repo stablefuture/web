@@ -39,3 +39,9 @@ Check changed layouts at mobile and desktop widths.
 ## Deployment
 
 Pushing `main` deploys to production through Vercel. Verify the connection first. A local commit does not deploy.
+
+## Immediate lead alerts
+
+Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in Vercel Production (server-only). Both form handlers schedule Telegram using Next.js `after` once Resend accepts the email; failed alerts never make a successful form look failed. Advice alerts include contact details and the situation. Career-check alerts include email and paths only when follow-ups are allowed; opt-outs produce an anonymous notification. Failed sends log only a generic error. Email remains the advice fallback; there is no durable Telegram retry queue.
+
+Enable Telegram notifications for this bot on Ben’s phone and allow them through Focus/Do Not Disturb. Delivery to Telegram does not prove the phone displayed a notification. Test both forms after deployment.

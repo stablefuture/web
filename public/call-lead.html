@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Call lead | Stable Future</title>
+  <style>
+    body { margin: 0; background: #f5f3e7; color: #243c30; font: 18px/1.5 system-ui, sans-serif; }
+    main { max-width: 440px; margin: 12vh auto; padding: 24px; }
+    h1 { font: 40px/1.2 Georgia, serif; }
+    a { display: block; padding: 18px; background: #243c30; color: white; border-radius: 8px; text-align: center; text-decoration: none; overflow-wrap: anywhere; }
+    [hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>stable future ↗</p>
+    <h1>Call lead</h1>
+    <p id="message">This link needs a valid phone number. Open the button in your Telegram alert.</p>
+    <a id="call" hidden>Open phone dialler</a>
+  </main>
+  <script>
+    // The fragment stays on the device; this page has no analytics or external assets.
+    let phone = '';
+    try { phone = decodeURIComponent(location.hash.slice(1)); } catch {}
+    if (/^\+?\d{7,15}$/.test(phone)) {
+      const call = document.getElementById('call');
+      call.href = 'tel:' + phone;
+      call.textContent = 'Call ' + phone;
+      call.hidden = false;
+      document.getElementById('message').textContent = 'If your dialler does not open, tap below. Your phone may ask you to confirm.';
+      history.replaceState(null, '', location.pathname);
+      location.href = call.href;
+    }
+  </script>
+</body>
+</html>

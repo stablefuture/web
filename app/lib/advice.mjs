@@ -19,9 +19,9 @@ export function parseAdvice(body) {
 }
 
 /**
- * @param {{ apiKey?: string, fetchImpl?: typeof fetch, to?: string, from?: string, now?: () => number, rateLimit?: number, rateWindowMs?: number }} options
+ * @param {{ apiKey?: string, fetchImpl?: typeof fetch, to?: string, from?: string, now?: () => number, rateLimit?: number, rateWindowMs?: number, notify?: (lead: any) => void }} options
  */
-export function createAdviceHandler({ apiKey, fetchImpl = fetch, to = 'ben@stablefuture.uk', from = 'Stable Future website <talk@stablefuture.uk>', now = Date.now, rateLimit = 5, rateWindowMs = 15 * 60 * 1000 } = {}) {
+export function createAdviceHandler({ apiKey, fetchImpl = fetch, to = 'ben@stablefuture.uk', from = 'Stable Future website <talk@stablefuture.uk>', now = Date.now, rateLimit = 5, rateWindowMs = 15 * 60 * 1000, notify } = {}) {
   const attempts = new Map();
   const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
   return async function handle(request) {
@@ -48,6 +48,7 @@ export function createAdviceHandler({ apiKey, fetchImpl = fetch, to = 'ben@stabl
       const response = await fetchImpl('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [to], reply_to: enquiry.email, subject: `Advice enquiry: ${enquiry.name}`.slice(0, 140), text, tags: [{ name: 'type', value: 'advice_enquiry' }] }), signal: AbortSignal.timeout(15000) });
       const result = await response.json().catch(() => null);
       if (!response.ok || typeof result?.id !== 'string') return json({ error: 'We could not send your message. Please try again, or email ben@stablefuture.uk.' }, 502);
+      try { notify?.({ type: 'advice', name: enquiry.name, email: enquiry.email, phone: enquiry.phone, situation: enquiry.situation }); } catch { console.error('Could not schedule advice alert.'); }
       return json({ ok: true });
     } catch {
       return json({ error: 'We could not send your message. Please try again, or email ben@stablefuture.uk.' }, 502);

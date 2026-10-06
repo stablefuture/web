@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/call",
-        destination: "https://cal.eu/ben-grime/strategy-call",
+        destination: "https://cal.com/ben-grime/strategy-call",
         permanent: false,
       },
       {
