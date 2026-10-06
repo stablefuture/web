@@ -52,7 +52,7 @@ test('renderer escapes content, keeps conditions/subject, five bands, honest bas
  assert.match(mail.text, /Jobs are made of tasks/); assert.match(mail.text, /HERE’S HOW EXPOSED YOUR CHOSEN CAREER PATHS ARE/);
  assert.match(mail.text, /AI exposure: High \(78 \/ 100\)/); assert.match(mail.text, /Writer <script>: Low \(32\/100\)/); assert.match(mail.text, /Flight operations \(Apprenticeship\)\nAI exposure: Medium \(50 \/ 100\)/);
  assert.match(mail.text, /Can AI help\?/); assert.doesNotMatch(mail.text, /How we score|won’t email you again/); assert.doesNotMatch(mail.html, /<img/i); assert.match(mail.text, /\[Yes\]/); assert.match(mail.text, /\[No\]/); assert.match(mail.text, /AI can help with 1 of these 2 tasks/);
- assert.match(mail.text, /Plan A:/); assert.match(mail.text, /10 families a month/); assert.match(mail.text, /Book a call: https:\/\/example.com/);
+ assert.match(mail.text, /Plan A:/); assert.match(mail.text, /10 families a month/); assert.match(mail.text, /Get advice: pick a time: https:\/\/example.com/);
  assert.match(mail.html, /table role="presentation"/); assert.match(mail.text, /Unscored job: Not scored/); assert.match(mail.html, /#d92a42|#ff8a3d|#ffc93c|#9bcf53|#3fa34d/);
  assert.ok(Buffer.byteLength(mail.html) < 100000, 'stays below Gmail clipping');
 });

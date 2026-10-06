@@ -173,14 +173,14 @@ export function renderCareerEmail(reports, { bookingUrl = '' } = {}) {
     text.push('', 'GET ADVICE',
       'We build your family an action plan to make sure your children are financially secure. You don’t pay a penny until the whole family is happy.',
       'We only work with 10 families a month, so every plan gets proper time. Book now to secure a place.',
-      `Book a call: ${bookingUrl}`);
+      `Get advice: pick a time: ${bookingUrl}`);
     cta = `<tr><td style="padding:8px 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${INK}" style="width:100%;background:${INK};border-radius:22px"><tr><td style="padding:30px 26px 32px">
 <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="46" height="46" bgcolor="${SUN}" style="width:46px;height:46px;background:${SUN};border-radius:23px;font-size:1px;line-height:1px">&nbsp;</td></tr></table>
 <p style="margin:20px 0 8px;font-family:${SANS};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:#ffc9a3">Your next step</p>
 <h2 style="margin:0 0 14px;font-family:${SERIF};font-size:30px;line-height:1.15;font-weight:400;color:#fffaf0">Get advice.</h2>
 <p style="margin:0 0 16px;font-family:${SANS};font-size:15px;line-height:1.65;color:#e6e9dd">We build your family an action plan to make sure your children are financially secure. You don’t pay a penny until the whole family is happy.</p>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%"><tr><td style="border-left:4px solid ${SUN};padding:2px 0 2px 14px;font-family:${SANS};font-size:15px;line-height:1.55;color:#fffaf0"><strong>We only work with 10 families a month,</strong> so every plan gets proper time. Book now to secure a place.</td></tr></table>
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:24px"><tr><td bgcolor="${SUN}" style="background:${SUN};border-radius:999px"><a href="${escape(bookingUrl)}" style="display:inline-block;padding:16px 28px;font-family:${SANS};font-size:17px;font-weight:700;color:${INK};text-decoration:none;border-radius:999px">Book a call &rarr;</a></td></tr></table>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:24px"><tr><td bgcolor="${SUN}" style="background:${SUN};border-radius:999px"><a href="${escape(bookingUrl)}" style="display:inline-block;padding:16px 28px;font-family:${SANS};font-size:17px;font-weight:700;color:${INK};text-decoration:none;border-radius:999px">Get advice: pick a time &rarr;</a></td></tr></table>
 <p style="margin:24px 0 0;font-family:${SANS};font-size:13px;line-height:1.5;color:#e6e9dd"><strong style="color:#fffaf0">Ben Grime</strong>, founder of Stable Future<br>Former AI Consultant</p>
 </td></tr></table></td></tr>`;
   }

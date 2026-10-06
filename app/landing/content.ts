@@ -105,5 +105,5 @@ export const ADVICE = {
   scarcityRest: 'so every plan gets proper time. Get in touch now to secure a place.',
   placeholder: 'For example: my daughter is in Year 12. She loves biology and is torn between medicine and a biomedical science degree.',
   privacy: 'We only use these details to reply to you. See our privacy notice.',
-  button: 'Choose a call time',
+  button: 'Get advice: pick a time',
 };

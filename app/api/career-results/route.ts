@@ -5,9 +5,8 @@ import path from 'node:path';
 import { subscribeViaKit } from '../../lib/kit';
 import { createCareerResultsHandler, renderCareerEmail, selectReports } from '../../lib/career-email.mjs';
 
-// Own-domain link (redirects to the booking page in next.config.ts) keeps links
-// aligned with the sending domain, which helps inbox placement.
-const CALL_URL = 'https://www.stablefuture.uk/call';
+// Send readers to the website form before they choose a call time.
+const CALL_URL = 'https://www.stablefuture.uk/#advice';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
