@@ -214,7 +214,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
             <div className={styles.nextStep}>
               <p className={styles.nextEyebrow}>Want a plan, not just a report?</p>
               <p>Ben will help you build a Plan A, B and Z the whole family is happy with. <strong>We only work with 10 families a month.</strong></p>
-              <a className={styles.cta} href="/call">Get advice: book a call <span aria-hidden="true">→</span></a>
+              <Link className={styles.cta} href="/#advice">Get advice: pick a time <span aria-hidden="true">→</span></Link>
             </div>
             <button type="button" className={styles.again} onClick={() => { setStatus('idle'); setSelected([]); setError(''); }}>Check different paths</button>
           </div> : <>
