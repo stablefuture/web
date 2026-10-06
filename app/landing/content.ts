@@ -27,9 +27,10 @@ export const AI = {
   statsTitle: 'AI vs a human expert, on the same projects',
   // Per-task averages for Codex with GPT-5.6 Luna (ranked 8th): the leaderboard's Overall
   // total runtime and estimated cost (66h 7m, $235) over the 160 public tasks (67 + 55 + 38).
+  // That is about 25 minutes a task. '3 days' is the low end of the paper's 'days or weeks'.
   // Human cost is our estimate.
   stats: [
-    { value: 'Days → 25 min', label: 'Experts took days or weeks on each project. Given only the brief and the files, a leading AI agent worked through it on its own in about 25 minutes.', source: 'ale' as const },
+    { value: '3\u00a0days → 30\u00a0minutes', label: 'Experts took days or weeks on each project. Given only the brief and the files, a leading AI agent worked through it on its own in under 30 minutes.', source: 'ale' as const },
     { value: '£1,000s → £1', label: 'Days or weeks of a professional’s time can cost thousands of pounds. Each AI run cost about £1.', source: 'ale' as const },
   ],
   note: 'Animations illustrate the benchmark tasks.',
