@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { BANDS } from '../lib/exposure-bands.mjs';
 import { ADVICE, CALL_URL, FAMILIES, JOBS, SOURCES } from './content';
 import { reducedMotion, useInView } from './motion';
 import s from './parts.module.css';
+
+const Cal = dynamic(() => import('@calcom/embed-react'), { ssr: false, loading: () => <p role="status">Loading available times…</p> });
+
 
 /* An org pyramid whose junior rows turn into AI as the stages advance. */
 const ROWS = [1, 3, 5, 7];
@@ -71,9 +75,11 @@ export function Cite({ source }: { source: keyof typeof SOURCES }) {
 
 /* The "Get advice" form. */
 export function AdviceForm({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
-  const [values, setValues] = useState({ name: '', email: '', phone: '', situation: '', website: '' });
+  const [values, setValues] = useState({ name: '', email: '', situation: '', website: '' });
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [error, setError] = useState('');
+  const bookingHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { if (status === 'sent') bookingHeading.current?.focus(); }, [status]);
   const set = (key: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setValues({ ...values, [key]: e.target.value });
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -86,21 +92,22 @@ export function AdviceForm({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
       setStatus('sent');
     } catch (err) { setStatus('idle'); setError(err instanceof Error ? err.message : 'We could not send your message. Please try again.'); }
   }
-  if (status === 'sent') return <div className={s.form} data-tone={tone} role="status">
-    <div className={s.thanks}><span aria-hidden="true" /><h3>Thank you, {values.name.split(' ')[0] || 'and welcome'}.</h3><p>Ben will reply to you personally. Keep an eye on your inbox.</p></div>
+  if (status === 'sent') return <div className={s.booking} data-booking-step="calendar" data-tone={tone}>
+    <h3 ref={bookingHeading} tabIndex={-1}>Choose your call time</h3>
+    <p>Future-Proof Career Strategy · 45 minutes · Google Meet</p>
+    <p>We recommend that the whole family joins, including your child and their parents or carers.</p>
+    <Cal calLink="ben-grime/strategy-call" namespace="family-strategy" config={{ name: values.name.trim(), email: values.email.trim(), notes: values.situation.trim(), layout: 'month_view', theme: 'light' }} style={{ width: '100%', minHeight: 650 }} />
+    <p className={s.fine}>Can’t find a suitable time? <a href="mailto:ben@stablefuture.uk">Email Ben</a>. Calendar not loading? <a href={CALL_URL} target="_blank" rel="noopener noreferrer">Open the booking page</a>.</p>
   </div>;
   const busy = status === 'sending';
   return <form className={s.form} data-tone={tone} onSubmit={submit}>
-    <div className={s.pair}>
-      <label><span>Your name</span><input value={values.name} onChange={set('name')} autoComplete="name" required maxLength={100} disabled={busy} /></label>
-      <label><span>Phone</span><input value={values.phone} onChange={set('phone')} type="tel" inputMode="tel" autoComplete="tel" required maxLength={30} disabled={busy} /></label>
-    </div>
+    <label><span>Your name</span><input value={values.name} onChange={set('name')} autoComplete="name" required maxLength={100} disabled={busy} /></label>
     <label><span>Email</span><input value={values.email} onChange={set('email')} type="email" inputMode="email" autoComplete="email" required maxLength={254} disabled={busy} /></label>
     <label><span>Your child’s situation</span><textarea value={values.situation} onChange={set('situation')} placeholder={ADVICE.placeholder} rows={4} required minLength={10} maxLength={3000} disabled={busy} /></label>
     <div className={s.honeypot} aria-hidden="true"><label>Website<input value={values.website} onChange={set('website')} tabIndex={-1} autoComplete="off" /></label></div>
     <button type="submit" disabled={busy}>{busy ? 'Sending…' : ADVICE.button}<span aria-hidden="true">→</span></button>
     {error && <p className={s.error} role="alert">{error}</p>}
-    <p className={s.fine}>{ADVICE.bookInstead} <a href={CALL_URL}>{ADVICE.bookLink}</a>.</p>
-    <p className={s.fine}>We only use these details to reply to you. <a href="/privacy">Privacy notice</a>.</p>
+    <p className={s.fine}>Next, choose a time for your 45-minute Google Meet call.</p>
+    <p className={s.fine}>We use these details to arrange and prepare for your call. <a href="/privacy">Privacy notice</a>.</p>
   </form>;
 }

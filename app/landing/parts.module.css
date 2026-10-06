@@ -89,3 +89,8 @@
   .abz svg path { stroke-dashoffset: 0; }
   .abz li { opacity: 1; transform: none; }
 }
+
+.booking { color: #1d3026; min-width: 0; }
+.booking h3 { font-size: 28px; margin: 0 0 12px; }
+.booking > p { line-height: 1.6; margin: 0 0 14px; }
+.booking h3:focus { outline: none; }

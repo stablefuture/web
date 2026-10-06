@@ -1,6 +1,6 @@
 // Server-only: lead alerts to Ben’s private Telegram chat. Never log their contents.
 export function formatLeadAlert(lead) {
-  if (lead.type === 'advice') return `ENQUIRY\n\nName: ${lead.name}\nPhone: ${lead.phone}\nEmail: ${lead.email}\n\nSituation:\n${lead.situation}`;
+  if (lead.type === 'booking') return `BOOKING\n\nName: ${lead.name}\nEmail: ${lead.email}\nCall: ${lead.title}\nWhen: ${lead.when} (UK time)${lead.meetUrl ? `\nGoogle Meet: ${lead.meetUrl}` : ''}\n\nSituation:\n${lead.situation || 'Not provided'}`;
   return lead.marketing
     ? `CHECKER\n\nEmail: ${lead.email}\nPaths: ${(lead.paths || []).join(', ')}`
     : 'CHECKER\n\nFollow-up: Opted out';
@@ -25,16 +25,10 @@ export async function sendLeadAlert(lead, {
     return false;
   }
   const text = formatLeadAlert(lead);
-  const entities = lead.type === 'advice'
-    ? [{ type: 'phone_number', offset: text.indexOf('\nPhone: ') + 8, length: lead.phone.length }]
-    : [];
-  entities.unshift({ type: 'bold', offset: 0, length: 7 });
-  const phone = lead.type === 'advice' ? lead.phone.replace(/[\s()-]/g, '') : '';
-  const reply_markup = /^\+?\d{7,15}$/.test(phone)
-    ? { inline_keyboard: [[{ text: 'Call lead', url: `https://www.stablefuture.uk/call-lead.html#${encodeURIComponent(phone)}` }]] }
-    : lead.type === 'career-check' && lead.marketing
-      ? { inline_keyboard: [[{ text: 'Draft reply', url: `https://www.stablefuture.uk/email-lead.html#${encodeURIComponent(JSON.stringify(careerReplyDraft(lead)))}` }]] }
-      : undefined;
+  const entities = [{ type: 'bold', offset: 0, length: 7 }];
+  const reply_markup = lead.type === 'career-check' && lead.marketing
+    ? { inline_keyboard: [[{ text: 'Draft reply', url: `https://www.stablefuture.uk/email-lead.html#${encodeURIComponent(JSON.stringify(careerReplyDraft(lead)))}` }]] }
+    : undefined;
   try {
     const response = await fetchImpl(`https://api.telegram.org/bot${token.trim()}/sendMessage`, {
       method: 'POST',

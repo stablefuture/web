@@ -2,10 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { formatLeadAlert, sendLeadAlert } from './lead-alerts.mjs';
 
-test('advice alert includes contact details and the requested situation', () => {
- const text = formatLeadAlert({ type: 'advice', name: 'Parent', phone: '07700 900123', email: 'parent@example.com', situation: 'private child details' });
- assert.match(text, /07700 900123/); assert.match(text, /parent@example.com/); assert.match(text, /private child details/);
-});
 test('opted-out report alerts contain no contact details and forbid outreach', () => {
  const text = formatLeadAlert({ type: 'career-check', email: 'private@example.com', marketing: false });
  assert.doesNotMatch(text, /private@example.com/); assert.match(text, /Follow-up: Opted out/);
@@ -25,18 +21,17 @@ test('Telegram accepts plain text and requires provider confirmation', async () 
  } finally { console.error = old; }
 });
 
-test('advice includes a Call lead button with the phone in a private URL fragment', async () => {
- const requests = [];
- const lead = { type: 'advice', name: 'Ben 😀 Phone: test', phone: '+44 7700 900123', email: 'test@example.com', situation: 'Test enquiry, not a real family.' };
- await sendLeadAlert(lead, { token: 'test', chatId: '123', fetchImpl: async (url, init) => { requests.push({url, body: JSON.parse(init.body)}); return Response.json({ ok: true }); } });
- const sent = requests[0].body;
- const entity = sent.entities.find(item => item.type === 'phone_number'); assert.equal(entity.type, 'phone_number');
- assert.equal(sent.text.slice(entity.offset, entity.offset + entity.length), lead.phone);
- assert.equal(sent.reply_markup.inline_keyboard[0][0].text, 'Call lead');
- const url = new URL(sent.reply_markup.inline_keyboard[0][0].url);
- assert.equal(url.search, '');
- assert.equal(decodeURIComponent(url.hash.slice(1)), '+447700900123');
- assert.equal(requests.length, 1);
+test('booking alerts contain plain booking data with a bold header and no phone CTA', async () => {
+ let sent;
+ const lead = { type: 'booking', name: '<Parent>', email: 'parent@example.com', title: 'Future-Proof Career Strategy', when: 'Wed, 7 Oct 2026, 18:00', situation: 'x'.repeat(3000), meetUrl: 'https://meet.google.com/abc-defg-hij' };
+ await sendLeadAlert(lead, { token: 'test', chatId: '123', fetchImpl: async (_, init) => { sent = JSON.parse(init.body); return Response.json({ ok: true }); } });
+ assert.match(sent.text, /^BOOKING\n\nName: <Parent>/);
+ assert.match(sent.text, /18:00 \(UK time\)/);
+ assert.match(sent.text, /Google Meet: https:/);
+ assert.ok(sent.text.length < 4096);
+ assert.deepEqual(sent.entities, [{ type: 'bold', offset: 0, length: 7 }]);
+ assert.equal(sent.reply_markup, undefined);
+ assert.doesNotMatch(sent.text, /ENQUIRY|Phone:|Call now|Codex/);
 });
 
 test('career reply buttons preserve draft text in fragments and respect opt-outs', async () => {

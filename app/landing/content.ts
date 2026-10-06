@@ -100,12 +100,12 @@ export const WHO = {
 export const ADVICE = {
   eyebrow: 'Get advice',
   title: 'Let’s make your child’s plan.',
-  intro: 'Tell us a little about your child. Ben will reply personally to arrange a call.',
+  intro: 'Book a Future-Proof Career Strategy call with Ben. Tell us a little about your child, then choose a time. We recommend that the whole family attends.',
   scarcity: 'We only work with 10 families a month,',
   scarcityRest: 'so every plan gets proper time. Get in touch now to secure a place.',
   placeholder: 'For example: my daughter is in Year 12. She loves biology and is torn between medicine and a biomedical science degree.',
   privacy: 'We only use these details to reply to you. See our privacy notice.',
-  button: 'Get advice',
+  button: 'Choose a call time',
   bookInstead: 'Prefer to pick a time now?',
   bookLink: 'Book a call',
 };

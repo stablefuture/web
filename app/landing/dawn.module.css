@@ -153,3 +153,5 @@
 @media (prefers-reduced-motion: reduce) {
   .root *, .root *::before, .root *::after { animation: none !important; }
 }
+
+.formCard:has([data-booking-step='calendar']) { grid-column: 1 / -1; min-width: 0; padding: 20px; }
