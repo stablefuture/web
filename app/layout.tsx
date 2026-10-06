@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   description: "Career advice for families navigating AI, for students of any age.",
   openGraph: { siteName: "Stable Future", locale: "en_GB", type: "website" },
   twitter: { card: "summary_large_image" },
+  // Google Search Console ownership (bengrime1@gmail.com). Keep, or verification lapses.
+  verification: { google: "JZojDcX5sE7nKrbw5NOWeMG0x5I_4ZIQSOeM7ued1jY" },
 };
 
 export default function RootLayout({
