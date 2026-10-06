@@ -100,6 +100,7 @@ export function AdviceForm({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
     <div className={s.honeypot} aria-hidden="true"><label>Website<input value={values.website} onChange={set('website')} tabIndex={-1} autoComplete="off" /></label></div>
     <button type="submit" disabled={busy}>{busy ? 'Sending…' : ADVICE.button}<span aria-hidden="true">→</span></button>
     {error && <p className={s.error} role="alert">{error}</p>}
-    <p className={s.fine}>We only use these details to reply to you. <a href="/privacy">Privacy notice</a>. {ADVICE.bookInstead} <a href={CALL_URL}>{ADVICE.bookLink}</a>.</p>
+    <p className={s.fine}>{ADVICE.bookInstead} <a href={CALL_URL}>{ADVICE.bookLink}</a>.</p>
+    <p className={s.fine}>We only use these details to reply to you. <a href="/privacy">Privacy notice</a>.</p>
   </form>;
 }
