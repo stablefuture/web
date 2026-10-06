@@ -253,6 +253,5 @@ export function AiDemos({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
     <div className={s.stats}>
       {AI.stats.map((x) => <div key={x.label}><b>{x.value}</b><span>{x.label} <a href={SOURCES[x.source].href} target="_blank" rel="noopener">{SOURCES[x.source].label}</a></span></div>)}
     </div>
-    <p className={s.source}>{AI.note} Agents’ Last Exam is run by UC Berkeley RDI.</p>
   </div>;
 }

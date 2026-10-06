@@ -30,10 +30,9 @@ export const AI = {
   // That is about 25 minutes a task. '3 days' is the low end of the paper's 'days or weeks'.
   // Human cost is our estimate.
   stats: [
-    { value: '3\u00a0days → 30\u00a0minutes', label: 'Experts took days or weeks on each project. Given only the brief and the files, a leading AI agent worked through it on its own in under 30 minutes.', source: 'ale' as const },
-    { value: '£1,000s → £1', label: 'Days or weeks of a professional’s time can cost thousands of pounds. Each AI run cost about £1.', source: 'ale' as const },
+    { value: '3\u00a0days → 30\u00a0minutes', label: 'Each project took experts days or weeks to complete. Given only the brief and the files, each project took leading AI models around 30 minutes to complete.', source: 'ale' as const },
+    { value: '£1,000s → £1', label: 'Days or weeks of an expert’s time costs thousands of pounds. Each project AI completed cost less than £1.', source: 'ale' as const },
   ],
-  note: 'Animations illustrate the benchmark tasks.',
 };
 
 export const JOBS = {
@@ -80,7 +79,7 @@ export const WHO = {
     'I used to build AI for businesses. As an AI Consultant, I’ve helped career coaches, environmental consultants, civil engineers, the NHS, and the University of Oxford. I saw how quickly AI was taking on work people had trained for years to do.',
     'So I left to help young people get ahead of it. I’ve tutored and mentored students of all ages since 2021. Now I spend my days tracking how AI is changing UK jobs, and turning that into advice families can act on.',
   ],
-  credentials: ['MSc Data Science, Lancaster', 'BA Maths and Philosophy, Lancaster', 'Machine learning researcher, University of Oxford', 'Statistician, NHS', 'AI Consultant, Waterman Group', 'Data Scientist, career coaching startup', 'Tutor and mentor'],
+  credentials: ['MSc Data Science, Lancaster', 'BA Maths and Philosophy, Lancaster', 'Machine learning researcher, University of Oxford', 'Statistician, NHS', 'AI Consultant, Waterman Group', 'Data Scientist, career coaching startup', 'Student Tutor and mentor'],
   data: [
     { value: '1,182', label: 'UK jobs broken into their tasks and scored for AI exposure' },
     { value: '780', label: 'degree subjects and apprenticeships traced to the jobs they lead to' },
