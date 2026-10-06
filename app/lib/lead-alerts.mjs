@@ -6,6 +6,15 @@ export function formatLeadAlert(lead) {
     : '[Codex] Career-check report sent. This person opted out of follow-ups; do not contact them.';
 }
 
+export function careerReplyDraft(lead) {
+  const paths = (lead.paths || []).join(', ');
+  return {
+    to: lead.email,
+    subject: 'Your AI career check — a quick question',
+    body: `Hi! It's Ben here.\n\nI hope you found our career checker useful. You looked at ${paths}.\n\nWhat’s the main career decision you or your family are trying to make at the moment?\n\nCheers,\nBen`,
+  };
+}
+
 export async function sendLeadAlert(lead, {
   token = process.env.TELEGRAM_BOT_TOKEN,
   chatId = process.env.TELEGRAM_CHAT_ID,
@@ -22,7 +31,9 @@ export async function sendLeadAlert(lead, {
   const phone = lead.type === 'advice' ? lead.phone.replace(/[\s()-]/g, '') : '';
   const reply_markup = /^\+?\d{7,15}$/.test(phone)
     ? { inline_keyboard: [[{ text: 'Call lead', url: `https://www.stablefuture.uk/call-lead.html#${encodeURIComponent(phone)}` }]] }
-    : undefined;
+    : lead.type === 'career-check' && lead.marketing
+      ? { inline_keyboard: [[{ text: 'Draft reply', url: `https://www.stablefuture.uk/email-lead.html#${encodeURIComponent(JSON.stringify(careerReplyDraft(lead)))}` }]] }
+      : undefined;
   try {
     const response = await fetchImpl(`https://api.telegram.org/bot${token.trim()}/sendMessage`, {
       method: 'POST',

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Draft reply | Stable Future</title>
+  <style>
+    body { margin: 0; background: #f5f3e7; color: #243c30; font: 18px/1.5 system-ui, sans-serif; }
+    main { max-width: 540px; margin: 8vh auto; padding: 24px; }
+    h1 { font: 40px/1.2 Georgia, serif; }
+    a { display: block; padding: 18px; background: #243c30; color: white; border-radius: 8px; text-align: center; text-decoration: none; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+    [hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>stable future ↗</p>
+    <h1>Draft reply</h1>
+    <p id="message">Open the Draft reply button in your Telegram alert.</p>
+    <a id="compose" hidden>Open email draft</a>
+    <pre id="preview"></pre>
+  </main>
+  <script>
+    // No analytics or external assets. The draft stays in the browser fragment.
+    let draft;
+    try { draft = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch {}
+    history.replaceState(null, '', location.pathname);
+    if (draft && typeof draft.to === 'string' && draft.to.length <= 254 &&
+        /^[^\s@?&#:]+@[^\s@?&#:]+\.[^\s@?&#:]+$/.test(draft.to) &&
+        typeof draft.subject === 'string' && draft.subject.length <= 200 && !/[\r\n]/.test(draft.subject) &&
+        typeof draft.body === 'string' && draft.body.length <= 4000) {
+      const compose = document.getElementById('compose');
+      compose.href = 'mailto:' + encodeURIComponent(draft.to) + '?subject=' + encodeURIComponent(draft.subject) + '&body=' + encodeURIComponent(draft.body);
+      compose.hidden = false;
+      document.getElementById('message').textContent = 'Review before sending. Check the From address is ben@stablefuture.uk. If your mail app does not open, tap below.';
+      document.getElementById('preview').textContent = 'To: ' + draft.to + '\nSubject: ' + draft.subject + '\n\n' + draft.body;
+      location.href = compose.href;
+    }
+  </script>
+</body>
+</html>
