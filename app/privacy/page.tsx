@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { SHARE_IMAGE } from '../config';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: 'Privacy notice | Stable Future', description: 'How Stable Future uses your personal data.', alternates: { canonical: '/privacy' } };
+export const metadata: Metadata = { title: 'Privacy notice | Stable Future', description: 'How Stable Future uses your personal data.', alternates: { canonical: '/privacy' }, openGraph: { title: 'Privacy notice | Stable Future', description: 'How Stable Future uses your personal data.', url: '/privacy', images: [SHARE_IMAGE] } };
 
 const S = { h2: { margin: '36px 0 10px', fontFamily: 'Georgia, serif', fontWeight: 400, fontSize: 26, letterSpacing: '-.01em' }, p: { margin: '0 0 12px', fontSize: 16, lineHeight: 1.7, color: '#3c4a3f' }, li: { margin: '0 0 8px', fontSize: 16, lineHeight: 1.6, color: '#3c4a3f' } } as const;
 

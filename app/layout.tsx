@@ -18,25 +18,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stablefuture.uk"),
-  title: "Stable Future | Career advice for families navigating AI",
-  description:
-    "Check any UK job, degree, or apprenticeship against real data on AI risk and pay. Career advice for students of all ages.",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Stable Future | Is That Career Future-Proof? UK Job Data",
-    description:
-      "Search any UK job, degree, or apprenticeship. See its AI risk and pay from real data, not opinion.",
-    url: "/",
-    siteName: "Stable Future",
-    locale: "en_GB",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Stable Future | Is That Career Future-Proof?",
-    description:
-      "Search any UK job, degree, or apprenticeship. Real data on AI risk and pay.",
-  },
+  title: "Stable Future | Is your child’s career ready for AI?",
+  description: "Career advice for families navigating AI, for students of any age.",
+  openGraph: { siteName: "Stable Future", locale: "en_GB", type: "website" },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

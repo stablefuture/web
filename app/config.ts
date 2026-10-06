@@ -15,3 +15,7 @@ export const BOOKING_URL = "https://cal.eu/ben-grime/strategy-call";
 export const SCARCITY_ENABLED = false;
 export const SCARCITY_TEXT =
   "We work with a limited number of families at a time, so every plan gets proper attention. If the calendar's open, you can book.";
+
+// Link-preview image (app/opengraph-image.jpg). Pages that set their own
+// openGraph must list it, because Next.js replaces the inherited openGraph.
+export const SHARE_IMAGE = { url: "/opengraph-image.jpg", width: 1200, height: 630, alt: "Stable Future: Is your child’s career path ready for AI? Career advice for families navigating AI." };
