@@ -136,12 +136,10 @@ export default function Dawn() {
       <section className={s.hero} data-sky="night" data-tone="dark" data-scene>
         <p className={s.eyebrow}><i />{HERO.eyebrow}</p>
         <h1>Is your child’s career path <em>ready for AI?</em></h1>
-        <p className={s.lede}>{HERO.lede}</p>
         <div className={s.actions}>
           <a className={s.bigCta} href={CHECK_URL}>{HERO.cta}<span aria-hidden="true">→</span></a>
           <a className={s.textLink} href="#advice">{HERO.secondary}</a>
         </div>
-        <p className={s.note}>{HERO.ctaNote}</p>
         <p className={s.audience}>{HERO.audience}</p>
         <a href="#ai" className={s.cue}><span>Scroll to sunrise</span><i /></a>
       </section>
@@ -213,7 +211,7 @@ export default function Dawn() {
     </main>
 
     <footer className={s.footer} data-sky="noon" data-tone="light">
-      <span>stable future ↗</span><span>AI career advice for families</span><a href="mailto:ben@stablefuture.uk">ben@stablefuture.uk</a><a href={CHECK_URL}>{HERO.cta}</a><a href="/privacy">Privacy</a>
+      <span>stable future ↗</span><span>{HERO.eyebrow}</span><a href="mailto:ben@stablefuture.uk">ben@stablefuture.uk</a><a href={CHECK_URL}>{HERO.cta}</a><a href="/privacy">Privacy</a>
     </footer>
   </div>;
 }

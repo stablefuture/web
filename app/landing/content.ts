@@ -13,12 +13,10 @@ export const CHECK_URL = '/ai-career-check';
 export const CALL_URL = '/call';
 
 export const HERO = {
-  eyebrow: 'AI career advice for families',
+  eyebrow: 'Career advice for families navigating AI',
   title: 'Is your child’s career path ready for AI?',
-  lede: 'AI now does much of the work that new starters used to learn on. We help families choose a path that will still pay well, and build the skills to get there.',
-  audience: 'For parents of students from Year 10 to university.',
+  audience: 'For parents of students of any age.',
   cta: 'Check their career path',
-  ctaNote: 'Free · 2 minutes · report by email',
   secondary: 'Get advice',
 };
 

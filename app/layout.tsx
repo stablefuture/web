@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stablefuture.uk"),
-  title: "Stable Future | AI career advice for families",
+  title: "Stable Future | Career advice for families navigating AI",
   description:
     "Check any UK job, degree, or apprenticeship against real data on AI risk and pay. Career advice for students of all ages.",
   alternates: { canonical: "/" },

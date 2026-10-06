@@ -32,7 +32,6 @@
 @keyframes pulse { 50% { box-shadow: 0 0 0 9px #ff8a3d00; } }
 .hero h1 { max-width: 15ch; margin: 0; font-size: clamp(46px, 8.4vw, 116px); line-height: .96; text-wrap: balance; animation: lift 1.2s cubic-bezier(.2, .8, .2, 1) both; }
 .hero h1 em { display: block; font-style: italic; color: #ffb27c; }
-.lede { max-width: 620px; margin: 28px auto 0; font-size: clamp(17px, 1.6vw, 20px); line-height: 1.6; color: var(--muted-dark); animation: lift 1.2s .15s cubic-bezier(.2, .8, .2, 1) both; }
 .actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 22px; margin-top: 36px; animation: lift 1.2s .3s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes lift { from { opacity: 0; transform: translateY(24px); } }
 .bigCta { position: relative; display: inline-flex; align-items: center; gap: 14px; min-height: 68px; padding: 0 34px; border-radius: 999px; background: var(--sun); color: var(--ink); font-size: 20px; font-weight: 800; letter-spacing: -.01em; overflow: hidden; box-shadow: 0 0 0 0 #ff8a3d80, 0 20px 40px -16px #ff8a3dcc; animation: ring 2.6s ease-out infinite; transition: transform .2s, background .2s; }
@@ -43,7 +42,6 @@
 @keyframes ring { 0% { box-shadow: 0 0 0 0 #ff8a3d70, 0 20px 40px -16px #ff8a3dcc; } 70%, 100% { box-shadow: 0 0 0 18px #ff8a3d00, 0 20px 40px -16px #ff8a3dcc; } }
 @keyframes sheen { 60%, 100% { left: 120%; } }
 .textLink { font-size: 17px; font-weight: 600; text-decoration: underline; text-underline-offset: 6px; text-decoration-color: #ff8a3d; }
-.note { margin: 16px 0 0; font-size: 14px; color: var(--muted-dark); }
 .audience { margin: 6px 0 0; font-size: 14px; color: var(--muted-dark); opacity: .8; }
 .cue { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-dark); }
 .cue i { width: 1px; height: 46px; background: linear-gradient(#fffaf0, transparent); animation: drip 2s ease-in-out infinite; transform-origin: top; }
