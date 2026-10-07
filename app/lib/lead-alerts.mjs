@@ -10,8 +10,8 @@ export function careerReplyDraft(lead) {
   const paths = (lead.paths || []).join(', ');
   return {
     to: lead.email,
-    subject: 'Quick question about your AI career check',
-    body: `Hi! It's Ben here.\n\nI hope you found our career checker useful. You looked at ${paths}.\n\nWhat’s the main career decision you or your family are trying to make at the moment?\n\nIf you’d rather not hear from me, just reply and say so.\n\nCheers,\nBen`,
+    subject: 'Quick question about your Future-Proof Career Check',
+    body: `Hi! It's Ben here.\n\nI hope you found the Future-Proof Career Check useful. You looked at ${paths}.\n\nWhat’s the main career decision you or your family are trying to make at the moment?\n\nIf you’d rather not hear from me, just reply and say so.\n\nCheers,\nBen`,
   };
 }
 

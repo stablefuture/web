@@ -1,6 +1,6 @@
-# AI career check (local feature)
+# Future-Proof Career Check
 
-`/ai-career-check` lets a visitor choose one to three degrees, apprenticeships, or detailed jobs. It sends one report containing the selected paths. Real submissions join Kit’s magnet form (9682557) only when the visitor ticks the follow-up box (`marketing: true`), after Resend accepts the report. Without it, the email says we won’t email again. KIT_CAREER_FORM_ID can override this. A failed Kit signup returns a visible warning without asking the user to resend their report.
+`/career-check` (formerly `/ai-career-check`, which now redirects) lets a visitor choose one to three degrees, apprenticeships, or detailed jobs. It sends one report containing the selected paths. Real submissions join Kit’s magnet form (9682557) unless the visitor ticks the opt-out box (soft opt-in; the form sends `marketing: !optOut`), after Resend accepts the report. If they opt out, the email says we won’t email again. KIT_CAREER_FORM_ID can override this. A failed Kit signup returns a visible warning without asking the user to resend their report.
 
 The client loads only `/lead-magnet/search.json`. `/api/career-results` looks up every ID in `data/lead-magnet/reports.json` on the server. Client-supplied scores, titles, and report contents have no effect.
 
@@ -19,7 +19,7 @@ The report closes with brief Plan A/B/Z guidance, one practical next step, and a
 From `web/`:
 
 - `node --test app/api/career-results/career-results.test.mjs`
-- `npx eslint app/ai-career-check app/api/career-results app/lib/career-email.mjs`
+- `npx eslint app/career-check app/api/career-results app/lib/career-email.mjs`
 - `npm run build`
 
 Tests mock Resend. Do not test with real recipients unless Ben explicitly asks.
@@ -31,4 +31,4 @@ POST checks same-origin requests, input size, email, a honeypot, and 1–3 valid
 The outer email layout uses inline presentation tables with a 660px Outlook fallback and a fluid mobile width. Resend accepted a real send to a Gmail address on 4 Oct 2026; inbox placement is unconfirmed.
 
 ## Test together
-In development (`npm run dev`), open `/ai-career-check/testing`, select up to three paths, then choose **View results**. It opens the exact email renderer in another tab, without an address, POST, email, or Kit signup. Keep the selector open to change choices.
+In development (`npm run dev`), open `/career-check/testing`, select up to three paths, then choose **View results**. It opens the exact email renderer in another tab, without an address, POST, email, or Kit signup. Keep the selector open to change choices.

@@ -9,7 +9,7 @@ const SOURCES = [
 
 const PAGES = [
   ["Home", "/"],
-  ["Check a career path", "/ai-career-check"],
+  ["Check a career path", "/career-check"],
   ["Get advice", "/#advice"],
 ];
 

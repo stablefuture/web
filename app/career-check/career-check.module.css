@@ -50,13 +50,13 @@
 .dots i[data-on] { background: var(--sun); border-color: var(--sun); transform: scale(1.15); }
 
 .search { position: relative; display: flex; align-items: center; }
-.search > svg { position: absolute; left: 20px; width: 22px; height: 22px; color: var(--muted); pointer-events: none; }
-.search input { width: 100%; min-height: 64px; padding: 0 52px 0 56px; border: 2px solid #e2dfcc; border-radius: 18px; background: #fff; font-size: 18px; color: var(--ink); transition: border-color .2s, box-shadow .2s; }
+.search > svg { position: absolute; left: 16px; width: 19px; height: 19px; color: var(--muted); pointer-events: none; }
+.search input { width: 100%; min-height: 52px; padding: 0 48px 0 46px; border: 2px solid #e2dfcc; border-radius: 16px; background: #fff; font-size: 16px; color: var(--ink); transition: border-color .2s, box-shadow .2s; }
 .search input::placeholder { color: #8a907f; }
 .search input:focus { outline: none; border-color: var(--sun); box-shadow: 0 0 0 5px #ff8a3d2e; }
 .search input:disabled { background: #f6f5ee; }
 .search input::-webkit-search-cancel-button { display: none; }
-.clear { position: absolute; right: 12px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: #f0eee3; font-size: 20px; color: var(--muted); cursor: pointer; }
+.clear { position: absolute; right: 10px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: #f0eee3; font-size: 20px; color: var(--muted); cursor: pointer; }
 
 .kinds { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
 .kinds button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px solid #e2dfcc; border-radius: 999px; background: #fff; font-size: 14px; color: var(--muted); cursor: pointer; transition: background .2s, color .2s, border-color .2s, transform .15s; }
@@ -64,7 +64,8 @@
 .kinds button:hover { border-color: var(--ink); color: var(--ink); }
 .kinds button:active { transform: scale(.96); }
 .kinds button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: #fffaf0; }
-.kinds select { min-height: 40px; max-width: 100%; padding: 0 12px; border: 1px solid #e2dfcc; border-radius: 999px; background: #fff; font-size: 14px; color: var(--ink); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 18px; }
+.filters select { min-height: 40px; max-width: 100%; padding: 0 12px; border: 1px solid #e2dfcc; border-radius: 999px; background: #fff; font-size: 14px; color: var(--ink); }
 
 .results { min-height: 220px; }
 .results:empty { min-height: 0; }
@@ -109,7 +110,6 @@
 @keyframes pop { from { transform: scale(.85); opacity: 0; } }
 .locked { display: inline-flex; align-items: center; gap: 3px; margin-top: 3px; color: #8a907f; }
 .locked i { width: 22px; height: 7px; border-radius: 4px; filter: saturate(2.2) brightness(.96); }
-.locked svg { width: 13px; height: 13px; margin-left: 4px; }
 
 .form { display: flex; flex-direction: column; gap: 10px; }
 .form > label { font-size: 15px; font-weight: 650; }
@@ -164,7 +164,7 @@
 .byline strong { color: var(--ink); }
 
 @media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; }
+  .app { grid-template-columns: minmax(0, 1fr); }
   .report { position: static; }
   .tiles { grid-template-columns: 1fr 1fr; }
 }
@@ -175,14 +175,14 @@
   .hero { padding: 76px 0 24px; }
   .lede { font-size: 16px; }
   .finder, .reportCard { padding: 18px; border-radius: 24px; }
-  .search input { min-height: 58px; font-size: 17px; }
+  .search input { min-height: 50px; font-size: 16px; }
   .results { min-height: 0; }
   .via { display: none; }
   .kinds { gap: 6px; flex-wrap: nowrap; overflow-x: auto; margin-inline: -18px; padding-inline: 18px; scrollbar-width: none; }
   .kinds::-webkit-scrollbar { display: none; }
   .kinds button { padding: 0 13px; flex-shrink: 0; }
   .kinds button svg { display: none; }
-  .kinds select { flex-shrink: 0; max-width: 220px; }
+  .filters select { flex: 1 1 0; min-width: 0; }
   .tiles { grid-template-columns: 1fr; }
   .scale span { font-size: 11px; padding: 10px 2px; }
   .mobileBar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 20; display: flex; align-items: center; justify-content: space-between; min-height: 60px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--ink); color: #fffaf0; font-size: 15px; box-shadow: 0 16px 40px -10px #1d302680; animation: pop .4s cubic-bezier(.3, 1.6, .5, 1); }

@@ -7,7 +7,7 @@ import { BANDS } from '../lib/exposure-bands.mjs';
 import { searchMatches } from '../lib/pathSearch';
 import styles from './career-check.module.css';
 
-type Path = { id: string; kind: string; title: string; aka?: string[]; sectors?: (string | { id: string; label: string })[] };
+type Path = { id: string; kind: string; title: string; aka?: string[]; level?: number | string; sectors?: (string | { id: string; label: string })[] };
 type JobGroup = { id: string; title: string; members: { id: string; title: string }[] };
 type Catalogue = { paths: Path[]; jobGroups: JobGroup[] };
 
@@ -19,6 +19,9 @@ const KINDS = [
 ];
 const KIND_ORDER: Record<string, number> = { degree: 0, apprenticeship: 1, job: 2 };
 const kindLabel = (kind: string) => kind === 'degree' ? 'Degree' : kind === 'apprenticeship' ? 'Apprenticeship' : 'Job';
+const pathLabel = (p: Path) => p.level ? `${kindLabel(p.kind)} · Level ${p.level}` : kindLabel(p.kind);
+// Apprenticeship levels and the qualification each is equivalent to.
+const LEVELS: Record<string, string> = { 2: 'GCSE', 3: 'A level', 4: 'HNC', 5: 'foundation degree', 6: 'bachelor’s degree', 7: 'master’s degree' };
 // One tap adds these. Chosen because parents ask about them most often.
 const HINTS = ['Psychology', 'Electrician', 'Law', 'Software developer', 'Medicine', 'Marketing'];
 const MAX = 3;
@@ -52,7 +55,6 @@ function Horizon({ count }: { count: number }) {
 function LockedMeter() {
   return <span className={styles.locked} aria-label="Score shown in your report">
     {BANDS.map((b) => <i key={b.key} style={{ background: b.tint }} />)}
-    <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5" fill="currentColor" /><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
   </span>;
 }
 
@@ -62,6 +64,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
   const [reload, setReload] = useState(0);
   const [kind, setKind] = useState('');
   const [sector, setSector] = useState('');
+  const [level, setLevel] = useState('');
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [selected, setSelected] = useState<Path[]>([]);
@@ -98,13 +101,14 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
     catalogue.paths.filter((p) => p.kind === kind).forEach((p) => p.sectors?.forEach((s) => found.set(typeof s === 'string' ? s : s.id, typeof s === 'string' ? s : s.label)));
     return [...found].map(([id, label]) => ({ id, label })).sort((a, b) => a.label.localeCompare(b.label));
   }, [catalogue, kind]);
+  const levels = useMemo(() => [...new Set((catalogue?.paths ?? []).filter((p) => p.kind === 'apprenticeship' && p.level).map((p) => String(p.level)))].sort(), [catalogue]);
   const pool = useMemo(() => {
     const group = kind === 'job' && sector ? catalogue?.jobGroups.find((g) => g.id === sector) : null;
     const ids = group ? new Set(group.members.map((m) => m.id)) : null;
     return (catalogue?.paths ?? [])
-      .filter((p) => (!kind || p.kind === kind) && (!sector || (kind === 'job' ? ids?.has(p.id) : p.sectors?.some((s) => (typeof s === 'string' ? s : s.id) === sector))))
+      .filter((p) => (!kind || p.kind === kind) && (!level || String(p.level) === level) && (!sector || (kind === 'job' ? ids?.has(p.id) : p.sectors?.some((s) => (typeof s === 'string' ? s : s.id) === sector))))
       .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || a.title.localeCompare(b.title));
-  }, [catalogue, kind, sector]);
+  }, [catalogue, kind, sector, level]);
   // Nothing is listed until the visitor types or picks a path type.
   const browsing = !query.trim() && !sector && !kind;
   const results = useMemo(() => browsing ? [] : searchMatches(pool, query, (p) => p.title, (p) => p.aka ?? []).slice(0, 60), [pool, query, browsing]);
@@ -144,9 +148,9 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
 
   const item = (path: Path, extra = '') => {
     const added = selected.some((p) => p.id === path.id);
-    return <button type="button" key={path.id} className={`${styles.option} ${extra}`} data-kind={path.kind} data-added={added || undefined} disabled={added || full || locked} onClick={() => choose(path)} aria-label={`${added ? 'Added' : 'Add'} ${path.title}, ${kindLabel(path.kind)}`}>
+    return <button type="button" key={path.id} className={`${styles.option} ${extra}`} data-kind={path.kind} data-added={added || undefined} disabled={added || full || locked} onClick={() => choose(path)} aria-label={`${added ? 'Added' : 'Add'} ${path.title}, ${pathLabel(path)}`}>
       <span className={styles.optionIcon}><PathIcon kind={path.kind} /></span>
-      <span className={styles.optionText}><strong>{path.title}</strong><small>{kindLabel(path.kind)}</small></span>
+      <span className={styles.optionText}><strong>{path.title}</strong><small>{pathLabel(path)}</small></span>
       <span className={styles.plus} aria-hidden="true">{added ? '✓' : '+'}</span>
     </button>;
   };
@@ -159,8 +163,8 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
     </header>
 
     <section className={styles.hero}>
-      <p className={styles.eyebrow}>The free AI career check for parents</p>
-      <h1>How exposed is your son or daughter’s <em>career path</em> to AI?</h1>
+      <p className={styles.eyebrow}>Future-Proof Career Check</p>
+      <h1>How exposed is your <em>career path</em> to AI?</h1>
       <p className={styles.lede}>Pick up to three degrees, apprenticeships, or jobs. We’ll email you a clear report: how much of the work AI can do, and what to do about it.</p>
     </section>
 
@@ -180,12 +184,18 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
         </label>
 
         <div className={styles.kinds} role="group" aria-label="Path type">
-          {KINDS.map((k) => <button type="button" key={k.kind || 'all'} aria-pressed={kind === k.kind} onClick={() => { setKind(k.kind); setSector(''); setActive(0); }}>{k.kind && <PathIcon kind={k.kind} />}{k.title}</button>)}
-          {kind && areas.length > 0 && <select aria-label={kind === 'degree' ? 'Subject group' : kind === 'apprenticeship' ? 'Apprenticeship route' : 'Career group'} value={sector} onChange={(e) => { setSector(e.target.value); setActive(0); }}>
-            <option value="">{kind === 'degree' ? 'All subjects' : kind === 'apprenticeship' ? 'All routes' : 'All career groups'}</option>
+          {KINDS.map((k) => <button type="button" key={k.kind || 'all'} aria-pressed={kind === k.kind} onClick={() => { setKind(k.kind); setSector(''); setLevel(''); setActive(0); }}>{k.kind && <PathIcon kind={k.kind} />}{k.title}</button>)}
+        </div>
+        {kind && (areas.length > 0 || (kind === 'apprenticeship' && levels.length > 0)) && <div className={styles.filters}>
+          {areas.length > 0 && <select aria-label={kind === 'degree' ? 'Subject group' : kind === 'apprenticeship' ? 'Apprenticeship route' : 'Sector'} value={sector} onChange={(e) => { setSector(e.target.value); setActive(0); }}>
+            <option value="">{kind === 'degree' ? 'All subjects' : kind === 'apprenticeship' ? 'All routes' : 'All sectors'}</option>
             {areas.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
           </select>}
-        </div>
+          {kind === 'apprenticeship' && levels.length > 0 && <select aria-label="Apprenticeship level" value={level} onChange={(e) => { setLevel(e.target.value); setActive(0); }}>
+            <option value="">All levels</option>
+            {levels.map((l) => <option key={l} value={l}>Level {l}{LEVELS[l] ? ` (${LEVELS[l]})` : ''}</option>)}
+          </select>}
+        </div>}
 
         <div id="cc-results" className={styles.results} aria-live="polite">
           {loadError ? <div className={styles.empty}>We couldn’t load the paths. <button type="button" onClick={() => { setLoadError(false); setReload(reload + 1); }}>Try again</button></div>
@@ -220,7 +230,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
             {selected.length > 0 && <ol className={styles.slots}>
               {selected.map((p) => <li key={p.id} className={styles.slot} data-kind={p.kind}>
                 <span className={styles.optionIcon}><PathIcon kind={p.kind} /></span>
-                <span className={styles.slotText}><small>{kindLabel(p.kind)}</small><strong>{p.title}</strong><LockedMeter /></span>
+                <span className={styles.slotText}><small>{pathLabel(p)}</small><strong>{p.title}</strong><LockedMeter /></span>
                 <button type="button" onClick={() => remove(p.id)} disabled={locked} aria-label={`Remove ${p.title}`}>×</button>
               </li>)}
             </ol>}

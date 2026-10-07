@@ -149,9 +149,9 @@ function renderPath(report, index, text) {
 
 export function renderCareerEmail(reports, { bookingUrl = '' } = {}) {
   const titles = reports.map((r) => r.title);
-  const subject = `Your AI career check: ${listTitles(titles)}`.replace(/[\r\n]/g, ' ').slice(0, 150);
+  const subject = `Your Future-Proof Career Check: ${listTitles(titles)}`.replace(/[\r\n]/g, ' ').slice(0, 150);
   const preheader = 'How exposed your chosen paths are to AI, the tasks behind them, and what to do next.';
-  const text = ['YOUR AI CAREER CHECK', ...reports.map((r) => `- ${r.title} (${kindLabel(r.kind)})`), '', 'THE SHORT VERSION',
+  const text = ['YOUR FUTURE-PROOF CAREER CHECK', ...reports.map((r) => `- ${r.title} (${kindLabel(r.kind)})`), '', 'THE SHORT VERSION',
     '1. Jobs are made of tasks.',
     '2. AI exposure measures how much of a job’s tasks AI can do relative to other jobs. We rank every UK job from 0 to 100: a score of 90 means more exposed than 90% of jobs.',
     `3. Studies link higher AI exposure to fewer entry-level jobs. (Stanford Digital Economy Lab: ${SOURCES.stanford})`,
@@ -203,7 +203,7 @@ ${p(`Then, we give you a roadmap to build the skills employers pay more for. Emp
 <!--[if mso]><table role="presentation" width="600" align="center" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px">
 <tr><td style="padding:0 4px 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="font-family:${SANS};font-size:19px;font-weight:700;letter-spacing:-0.5px;color:${INK}">stable future &#8599;</td><td align="right"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="30" height="30" bgcolor="${SUN}" style="width:30px;height:30px;background:${SUN};border-radius:15px;font-size:1px;line-height:1px">&nbsp;</td></tr></table></td></tr></table></td></tr>
-<tr><td style="padding:0 4px 20px"><h1 style="margin:0 0 10px;font-family:${SERIF};font-size:38px;line-height:1.1;font-weight:400;color:${INK}">Your AI career check</h1><table role="presentation" cellspacing="0" cellpadding="0" border="0">${reports.map((r) => `<tr><td width="18" style="width:18px;vertical-align:top;padding:3px 0;font-family:${SANS};font-size:16px;line-height:1.5;color:${SUN}">&#9679;</td><td style="padding:3px 0;font-family:${SANS};font-size:16px;line-height:1.5;color:${INK}">${escape(r.title)} <span style="color:${MUTED};font-size:13px">· ${kindLabel(r.kind)}</span></td></tr>`).join('')}</table></td></tr>
+<tr><td style="padding:0 4px 20px"><h1 style="margin:0 0 10px;font-family:${SERIF};font-size:38px;line-height:1.1;font-weight:400;color:${INK}">Your Future-Proof Career Check</h1><table role="presentation" cellspacing="0" cellpadding="0" border="0">${reports.map((r) => `<tr><td width="18" style="width:18px;vertical-align:top;padding:3px 0;font-family:${SANS};font-size:16px;line-height:1.5;color:${SUN}">&#9679;</td><td style="padding:3px 0;font-family:${SANS};font-size:16px;line-height:1.5;color:${INK}">${escape(r.title)} <span style="color:${MUTED};font-size:13px">· ${kindLabel(r.kind)}</span></td></tr>`).join('')}</table></td></tr>
 <tr><td style="padding:0 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${SAGE}" style="width:100%;background:${SAGE};border-radius:18px"><tr><td style="padding:22px 22px 12px">
 <p style="margin:0 0 14px;font-family:${SANS};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:${MUTED}">The short version</p>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%">

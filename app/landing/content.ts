@@ -9,7 +9,7 @@ export const SOURCES = {
   pwc: { label: 'PwC Global AI Jobs Barometer, June 2026', href: 'https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-jobs-barometer.html' },
 };
 
-export const CHECK_URL = '/ai-career-check';
+export const CHECK_URL = '/career-check';
 export const CALL_URL = '/call';
 
 export const HERO = {
@@ -54,9 +54,9 @@ export const JOBS = {
 
 export const FAMILIES = {
   eyebrow: 'What families should do',
-  title: 'We spend 80,000 hours in our careers. Help your family choose well.',
-  titleParts: ['We spend ', '80,000 hours', ' in our careers. Help your family choose well.'],
-  intro: 'Choosing a career was already one of life’s biggest decisions. AI makes it bigger. Four moves make the difference.',
+  title: 'We each spend 80,000 hours in our careers. We help students choose well.',
+  titleParts: ['We each spend ', '80,000 hours', ' in our careers. We help students choose well.'],
+  intro: 'Choosing a career was already one of life’s biggest decisions. AI makes it bigger.',
   moves: [
     { n: '01', title: 'Avoid dead ends', text: 'Don’t start in a career where AI already does most of the junior work, unless they’re truly exceptional at it. Take accountancy: on month-end accounting tasks, AI now beats junior accountants, getting every attempt right in under 10 minutes.', source: 'mercor' as const },
     { n: '02', title: 'Pick a direction', text: 'Match their interests, strengths, and preferences to careers with growing demand. Then find the best way in: university, an apprenticeship, or straight into work.' },

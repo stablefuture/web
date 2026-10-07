@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV = [
-  ["Check a career path", "/ai-career-check"],
+  ["Check a career path", "/career-check"],
 ];
 
 export function Header() {

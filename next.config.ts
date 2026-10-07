@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
         destination: "https://cal.com/ben-grime/strategy-call",
         permanent: false,
       },
+      // The career check moved here on 7 Oct 2026; keep old links and search results working.
+      {
+        source: "/ai-career-check",
+        destination: "/career-check",
+        permanent: true,
+      },
       {
         source: "/assessment",
         destination: "/pathfinder",
