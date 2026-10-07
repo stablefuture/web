@@ -15,8 +15,7 @@ export const CALL_URL = '/call';
 export const HERO = {
   eyebrow: 'Career advice for families navigating AI',
   title: 'How does AI impact your career path?',
-  audience: 'For parents of students of any age.',
-  cta: 'Check their career path',
+  cta: 'Check your career path',
   secondary: 'Get advice',
 };
 

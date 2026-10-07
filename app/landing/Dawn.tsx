@@ -141,7 +141,6 @@ export default function Dawn() {
           <a className={s.bigCta} href={CHECK_URL}>{HERO.cta}<span aria-hidden="true">→</span></a>
           <a className={s.textLink} href="#advice">{HERO.secondary}</a>
         </div>
-        <p className={s.audience}>{HERO.audience}</p>
         <a href="#ai" className={s.cue}><span>Scroll to sunrise</span><i /></a>
       </section>
 
