@@ -76,7 +76,7 @@ export const WHO = {
   greeting: 'Hi, I’m Ben.',
   bio: [
     'I used to build AI for businesses. As an AI Consultant, I’ve helped career coaches, environmental consultants, civil engineers, the NHS, and the University of Oxford. I saw how quickly AI was taking on work people had trained for years to do.',
-    'So I left to help young people get ahead of it. I’ve tutored and mentored students since 2021. Now I spend my days tracking how AI is changing UK jobs, and turning that into advice families can act on.',
+    'So I left to help young people get ahead of it. I’ve tutored and mentored students since 2021. Now I spend my days tracking how AI is changing UK jobs, and turning that into career strategies that students can act on.',
   ],
   credentials: ['MSc Data Science, Lancaster', 'BA Maths and Philosophy, Lancaster', 'Machine learning researcher, University of Oxford', 'Statistician, NHS', 'AI Consultant, Waterman Group', 'Data Scientist, career coaching startup', 'Student Tutor and mentor'],
   data: [

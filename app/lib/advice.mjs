@@ -10,7 +10,7 @@ export function parseAdvice(body) {
   const situation = clean(body.situation, 3000);
   if (!name || name.length > 100) throw new Error('Please add your name.');
   if (email.length > 254 || !EMAIL.test(email)) throw new Error('Enter a valid email address.');
-  if (situation.length < 10) throw new Error('Tell us a little about your child’s situation.');
+  if (situation.length < 10) throw new Error('Tell us a little about your son or daughter.');
   if (situation.length > 3000) throw new Error('Please keep it under 3,000 characters.');
   return { name, email, situation };
 }
