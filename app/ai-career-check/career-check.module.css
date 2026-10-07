@@ -67,9 +67,8 @@
 .kinds select { min-height: 40px; max-width: 100%; padding: 0 12px; border: 1px solid #e2dfcc; border-radius: 999px; background: #fff; font-size: 14px; color: var(--ink); }
 
 .results { min-height: 220px; }
+.results:empty { min-height: 0; }
 .listLabel { margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.listHint { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
-.popular { display: flex; flex-wrap: wrap; gap: 8px; }
 .list { display: flex; flex-direction: column; gap: 6px; max-height: 420px; overflow-y: auto; padding: 2px; margin: -2px; overscroll-behavior: contain; }
 .list > div { position: relative; }
 .via { position: absolute; right: 56px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--muted); pointer-events: none; }
@@ -89,12 +88,6 @@
 .plus { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 1px solid #e2dfcc; font-size: 18px; color: var(--ink); flex-shrink: 0; transition: background .2s, color .2s, transform .3s; }
 .option:hover:not(:disabled) .plus { background: var(--sun); border-color: var(--sun); color: var(--ink); transform: rotate(90deg); }
 .option[data-added] .plus { background: var(--c); border-color: var(--c); color: #fff; }
-.chip { width: auto; min-height: 48px; padding: 5px 12px 5px 5px; border-radius: 999px; gap: 8px; background: #fff; border-color: #ebe8d8; }
-.chip .optionIcon { width: 36px; height: 36px; border-radius: 50%; }
-.chip .optionIcon svg { width: 18px; height: 18px; }
-.chip .optionText strong { font-size: 14px; }
-.chip .optionText small { display: none; }
-.chip .plus { width: 24px; height: 24px; font-size: 15px; border: 0; background: #f2f0e5; }
 .empty { padding: 18px 0; color: var(--muted); font-size: 15px; }
 .empty button { margin-left: 6px; border: 0; background: none; color: var(--ink); text-decoration: underline; cursor: pointer; }
 .skeleton { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -113,8 +106,6 @@
 .slotText strong { font-size: 15px; line-height: 1.3; }
 .slot > button { width: 32px; height: 32px; border-radius: 50%; border: 0; background: #ffffffb0; font-size: 18px; color: var(--ink); cursor: pointer; flex-shrink: 0; }
 .slot > button:hover { background: #fff; }
-.slotEmpty { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px; border: 2px dashed #e2dfcc; border-radius: 18px; font-size: 14px; color: #8a907f; }
-.slotEmpty span { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: #f4f2e8; font-weight: 700; }
 @keyframes pop { from { transform: scale(.85); opacity: 0; } }
 .locked { display: inline-flex; align-items: center; gap: 3px; margin-top: 3px; color: #8a907f; }
 .locked i { width: 22px; height: 7px; border-radius: 4px; filter: saturate(2.2) brightness(.96); }
@@ -192,10 +183,6 @@
   .kinds button { padding: 0 13px; flex-shrink: 0; }
   .kinds button svg { display: none; }
   .kinds select { flex-shrink: 0; max-width: 220px; }
-  .popular { gap: 6px; }
-  .chip { min-height: 42px; padding: 0 6px 0 14px; }
-  .chip .optionIcon { display: none; }
-  .chip .optionText strong { font-size: 14px; }
   .tiles { grid-template-columns: 1fr; }
   .scale span { font-size: 11px; padding: 10px 2px; }
   .mobileBar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 20; display: flex; align-items: center; justify-content: space-between; min-height: 60px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--ink); color: #fffaf0; font-size: 15px; box-shadow: 0 16px 40px -10px #1d302680; animation: pop .4s cubic-bezier(.3, 1.6, .5, 1); }

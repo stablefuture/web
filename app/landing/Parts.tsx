@@ -62,7 +62,7 @@ export function AbzPaths({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
       <path d="M40 150 C 200 150, 260 250, 430 250" pathLength={1} />
       <circle cx="40" cy="150" r="16" className={s.origin} />
     </svg>
-    <span className={s.you}>Your child</span>
+    <span className={s.you}>Student</span>
     <ol>
       {FAMILIES.plans.map((p) => <li key={p.key} data-plan={p.key}><b>{p.key}</b><div><strong>{p.title}</strong><span>{p.text}</span></div></li>)}
     </ol>
@@ -95,7 +95,7 @@ export function AdviceForm({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
   if (status === 'sent') return <div className={s.booking} data-booking-step="calendar" data-tone={tone}>
     <h3 ref={bookingHeading} tabIndex={-1}>Choose your call time</h3>
     <p>Future-Proof Career Strategy · 45 minutes · Google Meet</p>
-    <p>A video call to discuss your child&apos;s career options and next steps. We recommend both the child and parents attend.</p>
+    <p>A video call to discuss their career options and next steps. We recommend both the student and parent(s) attend.</p>
     <Cal calLink="ben-grime/strategy-call" namespace="family-strategy" config={{ name: values.name.trim(), email: values.email.trim(), notes: values.situation.trim(), layout: 'month_view', theme: 'light' }} style={{ width: '100%', minHeight: 650 }} />
     <p className={s.fine}>Can’t find a suitable time? <a href="mailto:ben@stablefuture.uk">Email Ben</a>. Calendar not loading? <a href={CALL_URL} target="_blank" rel="noopener noreferrer">Open the booking page</a>.</p>
   </div>;
@@ -103,7 +103,7 @@ export function AdviceForm({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
   return <form className={s.form} data-tone={tone} onSubmit={submit}>
     <label><span>Your name</span><input value={values.name} onChange={set('name')} autoComplete="name" required maxLength={100} disabled={busy} /></label>
     <label><span>Email</span><input value={values.email} onChange={set('email')} type="email" inputMode="email" autoComplete="email" required maxLength={254} disabled={busy} /></label>
-    <label><span>Your child’s situation</span><textarea value={values.situation} onChange={set('situation')} placeholder={ADVICE.placeholder} rows={4} required minLength={10} maxLength={3000} disabled={busy} /></label>
+    <label><span>About your son or daughter</span><textarea value={values.situation} onChange={set('situation')} placeholder={ADVICE.placeholder} rows={4} required minLength={10} maxLength={3000} disabled={busy} /></label>
     <div className={s.honeypot} aria-hidden="true"><label>Website<input value={values.website} onChange={set('website')} tabIndex={-1} autoComplete="off" /></label></div>
     <button type="submit" disabled={busy}>{busy ? 'Sending…' : ADVICE.button}<span aria-hidden="true">→</span></button>
     {error && <p className={s.error} role="alert">{error}</p>}

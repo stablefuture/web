@@ -103,7 +103,8 @@ export default function Dawn() {
       e.preventDefault();
       const nav = el.querySelector('header')?.getBoundingClientRect().height ?? 0;
       const from = window.scrollY;
-      const to = target.getBoundingClientRect().top + from - nav;
+      // A section can ask to land a little lower, past its own top padding.
+      const to = target.getBoundingClientRect().top + from - nav + Number(target.dataset.scrollOffset || 0);
       if (reducedMotion()) { window.scrollTo(0, to); return; }
       const start = performance.now();
       const step = (now: number) => {
@@ -135,7 +136,7 @@ export default function Dawn() {
     <main data-landing>
       <section className={s.hero} data-sky="night" data-tone="dark" data-scene>
         <p className={s.eyebrow}><i />{HERO.eyebrow}</p>
-        <h1>Is your child’s career path <em>ready for AI?</em></h1>
+        <h1>How does AI impact <em>your career path?</em></h1>
         <div className={s.actions}>
           <a className={s.bigCta} href={CHECK_URL}>{HERO.cta}<span aria-hidden="true">→</span></a>
           <a className={s.textLink} href="#advice">{HERO.secondary}</a>
@@ -176,7 +177,7 @@ export default function Dawn() {
         <div className={s.glass} data-reveal><AbzPaths /></div>
       </section>
 
-      <section id="who" className={s.section} data-sky="morning" data-tone="light">
+      <section id="who" className={s.section} data-sky="morning" data-tone="light" data-scroll-offset="64">
         <div className={s.who}>
           <figure className={s.portrait} data-reveal>
             {/* eslint-disable-next-line @next/next/no-img-element */}

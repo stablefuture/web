@@ -5,11 +5,11 @@ import Dawn from './landing/Dawn';
 const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-display', axes: ['SOFT', 'opsz'], style: ['normal', 'italic'], display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Is your child’s career ready for AI? | Stable Future',
+  title: 'How does AI impact your career path? | Stable Future',
   description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.',
   alternates: { canonical: '/' },
-  openGraph: { title: 'Is your child’s career ready for AI? | Stable Future', description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.', url: '/' },
-  twitter: { card: 'summary_large_image', title: 'Is your child’s career ready for AI? | Stable Future', description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.' },
+  openGraph: { title: 'How does AI impact your career path? | Stable Future', description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.', url: '/' },
+  twitter: { card: 'summary_large_image', title: 'How does AI impact your career path? | Stable Future', description: 'Understand how AI affects your career and build a strategy to develop the skills employers pay most for.' },
 };
 
 // Tells search engines the site's name, logo, what it does, and who runs it.

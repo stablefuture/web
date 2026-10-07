@@ -14,7 +14,7 @@ export const CALL_URL = '/call';
 
 export const HERO = {
   eyebrow: 'Career advice for families navigating AI',
-  title: 'Is your child’s career path ready for AI?',
+  title: 'How does AI impact your career path?',
   audience: 'For parents of students of any age.',
   cta: 'Check their career path',
   secondary: 'Get advice',
@@ -50,16 +50,16 @@ export const JOBS = {
     { label: 'Now', text: 'AI does many of those tasks, so firms hire fewer juniors.' },
     { label: 'Next', text: 'New starters must work like seniors: set goals, check AI’s work, use judgement. The bar rises.' },
   ],
-  checkPrompt: 'How exposed is your child’s path?',
+  checkPrompt: 'How does AI impact your career path?',
 };
 
 export const FAMILIES = {
   eyebrow: 'What families should do',
-  title: 'Your child will spend 80,000 hours in their career. Help them choose well.',
-  titleParts: ['Your child will spend ', '80,000 hours', ' in their career. Help them choose well.'],
+  title: 'We spend 80,000 hours in our careers. Help your family choose well.',
+  titleParts: ['We spend ', '80,000 hours', ' in our careers. Help your family choose well.'],
   intro: 'Choosing a career was already one of life’s biggest decisions. AI makes it bigger. Four moves make the difference.',
   moves: [
-    { n: '01', title: 'Avoid dead ends', text: 'Don’t start in a career where AI already does most of the junior work, unless your child is truly exceptional at it. Take accountancy: on month-end accounting tasks, AI now beats junior accountants, getting every attempt right in under 10 minutes.', source: 'mercor' as const },
+    { n: '01', title: 'Avoid dead ends', text: 'Don’t start in a career where AI already does most of the junior work, unless they’re truly exceptional at it. Take accountancy: on month-end accounting tasks, AI now beats junior accountants, getting every attempt right in under 10 minutes.', source: 'mercor' as const },
     { n: '02', title: 'Pick a direction', text: 'Match their interests, strengths, and preferences to careers with growing demand. Then find the best way in: university, an apprenticeship, or straight into work.' },
     { n: '03', title: 'Learn to work with AI', text: 'In every career, AI will take some tasks and leave others. People who do the human parts well, and use AI for the rest, earn more.', stat: { value: '62%', label: 'higher pay, on average, for jobs that need AI skills', source: 'pwc' as const } },
     { n: '04', title: 'Make a Plan A, B and Z', text: 'Plan A is the career they want most. Plan B is a good alternative that’s less exposed to AI. Plan Z is a lifeboat: work that’s barely exposed at all. So they’re secure even in a very disruptive job market.' },
@@ -77,29 +77,29 @@ export const WHO = {
   greeting: 'Hi, I’m Ben.',
   bio: [
     'I used to build AI for businesses. As an AI Consultant, I’ve helped career coaches, environmental consultants, civil engineers, the NHS, and the University of Oxford. I saw how quickly AI was taking on work people had trained for years to do.',
-    'So I left to help young people get ahead of it. I’ve tutored and mentored students of all ages since 2021. Now I spend my days tracking how AI is changing UK jobs, and turning that into advice families can act on.',
+    'So I left to help young people get ahead of it. I’ve tutored and mentored students since 2021. Now I spend my days tracking how AI is changing UK jobs, and turning that into advice families can act on.',
   ],
   credentials: ['MSc Data Science, Lancaster', 'BA Maths and Philosophy, Lancaster', 'Machine learning researcher, University of Oxford', 'Statistician, NHS', 'AI Consultant, Waterman Group', 'Data Scientist, career coaching startup', 'Student Tutor and mentor'],
   data: [
     { value: '1,182', label: 'UK jobs broken into their tasks and scored for AI exposure' },
     { value: '780', label: 'degree subjects and apprenticeships traced to the jobs they lead to' },
-    { value: '1', label: 'plan your whole family agrees on' },
+    { value: '1', label: 'plan you have confidence in' },
   ],
   dataNote: 'Built on ONS job and task data, HESA graduate outcomes, and the latest research.',
-  outcomes: 'We work towards outcomes, not information. You won’t get a pile of reports. You’ll get a plan your child believes in, and the skills to make it work.',
+  outcomes: 'We work towards outcomes, not information. You won’t get a pile of reports. You’ll get a plan the student believes in, and the skills to make it work.',
   steps: [
-    { title: 'Career test', text: 'Your child takes Pathfinder, our career test. Ben studies the results.' },
-    { title: 'Options session', text: 'Ben takes the family through the best paths for your child, and you narrow them down together.' },
+    { title: 'Career test', text: 'Our students take Pathfinder, our career test. Ben studies the results.' },
+    { title: 'Options session', text: 'Ben takes the family through the best paths, and we narrow them down together.' },
     { title: 'Plan A, B and Z', text: 'You agree one plan the whole family is happy with.' },
-    { title: 'Skills plan', text: 'For Plan A, Ben finds the skills employers pay thousands more for and sets out how to build them, such as a job-specific AI project.' },
+    { title: 'Skills strategy', text: 'For Plan A, Ben finds the skills employers pay thousands more for and sets out how to build them, such as a job-specific AI project.' },
   ],
-  leaveWith: ['A direction your child is excited about', 'A backup plan if things change', 'A project that sets them apart'],
+  leaveWith: ['A direction they’re excited about', 'A backup plan if things change', 'A project that sets them apart'],
 };
 
 export const ADVICE = {
   eyebrow: 'Get advice',
-  title: 'Let’s make your child’s plan.',
-  intro: 'Book a Future-Proof Career Strategy call with Ben. Tell us a little about your child, then choose a time. We recommend both the child and parents attend.',
+  title: 'Let’s make a plan for your son or daughter.',
+  intro: 'Book a Future-Proof Career Strategy call with Ben. Tell us a little about your son or daughter, then choose a time. We recommend both the student and parent(s) attend.',
   scarcity: 'We only work with 10 families a month,',
   scarcityRest: 'so every plan gets proper time. Get in touch now to secure a place.',
   placeholder: 'For example: my daughter is in Year 12. She loves biology and is torn between medicine and a biomedical science degree.',

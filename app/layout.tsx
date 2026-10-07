@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stablefuture.uk"),
-  title: "Is your child’s career ready for AI? | Stable Future",
+  title: "How does AI impact your career path? | Stable Future",
   description: "Understand how AI affects your career and build a strategy to develop the skills employers pay most for.",
   openGraph: { siteName: "Stable Future", locale: "en_GB", type: "website" },
   twitter: { card: "summary_large_image" },

@@ -20,7 +20,6 @@ const KINDS = [
 const KIND_ORDER: Record<string, number> = { degree: 0, apprenticeship: 1, job: 2 };
 const kindLabel = (kind: string) => kind === 'degree' ? 'Degree' : kind === 'apprenticeship' ? 'Apprenticeship' : 'Job';
 // One tap adds these. Chosen because parents ask about them most often.
-const POPULAR = ['cah3:CAH04-01-01', 'cah3:CAH16-01-01', 'cah3:CAH11-01-01', 'cah3:CAH01-01-02', 'cah3:CAH17-01-01', 'st:ST0116', 'cah3:CAH17-01-08', 'st:ST0152', 'cah3:CAH02-04-01', 'cah3:CAH19-01-01', 'st:ST0246', 'soc4:2255'];
 const HINTS = ['Psychology', 'Electrician', 'Law', 'Software developer', 'Medicine', 'Marketing'];
 const MAX = 3;
 
@@ -92,7 +91,6 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
     return () => window.clearInterval(timer);
   }, []);
 
-  const byId = useMemo(() => new Map((catalogue?.paths ?? []).map((p) => [p.id, p])), [catalogue]);
   const areas = useMemo(() => {
     if (!catalogue || !kind) return [];
     if (kind === 'job') return catalogue.jobGroups.map((g) => ({ id: g.id, label: g.title })).sort((a, b) => a.label.localeCompare(b.label));
@@ -107,9 +105,9 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
       .filter((p) => (!kind || p.kind === kind) && (!sector || (kind === 'job' ? ids?.has(p.id) : p.sectors?.some((s) => (typeof s === 'string' ? s : s.id) === sector))))
       .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || a.title.localeCompare(b.title));
   }, [catalogue, kind, sector]);
-  const browsing = !query.trim() && !sector;
+  // Nothing is listed until the visitor types or picks a path type.
+  const browsing = !query.trim() && !sector && !kind;
   const results = useMemo(() => browsing ? [] : searchMatches(pool, query, (p) => p.title, (p) => p.aka ?? []).slice(0, 60), [pool, query, browsing]);
-  const popular = useMemo(() => POPULAR.map((id) => byId.get(id)).filter((p): p is Path => !!p && (!kind || p.kind === kind)), [byId, kind]);
   const full = selected.length >= MAX;
   const locked = status === 'sending';
 
@@ -162,7 +160,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
 
     <section className={styles.hero}>
       <p className={styles.eyebrow}>The free AI career check for parents</p>
-      <h1>How exposed is your child’s <em>career path</em> to AI?</h1>
+      <h1>How exposed is your son or daughter’s <em>career path</em> to AI?</h1>
       <p className={styles.lede}>Pick up to three degrees, apprenticeships, or jobs. We’ll email you a clear report: how much of the work AI can do, and what to do about it.</p>
     </section>
 
@@ -192,11 +190,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
         <div id="cc-results" className={styles.results} aria-live="polite">
           {loadError ? <div className={styles.empty}>We couldn’t load the paths. <button type="button" onClick={() => { setLoadError(false); setReload(reload + 1); }}>Try again</button></div>
             : !catalogue ? <div className={styles.skeleton}>{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</div>
-            : browsing ? <>
-              <p className={styles.listLabel}>Popular with parents</p>
-              <div className={styles.popular}>{popular.map((p) => item(p, styles.chip))}</div>
-              <p className={styles.listHint}>Or type any of {catalogue.paths.length.toLocaleString('en-GB')} UK degrees, apprenticeships, and jobs.</p>
-            </> : <>
+            : browsing ? null : <>
               <p className={styles.listLabel}>{results.length ? `${results.length === 60 ? '60+' : results.length} ${results.length === 1 ? 'match' : 'matches'}` : 'No matches yet'}</p>
               <div className={styles.list} role="list">{results.map(({ item: p, via }, i) => <div role="listitem" key={p.id} data-active={i === active || undefined} onMouseEnter={() => setActive(i)}>{item(p)}{via && <span className={styles.via}>Also called {via}</span>}</div>)}</div>
               {!results.length && <p className={styles.empty}>Try a shorter word, or another path type.</p>}
@@ -214,7 +208,7 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
             <div className={styles.nextStep}>
               <p className={styles.nextEyebrow}>Want a plan, not just a report?</p>
               <p>Ben will help you build a Plan A, B and Z the whole family is happy with. <strong>We only work with 10 families a month.</strong></p>
-              <a className={styles.cta} href="/#advice">Get advice: pick a time <span aria-hidden="true">→</span></a>
+              <Link className={styles.cta} href="/#advice">Get advice: pick a time <span aria-hidden="true">→</span></Link>
             </div>
             <button type="button" className={styles.again} onClick={() => { setStatus('idle'); setSelected([]); setError(''); }}>Check different paths</button>
           </div> : <>
@@ -223,23 +217,20 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
               <h2 id="report-title">Your report</h2>
               <span className={styles.ready} data-on={selected.length > 0 || undefined}>{selected.length ? 'Ready to send' : 'Waiting for a path'}</span>
             </div>
-            <ol className={styles.slots}>
-              {Array.from({ length: MAX }, (_, i) => {
-                const p = selected[i];
-                return p ? <li key={p.id} className={styles.slot} data-kind={p.kind}>
-                  <span className={styles.optionIcon}><PathIcon kind={p.kind} /></span>
-                  <span className={styles.slotText}><small>{kindLabel(p.kind)}</small><strong>{p.title}</strong><LockedMeter /></span>
-                  <button type="button" onClick={() => remove(p.id)} disabled={locked} aria-label={`Remove ${p.title}`}>×</button>
-                </li> : <li key={`empty-${i}`} className={styles.slotEmpty}><span>{i + 1}</span>{i === 0 ? 'Add a degree, apprenticeship, or job' : 'Optional: add another to compare'}</li>;
-              })}
-            </ol>
+            {selected.length > 0 && <ol className={styles.slots}>
+              {selected.map((p) => <li key={p.id} className={styles.slot} data-kind={p.kind}>
+                <span className={styles.optionIcon}><PathIcon kind={p.kind} /></span>
+                <span className={styles.slotText}><small>{kindLabel(p.kind)}</small><strong>{p.title}</strong><LockedMeter /></span>
+                <button type="button" onClick={() => remove(p.id)} disabled={locked} aria-label={`Remove ${p.title}`}>×</button>
+              </li>)}
+            </ol>}
 
             {testing ? <div className={styles.form}><p className={styles.testNote}>Test mode · no emails or signups</p><a className={styles.cta} href={selected.length ? preview : undefined} aria-disabled={!selected.length} target="_blank" rel="noreferrer">View results <span aria-hidden="true">↗</span></a></div>
               : <form className={styles.form} onSubmit={submit} data-ready={selected.length > 0 || undefined}>
                 <label htmlFor="career-email">Where should we send it?</label>
                 <input ref={emailRef} id="career-email" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} required disabled={locked} />
                 <div className={styles.honeypot} aria-hidden="true"><label>Website<input name="website" value={website} onChange={(e) => setWebsite(e.target.value)} autoComplete="off" tabIndex={-1} /></label></div>
-                <label className={styles.optIn}><input type="checkbox" checked={optOut} onChange={(e) => setOptOut(e.target.checked)} disabled={locked} /><span>We’ll also send a few short emails on helping your child plan their career. Tick here if you’d rather not. You can unsubscribe any time.</span></label>
+                <label className={styles.optIn}><input type="checkbox" checked={optOut} onChange={(e) => setOptOut(e.target.checked)} disabled={locked} /><span>We’ll also send a few short emails on helping your son or daughter plan their career. Tick here if you’d rather not receive these. You can unsubscribe any time.</span></label>
                 <button className={styles.cta} type="submit" disabled={!selected.length || locked}>{locked ? 'Sending your report…' : selected.length ? 'Email my free report' : 'Choose a path first'} <span aria-hidden="true">→</span></button>
                 {error && <p className={styles.error} role="alert">{error}</p>}
                 <p className={styles.fine}>We use your email to send the report and any follow-ups. <a href="/privacy">Privacy notice</a></p>
@@ -258,15 +249,15 @@ export default function CareerCheck({ testing = false }: { testing?: boolean }) 
       <div className={styles.scale} aria-label="The five exposure bands">{BANDS.map((b) => <span key={b.key} style={{ background: b.bg, color: b.ink }}>{b.label}</span>)}</div>
       <div className={styles.tiles}>
         <article><b>01</b><h3>An exposure band for each path</h3><p>From very low to very high, ranked against 1,182 UK jobs.</p></article>
-        <article><b>02</b><h3>Where each path leads</h3><p>The jobs a course or apprenticeship leads to, each with its own score.</p></article>
-        <article><b>03</b><h3>The tasks inside the job</h3><p>The five most important tasks, and whether AI can help with them today.</p></article>
-        <article><b>04</b><h3>What to do next</h3><p>How to plan an A, B and Z, and the skills employers pay more for.</p></article>
+        <article><b>02</b><h3>Where each path leads</h3><p>The careers a degree, apprenticeship, or jobs sector leads to, each with an AI exposure score.</p></article>
+        <article><b>03</b><h3>The tasks inside the job</h3><p>The three most important tasks, and whether AI can help with them today.</p></article>
+        <article><b>04</b><h3>What to do next</h3><p>Making a Plan A, B and Z, and getting the right advice.</p></article>
       </div>
       <div className={styles.short}>
         <p className={styles.listLabel}>Why it matters</p>
         <ol>
           <li><strong>Jobs are made of tasks.</strong></li>
-          <li><strong>AI exposure means how many of a job’s tasks AI can do.</strong></li>
+          <li><strong>AI exposure measures how much of a job’s tasks AI can do, compared with other jobs.</strong></li>
           <li><strong>Higher exposure is linked to fewer entry-level jobs.</strong> AI is doing the tasks juniors used to do. <a href="https://digitaleconomy.stanford.edu/project/indicators/canaries-dashboard/" target="_blank" rel="noopener">Stanford Digital Economy Lab</a></li>
           <li><strong>AI is improving faster each year,</strong> and companies are starting to use it at scale. <a href="https://epoch.ai/" target="_blank" rel="noopener">Epoch AI</a></li>
         </ol>

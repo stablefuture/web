@@ -11,7 +11,7 @@ export function careerReplyDraft(lead) {
   return {
     to: lead.email,
     subject: 'Quick question about your AI career check',
-    body: `Hi! It's Ben here.\n\nI hope you found our career checker useful. You looked at ${paths}.\n\nWhat’s the main career decision you or your family are trying to make at the moment?\n\nCheers,\nBen`,
+    body: `Hi! It's Ben here.\n\nI hope you found our career checker useful. You looked at ${paths}.\n\nWhat’s the main career decision you or your family are trying to make at the moment?\n\nIf you’d rather not hear from me, just reply and say so.\n\nCheers,\nBen`,
   };
 }
 

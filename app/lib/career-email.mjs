@@ -29,10 +29,10 @@ const details = (item) => [...new Set([item?.condition, item?.scopeNote].filter(
 // General advice for every band: use AI for the exposed tasks, and get good at the
 // high-skill human ones.
 const MEANING = {
-  'very-high': 'AI can already do much of this work, so expect fewer junior jobs and more competition for them. Your child should learn to use AI for the exposed tasks and get really good at the high-skill human ones. Have a strong Plan B.',
-  high: 'A lot of this work is exposed to AI, so junior roles will get more competitive. Your child should learn to use AI for the exposed tasks and focus on the high-skill human ones.',
-  medium: 'Some of this work is exposed to AI and some stays human. Your child should learn to use AI for the exposed tasks and focus on the high-skill human ones, where they can stand out.',
-  low: 'Most of this work still needs a person. Your child should still use AI where it helps, and focus on the high-skill human tasks. A good Plan B beside more exposed paths.',
+  'very-high': 'AI can already do much of this work, so expect fewer junior jobs and more competition for them. Learn to use AI for the exposed tasks and get really good at the high-skill human ones. Have a strong Plan B.',
+  high: 'A lot of this work is exposed to AI, so junior roles will get more competitive. Learn to use AI for the exposed tasks and focus on the high-skill human ones.',
+  medium: 'Some of this work is exposed to AI and some stays human. Learn to use AI for the exposed tasks and focus on the high-skill human ones, where you can stand out.',
+  low: 'Most of this work still needs a person. Still use AI where it helps, and focus on the high-skill human tasks. A good Plan B beside more exposed paths.',
   'very-low': 'Very little of this work is exposed to AI today, which makes it a strong Plan Z. AI skills still help, but the high-skill human work matters most here.',
   none: 'We haven’t been able to score this path yet.',
 };
@@ -162,7 +162,7 @@ export function renderCareerEmail(reports, { bookingUrl = '' } = {}) {
   reports.forEach((r) => text.push(`- ${r.title}: ${bandFor(r.aiExposure?.score).label}${score(r.aiExposure) !== null ? ` (${score(r.aiExposure)}/100)` : ''}`));
   const cards = reports.map((r, i) => renderPath(r, i, text)).join('');
 
-  text.push('', 'EVERY CHILD NEEDS A PLAN FOR AI', 'We help families build plans for every scenario:',
+  text.push('', 'EVERY STUDENT NEEDS A PLAN FOR AI', 'We help families build plans for every scenario:',
     'Plan A: their preference. The career they want most.',
     'Plan B: a good alternative. Close to their interests, and less exposed to AI.',
     'Plan Z: a lifeboat. Work that’s barely exposed to AI, so they’re secure even in a very disruptive job market.',
@@ -189,7 +189,7 @@ export function renderCareerEmail(reports, { bookingUrl = '' } = {}) {
 
   // Neutral brand greens, darkest for Plan A, so no plan reads as an exposure warning.
   const plans = [['A', 'their preference.', 'The career they want most.', { bg: INK, ink: '#fffaf0' }], ['B', 'a good alternative.', 'Close to their interests, and less exposed to AI.', { bg: '#6f7d5c', ink: '#fffaf0' }], ['Z', 'a lifeboat.', 'Work that’s barely exposed to AI. So they’re secure even in a very disruptive job market.', { bg: '#d6dbc4', ink: INK }]];
-  const plan = `<tr><td style="padding:6px 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${CARD}" style="width:100%;background:${CARD};border-radius:18px"><tr><td style="padding:26px 24px 20px">${h2('Every child needs a plan for AI.')}${p('We help families build plans for every scenario:')}
+  const plan = `<tr><td style="padding:6px 0 22px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${CARD}" style="width:100%;background:${CARD};border-radius:18px"><tr><td style="padding:26px 24px 20px">${h2('Every student needs a plan for AI.')}${p('We help families build plans for every scenario:')}
 ${plans.map(([letter, lead, rest, band]) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;margin-bottom:12px"><tr><td width="44" style="width:44px;vertical-align:top"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="34" height="34" align="center" bgcolor="${band.bg}" style="width:34px;height:34px;background:${band.bg};border-radius:17px;font-family:${SERIF};font-size:18px;color:${band.ink};text-align:center">${letter}</td></tr></table></td><td style="vertical-align:top;font-family:${SANS};font-size:15px;line-height:1.55;color:${INK};padding-top:5px"><strong>Plan ${letter}: ${lead}</strong> ${rest}</td></tr></table>`).join('')}
 ${p(`Then, we give you a roadmap to build the skills employers pay more for. Employers pay <strong>62% more</strong> for AI skills (${link(SOURCES.pwc, 'PwC, 2026')}).`, 'margin:6px 0 0')}</td></tr></table></td></tr>`;
 

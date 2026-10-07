@@ -18,4 +18,4 @@ export const SCARCITY_TEXT =
 
 // Link-preview image (app/opengraph-image.jpg). Pages that set their own
 // openGraph must list it, because Next.js replaces the inherited openGraph.
-export const SHARE_IMAGE = { url: "/opengraph-image.jpg", width: 1200, height: 630, alt: "Stable Future: Is your child’s career path ready for AI? Career advice for families navigating AI." };
+export const SHARE_IMAGE = { url: "/opengraph-image.jpg", width: 1200, height: 630, alt: "Stable Future: How does AI impact your career path? Career advice for families navigating AI." };
