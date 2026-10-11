@@ -56,6 +56,12 @@ test('renderer escapes content, keeps conditions/subject, five bands, honest bas
  assert.match(mail.html, /table role="presentation"/); assert.match(mail.text, /Unscored job: Not scored/); assert.match(mail.html, /#d92a42|#ff8a3d|#ffc93c|#9bcf53|#3fa34d/);
  assert.ok(Buffer.byteLength(mail.html) < 100000, 'stays below Gmail clipping');
 });
+test('a degree with no direct route shows its relevant jobs under their own heading and note', () => {
+ const note = 'This degree has no direct career links. These jobs may be relevant.';
+ const mail = renderCareerEmail([{ id: 'cah3:x', kind: 'degree', title: 'Philosophy', aiExposure: exposure, jobsHeading: 'May be relevant', routeNote: note, jobs: [{ sug: '1/01', title: 'Teacher', relation: 'relevant', aiExposure: exposure }], exampleCareer: null }]);
+ assert.match(mail.text, /MAY BE RELEVANT\nThis degree has no direct career links\. These jobs may be relevant\./); assert.doesNotMatch(mail.text, /WHERE IT LEADS/); assert.match(mail.html, /These jobs may be relevant/);
+ assert.doesNotMatch(renderCareerEmail(reports).text, /may be relevant/);
+});
 test('quintile bands cover the full score range', async () => {
  const { bandFor } = await import('../../lib/exposure-bands.mjs');
  assert.deepEqual([0, 19.9, 20, 39, 40, 59, 60, 79, 80, 100, null].map((v) => bandFor(v).label), ['Very low', 'Very low', 'Low', 'Low', 'Medium', 'Medium', 'High', 'High', 'Very high', 'Very high', 'Not scored']);

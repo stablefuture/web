@@ -97,9 +97,11 @@ function renderPath(report, index, text) {
   html += `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;margin-top:14px"><tr><td bgcolor="${band.tint}" style="background:${band.tint};border-radius:12px;padding:14px 16px;font-family:${SANS};font-size:14px;line-height:1.6;color:${INK}"><strong>What this means:</strong> ${escape(MEANING[band.key])}</td></tr></table>`;
 
   if (jobs.length) {
-    const heading = report.jobsHeading === 'Jobs in this group' ? 'Jobs in this group' : report.kind === 'job' ? 'Related jobs' : 'Where it leads';
+    const heading = ['Jobs in this group', 'May be relevant'].includes(report.jobsHeading) ? report.jobsHeading : report.kind === 'job' ? 'Related jobs' : 'Where it leads';
     text.push('', heading.toUpperCase());
     html += h3(escape(heading));
+    // Degrees with no direct career link fall back to relevant jobs and say so.
+    if (report.routeNote) { text.push(report.routeNote); html += small(escape(report.routeNote)); }
     // One short disclaimer replaces per-job subject routes and entry conditions.
     if (jobs.some((j) => j.memberSubjects?.length || details(j).length)) { text.push(ROUTE_NOTE); html += small(ROUTE_NOTE) + '<div style="height:8px;line-height:8px;font-size:1px">&nbsp;</div>'; }
     html += `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse">`;
