@@ -1,5 +1,7 @@
 // Server-only: lead alerts to Ben’s private Telegram chat. Never log their contents.
 export function formatLeadAlert(lead) {
+  if (lead.type === 'plan') return `SIGNUP\n\nCard saved for the ABZ plan (£0 charged).\nParent: ${lead.name}\nEmail: ${lead.email}\nStudent: ${lead.student || 'not given'}${lead.emailed ? '' : '\n\nConfirmation email FAILED: send the terms by hand.'}`;
+  if (lead.type === 'pathfinder') return `PATHFINDER\n\nCompleted by ${lead.student} (${lead.stage}).\nBooking email: ${lead.email}\nTop interests: ${lead.top}\n\nFull answers are in your inbox.`;
   if (lead.type === 'booking') return `BOOKING\n\nName: ${lead.name}\nEmail: ${lead.email}\nCall: ${lead.title}\nWhen: ${lead.when} (UK time)${lead.meetUrl ? `\nGoogle Meet: ${lead.meetUrl}` : ''}\n\nSituation:\n${lead.situation || 'Not provided'}`;
   return lead.marketing
     ? `CHECKER\n\nEmail: ${lead.email}\nPaths: ${(lead.paths || []).join(', ')}`
@@ -25,7 +27,7 @@ export async function sendLeadAlert(lead, {
     return false;
   }
   const text = formatLeadAlert(lead);
-  const entities = [{ type: 'bold', offset: 0, length: 7 }];
+  const entities = [{ type: 'bold', offset: 0, length: text.indexOf('\n') }];
   const reply_markup = lead.type === 'career-check' && lead.marketing
     ? { inline_keyboard: [[{ text: 'Draft reply', url: `https://www.stablefuture.uk/email-lead.html#${encodeURIComponent(JSON.stringify(careerReplyDraft(lead)))}` }]] }
     : undefined;

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Pathfinder from "./Pathfinder";
+import Questions from "./Questions";
 
 export const metadata: Metadata = {
   title: "Pathfinder | Stable Future",
-  description: "Pathfinder helps students and young people explore careers that suit their interests, qualifications, and views on AI.",
+  description: "Pathfinder: quick questions about your interests, strengths, and goals, so Ben can prepare your results call.",
   alternates: { canonical: "/pathfinder" },
   robots: { index: false, follow: false },
 };
 
-export default function PathfinderPage() { return <Pathfinder />; }
+export default function PathfinderPage() { return <Questions />; }

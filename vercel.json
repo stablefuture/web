@@ -1,0 +1,3 @@
+{
+  "crons": [{ "path": "/api/pathfinder-cleanup", "schedule": "0 4 * * *" }]
+}
