@@ -110,9 +110,6 @@
 .a p { margin: 0 0 10px; }
 .a ul { margin: 0 0 12px; padding-left: 20px; }
 
-.cta { max-width: 960px; margin: 28px auto; padding: 28px 24px; border-radius: 24px; background: var(--ink); color: #fffaf0; }
-.cta h2 { margin: 0 0 10px; font-size: 30px; }
-.cta p { max-width: 600px; margin: 0 0 18px; color: #d9dccd; line-height: 1.55; }
 .foot { max-width: 960px; margin: 32px auto 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
 .foot p { margin: 0 0 8px; }
 

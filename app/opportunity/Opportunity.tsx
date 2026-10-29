@@ -61,7 +61,7 @@ function Rich({ text }: { text: string }) {
 }
 
 async function problem(res: Response) {
-  if (res.status === 429) return 'The demo has reached today’s limit. Please try again tomorrow, or book a call.';
+  if (res.status === 429) return 'The demo has reached today’s limit. Please try again tomorrow.';
   try { const body = await res.json(); return typeof body.detail === 'string' ? body.detail : 'Something went wrong. Please try again.'; }
   catch { return 'Something went wrong. Please try again.'; }
 }
@@ -175,7 +175,6 @@ export default function Opportunity() {
     <main className={s.page}>
       <header className={s.top}>
         <Link className={s.brand} href="/">Stable Future</Link>
-        <a href="/call">Book a call</a>
       </header>
 
       <section className={s.hero}>
@@ -341,13 +340,6 @@ export default function Opportunity() {
         </section>
       )}
 
-      {phase === 'done' && (
-        <section className={s.cta}>
-          <h2>Want to turn this into a plan?</h2>
-          <p>This is a starting point: it shows where to look, not what you’ll save. On a call we’ll go through your results and pick the first things to try.</p>
-          <a className={s.primary} href="/call">Book a free call</a>
-        </section>
-      )}
 
       <footer className={s.foot}>
         <p>How it works: job titles are matched to UK SOC 2020 occupations using the ONS coding index, linked to US O*NET tasks, each labelled by whether AI could halve its time (Eloundou et al., “GPTs are GPTs”). Time per task follows Hatgis-Kessell et al. (2026). It describes typical jobs, not yours, and says nothing about jobs lost. {report ? `Model: ${report.model.split(':').pop()}.` : ''}</p>
